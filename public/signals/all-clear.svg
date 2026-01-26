@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#D1FAE5"/>
+  <!-- Body -->
+  <ellipse cx="100" cy="140" rx="25" ry="40" fill="#1E40AF"/>
+  <!-- Head -->
+  <circle cx="100" cy="70" r="25" fill="#FBBF24"/>
+  <!-- Left arm (raised and crossed) -->
+  <line x1="75" y1="110" x2="110" y2="30" stroke="#FBBF24" stroke-width="12" stroke-linecap="round"/>
+  <!-- Right arm (raised and crossed) -->
+  <line x1="125" y1="110" x2="90" y2="30" stroke="#FBBF24" stroke-width="12" stroke-linecap="round"/>
+  <!-- Checkmark indicator -->
+  <path d="M 160 50 L 170 60 L 185 40" stroke="#059669" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>
