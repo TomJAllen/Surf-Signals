@@ -79,8 +79,8 @@ test.describe("Session Flow", () => {
       // Reveal answer
       await page.getByRole("button", { name: "Reveal Answer" }).click();
 
-      // Mark as correct
-      await page.getByRole("button", { name: "Correct" }).click();
+      // Mark as correct (use exact match to avoid matching "Incorrect")
+      await page.getByRole("button", { name: "Correct", exact: true }).click();
 
       // Click next (unless it's the last one)
       if (i < 4) {
