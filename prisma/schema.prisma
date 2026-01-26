@@ -14,6 +14,7 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   attempts     Attempt[]
+  sessions     StudySession[]
 }
 
 model Signal {
@@ -21,7 +22,8 @@ model Signal {
   name        String    @unique
   description String
   imageUrl    String
-  category    String?
+  videoUrl    String?   // YouTube embed URL for the signal demonstration
+  category    String    @default("water") // "water" | "land" | "irb"
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   attempts    Attempt[]
@@ -29,15 +31,34 @@ model Signal {
 
 model Attempt {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String?  // Nullable for anonymous users
+  sessionId String?  // Link to study session
   signalId  String
   mode      String   // "identify" | "perform"
   correct   Boolean
   createdAt DateTime @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  signal Signal @relation(fields: [signalId], references: [id], onDelete: Cascade)
+  user    User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session StudySession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  signal  Signal        @relation(fields: [signalId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([sessionId])
   @@index([signalId])
+}
+
+model StudySession {
+  id           String    @id @default(cuid())
+  userId       String?   // Nullable for anonymous users
+  mode         String    // "identify" | "perform"
+  category     String?   // Filter applied: "water" | "land" | "irb" | null for all
+  totalCount   Int       // Total signals in session
+  correctCount Int       @default(0)
+  completedAt  DateTime? // Null if session is still in progress
+  createdAt    DateTime  @default(now())
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempts Attempt[]
+
+  @@index([userId])
 }

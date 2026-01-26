@@ -6,8 +6,17 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   const session = await getServerSession(authOptions);
 
+  // Return empty stats for anonymous users (they use localStorage)
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({
+      overall: { totalAttempts: 0, correctAttempts: 0, accuracy: 0 },
+      byMode: {
+        identify: { totalAttempts: 0, correctAttempts: 0, accuracy: 0 },
+        perform: { totalAttempts: 0, correctAttempts: 0, accuracy: 0 },
+      },
+      recentAttempts: [],
+      signalStats: [],
+    });
   }
 
   try {

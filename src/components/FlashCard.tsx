@@ -11,6 +11,21 @@ interface FlashCardProps {
   onNext: () => void;
 }
 
+// YouTube Video Embed Component
+function VideoEmbed({ url, title }: { url: string; title: string }) {
+  return (
+    <div className="relative w-full aspect-video bg-gray-900 rounded-lg overflow-hidden">
+      <iframe
+        src={url}
+        title={title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        className="absolute inset-0 w-full h-full"
+      />
+    </div>
+  );
+}
+
 export default function FlashCard({
   signal,
   mode,
@@ -19,6 +34,7 @@ export default function FlashCard({
 }: FlashCardProps) {
   const [revealed, setRevealed] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
 
   const handleReveal = () => {
     setRevealed(true);
@@ -32,42 +48,106 @@ export default function FlashCard({
   const handleNext = () => {
     setRevealed(false);
     setAnswered(false);
+    setShowVideo(false);
     onNext();
   };
 
+  const categoryColors: Record<string, string> = {
+    water: "bg-blue-500",
+    land: "bg-green-600",
+    irb: "bg-orange-500",
+  };
+
+  const categoryBadge = signal.category && (
+    <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold text-white uppercase z-10 ${categoryColors[signal.category] || "bg-gray-500"}`}>
+      {signal.category}
+    </span>
+  );
+
+  // Media toggle for image/video
+  const hasVideo = !!signal.videoUrl;
+
+  const MediaToggle = () => hasVideo && (
+    <div className="flex justify-center gap-2 p-2 bg-gray-100 border-b border-gray-200">
+      <button
+        onClick={() => setShowVideo(false)}
+        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+          !showVideo
+            ? "bg-white shadow-sm text-gray-900"
+            : "text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        Image
+      </button>
+      <button
+        onClick={() => setShowVideo(true)}
+        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
+          showVideo
+            ? "bg-white shadow-sm text-gray-900"
+            : "text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        Video
+      </button>
+    </div>
+  );
+
+  const MediaDisplay = ({ showBadge = true }: { showBadge?: boolean }) => (
+    <>
+      <MediaToggle />
+      <div className="relative aspect-square bg-gradient-to-b from-gray-50 to-gray-100">
+        {showBadge && categoryBadge}
+        {showVideo && signal.videoUrl ? (
+          <div className="absolute inset-4 flex items-center justify-center">
+            <VideoEmbed url={signal.videoUrl} title={signal.name} />
+          </div>
+        ) : (
+          <Image
+            src={signal.imageUrl}
+            alt={signal.name}
+            fill
+            className="object-contain p-6"
+            priority
+          />
+        )}
+      </div>
+    </>
+  );
+
   if (mode === "identify") {
     return (
-      <div className="max-w-lg mx-auto">
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Signal Image */}
-          <div className="relative aspect-square bg-gray-100">
-            <Image
-              src={signal.imageUrl}
-              alt="Signal to identify"
-              fill
-              className="object-contain p-4"
-              priority
-            />
+      <div className="max-w-lg mx-auto px-4">
+        <div className="flashcard">
+          {/* Header */}
+          <div className="flashcard-header text-center">
+            <span className="text-sm font-medium opacity-80">Identify Mode</span>
+            <h3 className="text-lg font-bold">What signal is this?</h3>
           </div>
 
+          {/* Signal Media (Image/Video) */}
+          <MediaDisplay showBadge={true} />
+
           {/* Card Content */}
-          <div className="p-6">
+          <div className="p-6 bg-white">
             {!revealed ? (
               <div className="text-center">
-                <p className="text-gray-600 mb-4">
-                  What signal is being shown?
+                <p className="text-gray-500 mb-4 text-sm">
+                  Think about what this signal means, then reveal the answer.
                 </p>
                 <button
                   onClick={handleReveal}
-                  className="w-full py-3 px-6 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  className="w-full py-4 px-6 bg-secondary text-gray-900 rounded-xl font-bold hover:bg-secondary-light transition-all active:scale-[0.98] shadow-md"
                 >
                   Reveal Answer
                 </button>
               </div>
             ) : (
               <div>
-                <div className="text-center mb-4">
-                  <h2 className="text-2xl font-bold text-gray-800">
+                <div className="text-center mb-6 p-4 bg-gradient-to-b from-secondary/10 to-transparent rounded-xl">
+                  <h2 className="text-2xl font-bold text-gray-900">
                     {signal.name}
                   </h2>
                   <p className="text-gray-600 mt-2">{signal.description}</p>
@@ -77,13 +157,13 @@ export default function FlashCard({
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleAnswer(false)}
-                      className="flex-1 py-3 px-6 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
+                      className="flex-1 py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
                     >
                       Incorrect
                     </button>
                     <button
                       onClick={() => handleAnswer(true)}
-                      className="flex-1 py-3 px-6 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors"
+                      className="flex-1 py-4 px-6 bg-success text-gray-900 rounded-xl font-bold hover:bg-success-light transition-all active:scale-[0.98] shadow-md"
                     >
                       Correct
                     </button>
@@ -91,7 +171,7 @@ export default function FlashCard({
                 ) : (
                   <button
                     onClick={handleNext}
-                    className="w-full py-3 px-6 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
                   >
                     Next Signal
                   </button>
@@ -106,39 +186,43 @@ export default function FlashCard({
 
   // Perform mode
   return (
-    <div className="max-w-lg mx-auto">
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Prompt Section */}
-        <div className="p-6 bg-blue-50">
-          <h2 className="text-2xl font-bold text-gray-800 text-center">
+    <div className="max-w-lg mx-auto px-4">
+      <div className="flashcard">
+        {/* Header with Signal Info */}
+        <div className="flashcard-header">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium opacity-80">Perform Mode</span>
+            {signal.category && (
+              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                signal.category === "water" ? "bg-blue-400 text-blue-900" :
+                signal.category === "land" ? "bg-green-400 text-green-900" :
+                "bg-orange-400 text-orange-900"
+              }`}>
+                {signal.category}
+              </span>
+            )}
+          </div>
+          <h2 className="text-2xl font-bold">
             {signal.name}
           </h2>
-          <p className="text-gray-600 mt-2 text-center">{signal.description}</p>
+          <p className="opacity-80 mt-1">{signal.description}</p>
         </div>
 
-        {/* Image Section (hidden until revealed) */}
-        {revealed && (
-          <div className="relative aspect-square bg-gray-100">
-            <Image
-              src={signal.imageUrl}
-              alt={signal.name}
-              fill
-              className="object-contain p-4"
-              priority
-            />
-          </div>
-        )}
+        {/* Media Section (hidden until revealed) */}
+        {revealed && <MediaDisplay showBadge={false} />}
 
         {/* Card Content */}
-        <div className="p-6">
+        <div className="p-6 bg-white">
           {!revealed ? (
             <div className="text-center">
-              <p className="text-gray-600 mb-4">
-                Perform this signal, then reveal to check your form.
-              </p>
+              <div className="mb-6 p-6 bg-secondary/10 rounded-xl border-2 border-dashed border-secondary/30">
+                <p className="text-gray-700 font-medium">
+                  Perform this signal physically, then reveal the reference to check your form.
+                </p>
+              </div>
               <button
                 onClick={handleReveal}
-                className="w-full py-3 px-6 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="w-full py-4 px-6 bg-accent text-white rounded-xl font-bold hover:bg-accent-dark transition-all active:scale-[0.98] shadow-md"
               >
                 Reveal Reference
               </button>
@@ -146,24 +230,29 @@ export default function FlashCard({
           ) : (
             <div>
               {!answered ? (
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => handleAnswer(false)}
-                    className="flex-1 py-3 px-6 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
-                  >
-                    Incorrect
-                  </button>
-                  <button
-                    onClick={() => handleAnswer(true)}
-                    className="flex-1 py-3 px-6 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors"
-                  >
-                    Correct
-                  </button>
+                <div>
+                  <p className="text-center text-gray-600 mb-4 text-sm">
+                    Did you perform the signal correctly?
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleAnswer(false)}
+                      className="flex-1 py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
+                    >
+                      Incorrect
+                    </button>
+                    <button
+                      onClick={() => handleAnswer(true)}
+                      className="flex-1 py-4 px-6 bg-success text-gray-900 rounded-xl font-bold hover:bg-success-light transition-all active:scale-[0.98] shadow-md"
+                    >
+                      Correct
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <button
                   onClick={handleNext}
-                  className="w-full py-3 px-6 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
                 >
                   Next Signal
                 </button>

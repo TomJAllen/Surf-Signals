@@ -10,90 +10,144 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+// Signal categories based on SLSA standards:
+// - water: Signals given in or from the water
+// - land: Signals given from the beach/shore
+// - irb: Signals specific to Inflatable Rescue Boats
+
 const signals = [
+  // WATER SIGNALS - Signals given in the water or for swimmers
   {
     name: "Assistance Required",
     description:
-      "One arm raised with clenched fist, waved side to side. Indicates a swimmer or surfer needs help.",
+      "One arm raised with clenched fist, waved side to side. Used by a swimmer or lifesaver to indicate help is needed.",
     imageUrl: "/signals/assistance-required.svg",
-    category: "Emergency",
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Placeholder - replace with actual SLSA video
+    category: "water",
   },
+  {
+    name: "All Clear",
+    description:
+      "Both arms raised straight above head, crossed at wrists. Indicates the rescue is complete or area is safe.",
+    imageUrl: "/signals/all-clear.svg",
+    videoUrl: null,
+    category: "water",
+  },
+  {
+    name: "Pick Up Swimmers",
+    description:
+      "One arm raised high with hand open, then closed into fist repeatedly. Signals for rescue craft to collect swimmers from the water.",
+    imageUrl: "/signals/pick-up-swimmers.svg",
+    videoUrl: null,
+    category: "water",
+  },
+
+  // LAND SIGNALS - Signals given from the beach
   {
     name: "Return to Shore",
     description:
-      "Both arms raised above head, swept together in a diagonal motion toward shore. Directs swimmers to return to the beach.",
+      "Both arms raised above head, swept together in a diagonal motion toward shore. Directs swimmers to return to the beach immediately.",
     imageUrl: "/signals/return-to-shore.svg",
-    category: "Direction",
+    videoUrl: null,
+    category: "land",
   },
   {
     name: "Go Further Out",
     description:
-      "Both arms raised above head, swept in circular motion away from shore. Indicates swimmers should move further out.",
+      "Both arms raised above head, swept outward away from body. Indicates swimmers should move further out from shore.",
     imageUrl: "/signals/go-further-out.svg",
-    category: "Direction",
+    videoUrl: null,
+    category: "land",
   },
   {
     name: "Move Left",
     description:
-      "Left arm extended horizontally, pointing left. Right arm raised and swept toward the left. Directs swimmers to move left.",
+      "Left arm extended horizontally, right arm raised and swept toward the left. Directs swimmers to move to their left (lifesaver's right).",
     imageUrl: "/signals/move-left.svg",
-    category: "Direction",
+    videoUrl: null,
+    category: "land",
   },
   {
     name: "Move Right",
     description:
-      "Right arm extended horizontally, pointing right. Left arm raised and swept toward the right. Directs swimmers to move right.",
+      "Right arm extended horizontally, left arm raised and swept toward the right. Directs swimmers to move to their right (lifesaver's left).",
     imageUrl: "/signals/move-right.svg",
-    category: "Direction",
+    videoUrl: null,
+    category: "land",
   },
   {
     name: "Remain Stationary",
     description:
       "Both arms extended horizontally to sides, palms facing forward. Indicates swimmers should stay in their current position.",
     imageUrl: "/signals/remain-stationary.svg",
-    category: "Direction",
-  },
-  {
-    name: "Pick Up Swimmers",
-    description:
-      "One arm raised with hand open, then closed into fist. Used to signal rescue craft to pick up swimmers.",
-    imageUrl: "/signals/pick-up-swimmers.svg",
-    category: "Rescue",
-  },
-  {
-    name: "All Clear",
-    description:
-      "Both arms raised straight above head, crossed at wrists. Indicates the area is safe and clear.",
-    imageUrl: "/signals/all-clear.svg",
-    category: "Status",
+    videoUrl: null,
+    category: "land",
   },
   {
     name: "Message Received/Understood",
     description:
-      "Both arms raised above head and brought together so hands touch. Acknowledges that a signal has been received.",
+      "Both arms raised above head and brought together so hands touch above head. Acknowledges that a signal has been seen and understood.",
     imageUrl: "/signals/message-received.svg",
-    category: "Communication",
+    videoUrl: null,
+    category: "land",
   },
   {
     name: "Investigate",
     description:
-      "One arm pointing at area of concern. Used to direct attention to a specific area for investigation.",
+      "One arm extended, pointing at area of concern. Used to direct attention to a specific location that needs checking.",
     imageUrl: "/signals/investigate.svg",
-    category: "Direction",
+    videoUrl: null,
+    category: "land",
   },
   {
     name: "Stop",
     description:
-      "One arm raised straight up with open palm facing forward. Signals to stop current activity.",
+      "One arm raised straight up with open palm facing forward. Signals to stop current activity immediately.",
     imageUrl: "/signals/stop.svg",
-    category: "Direction",
+    videoUrl: null,
+    category: "land",
   },
+
+  // IRB SIGNALS - Signals for Inflatable Rescue Boat operations
   {
     name: "Increase Speed",
     description:
-      "Arm extended with hand making circular motion. Indicates rescue craft should increase speed.",
+      "Arm extended forward with hand making rapid circular motion. Signals IRB driver to increase speed.",
     imageUrl: "/signals/increase-speed.svg",
-    category: "Rescue",
+    videoUrl: null,
+    category: "irb",
+  },
+  {
+    name: "Decrease Speed",
+    description:
+      "Arm extended to side, palm facing down, moving up and down slowly. Signals IRB driver to slow down.",
+    imageUrl: "/signals/decrease-speed.svg",
+    videoUrl: null,
+    category: "irb",
+  },
+  {
+    name: "Turn Left (IRB)",
+    description:
+      "Left arm extended horizontally, pointing in direction of turn. Signals IRB driver to turn left.",
+    imageUrl: "/signals/irb-turn-left.svg",
+    videoUrl: null,
+    category: "irb",
+  },
+  {
+    name: "Turn Right (IRB)",
+    description:
+      "Right arm extended horizontally, pointing in direction of turn. Signals IRB driver to turn right.",
+    imageUrl: "/signals/irb-turn-right.svg",
+    videoUrl: null,
+    category: "irb",
+  },
+  {
+    name: "Stop Engine",
+    description:
+      "Hand drawn across throat in cutting motion. Signals IRB driver to stop the engine immediately.",
+    imageUrl: "/signals/stop-engine.svg",
+    videoUrl: null,
+    category: "irb",
   },
 ];
 

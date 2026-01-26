@@ -6,9 +6,8 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // Allow anonymous attempts - userId will be null
+  const userId = session?.user?.id || null;
 
   try {
     const { signalId, mode, correct } = await request.json();
@@ -27,16 +26,22 @@ export async function POST(request: Request) {
       );
     }
 
-    const attempt = await prisma.attempt.create({
-      data: {
-        userId: session.user.id,
-        signalId,
-        mode,
-        correct,
-      },
-    });
+    // Only save to database if user is authenticated
+    // Anonymous attempts are handled client-side via localStorage
+    if (userId) {
+      const attempt = await prisma.attempt.create({
+        data: {
+          userId,
+          signalId,
+          mode,
+          correct,
+        },
+      });
+      return NextResponse.json(attempt);
+    }
 
-    return NextResponse.json(attempt);
+    // Return success for anonymous users (they store locally)
+    return NextResponse.json({ success: true, anonymous: true });
   } catch (error) {
     console.error("Error creating attempt:", error);
     return NextResponse.json(
@@ -50,7 +55,8 @@ export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Return empty array for anonymous users (they use localStorage)
+    return NextResponse.json([]);
   }
 
   try {

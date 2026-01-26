@@ -55,22 +55,22 @@ export default function HistoryPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-900">History</h1>
 
         <div className="flex gap-2">
           <button
             onClick={() => setFilter("all")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
               filter === "all"
-                ? "bg-blue-600 text-white"
+                ? "bg-primary text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
@@ -78,9 +78,9 @@ export default function HistoryPage() {
           </button>
           <button
             onClick={() => setFilter("identify")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
               filter === "identify"
-                ? "bg-blue-600 text-white"
+                ? "bg-secondary text-gray-900"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
@@ -88,9 +88,9 @@ export default function HistoryPage() {
           </button>
           <button
             onClick={() => setFilter("perform")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
               filter === "perform"
-                ? "bg-blue-600 text-white"
+                ? "bg-accent text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
@@ -100,29 +100,34 @@ export default function HistoryPage() {
       </div>
 
       {filteredAttempts.length === 0 ? (
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center">
-          <p className="text-gray-500">
+        <div className="card text-center py-12">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p className="text-gray-500 font-medium">
             {filter === "all"
               ? "No attempts yet. Start practicing to see your history!"
               : `No ${filter} attempts yet.`}
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="card overflow-hidden p-0">
           <div className="divide-y divide-gray-100">
             {filteredAttempts.map((attempt) => (
               <div
                 key={attempt.id}
-                className="p-4 flex items-center justify-between hover:bg-gray-50"
+                className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-4">
                   <span
-                    className={`w-3 h-3 rounded-full ${
-                      attempt.correct ? "bg-green-500" : "bg-red-500"
+                    className={`w-4 h-4 rounded-full ${
+                      attempt.correct ? "bg-success" : "bg-primary"
                     }`}
                   />
                   <div>
-                    <div className="font-medium text-gray-800">
+                    <div className="font-semibold text-gray-900">
                       {attempt.signalName}
                     </div>
                     <div className="text-sm text-gray-500">
@@ -131,15 +136,19 @@ export default function HistoryPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <span className="px-3 py-1 bg-gray-100 rounded-full text-xs font-medium text-gray-600 capitalize">
+                <div className="flex items-center gap-3">
+                  <span className={`px-3 py-1 rounded-lg text-xs font-bold capitalize ${
+                    attempt.mode === "identify"
+                      ? "bg-secondary/20 text-secondary-dark"
+                      : "bg-accent/20 text-accent-dark"
+                  }`}>
                     {attempt.mode}
                   </span>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    className={`px-3 py-1.5 rounded-lg text-sm font-bold ${
                       attempt.correct
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
+                        ? "bg-success/20 text-success-dark"
+                        : "bg-primary/10 text-primary"
                     }`}
                   >
                     {attempt.correct ? "Correct" : "Incorrect"}

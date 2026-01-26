@@ -1,11 +1,13 @@
 export type StudyMode = "identify" | "perform";
+export type SignalCategory = "water" | "land" | "irb";
 
 export interface Signal {
   id: string;
   name: string;
   description: string;
   imageUrl: string;
-  category: string | null;
+  videoUrl?: string | null;
+  category: SignalCategory;
 }
 
 export interface AttemptStats {
@@ -33,4 +35,20 @@ export interface RecentAttempt {
   mode: StudyMode;
   correct: boolean;
   createdAt: string;
+}
+
+export interface StudySession {
+  id: string;
+  mode: StudyMode;
+  category: SignalCategory | null;
+  totalCount: number;
+  correctCount: number;
+  completedAt: string | null;
+  createdAt: string;
+}
+
+export interface SessionConfig {
+  mode: StudyMode;
+  category: SignalCategory | null;
+  count: number; // 5, 10, or total signals
 }
