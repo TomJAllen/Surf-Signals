@@ -50,6 +50,7 @@ export default function FlashCard({
 
   const handleReveal = () => {
     setRevealed(true);
+    setPerformPhase("revealed");
   };
 
   const handleAnswer = (correct: boolean) => {

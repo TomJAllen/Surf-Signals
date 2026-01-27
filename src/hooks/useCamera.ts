@@ -31,6 +31,16 @@ export function useCamera(options: UseCameraOptions = {}): UseCameraReturn {
     facingMode: initialFacingMode,
   });
 
+  // Connect stream to video element when both are available
+  useEffect(() => {
+    if (cameraState.isActive && streamRef.current && videoRef.current) {
+      if (videoRef.current.srcObject !== streamRef.current) {
+        videoRef.current.srcObject = streamRef.current;
+        videoRef.current.play().catch(console.error);
+      }
+    }
+  }, [cameraState.isActive]);
+
   // Clean up stream on unmount
   useEffect(() => {
     return () => {
@@ -80,35 +90,7 @@ export function useCamera(options: UseCameraOptions = {}): UseCameraReturn {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-
-        // Wait for video to be ready
-        await new Promise<void>((resolve, reject) => {
-          if (!videoRef.current) {
-            reject(new Error("Video element not found"));
-            return;
-          }
-
-          const video = videoRef.current;
-
-          const onLoadedMetadata = () => {
-            video.removeEventListener("loadedmetadata", onLoadedMetadata);
-            video.removeEventListener("error", onError);
-            video.play().then(resolve).catch(reject);
-          };
-
-          const onError = () => {
-            video.removeEventListener("loadedmetadata", onLoadedMetadata);
-            video.removeEventListener("error", onError);
-            reject(new Error("Failed to load video stream"));
-          };
-
-          video.addEventListener("loadedmetadata", onLoadedMetadata);
-          video.addEventListener("error", onError);
-        });
-      }
-
+      // Set isActive to true - the useEffect will connect the stream to the video element
       setCameraState((prev) => ({
         ...prev,
         isActive: true,
