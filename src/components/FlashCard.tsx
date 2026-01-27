@@ -89,9 +89,8 @@ export default function FlashCard({
   }, []);
 
   const categoryColors: Record<string, string> = {
-    water: "bg-blue-500",
-    land: "bg-green-600",
-    irb: "bg-orange-500",
+    "beach-to-water": "bg-amber-500",
+    "water-to-beach": "bg-blue-500",
   };
 
   const categoryBadge = signal.category && (
@@ -232,11 +231,10 @@ export default function FlashCard({
             </span>
             {signal.category && (
               <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                signal.category === "water" ? "bg-blue-400 text-blue-900" :
-                signal.category === "land" ? "bg-green-400 text-green-900" :
-                "bg-orange-400 text-orange-900"
+                signal.category === "beach-to-water" ? "bg-amber-400 text-amber-900" :
+                "bg-blue-400 text-blue-900"
               }`}>
-                {signal.category}
+                {signal.category === "beach-to-water" ? "Beach" : "Water"}
               </span>
             )}
           </div>

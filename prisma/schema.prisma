@@ -23,7 +23,7 @@ model Signal {
   description String
   imageUrl    String
   videoUrl    String?   // YouTube embed URL for the signal demonstration
-  category    String    @default("water") // "water" | "land" | "irb"
+  category    String    @default("beach-to-water") // "beach-to-water" | "water-to-beach"
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   attempts    Attempt[]
@@ -51,7 +51,7 @@ model StudySession {
   id           String    @id @default(cuid())
   userId       String?   // Nullable for anonymous users
   mode         String    // "identify" | "perform"
-  category     String?   // Filter applied: "water" | "land" | "irb" | null for all
+  category     String?   // Filter applied: "beach-to-water" | "water-to-beach" | null for all
   totalCount   Int       // Total signals in session
   correctCount Int       @default(0)
   completedAt  DateTime? // Null if session is still in progress

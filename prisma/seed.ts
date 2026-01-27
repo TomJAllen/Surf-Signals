@@ -10,149 +10,140 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-// Signal categories based on SLSA standards:
-// - water: Signals given in or from the water
-// - land: Signals given from the beach/shore
-// - irb: Signals specific to Inflatable Rescue Boats
+// Signal categories:
+// - beach-to-water: Signals given from the beach to swimmers/craft in the water
+// - water-to-beach: Signals given from the water back to the beach
 
 const signals = [
-  // WATER SIGNALS - Signals given in the water or for swimmers
+  // BEACH TO WATER SIGNALS
   {
-    name: "Assistance Required",
+    name: "Attract Attention",
     description:
-      "One arm raised with clenched fist, waved side to side. Used by a swimmer or lifesaver to indicate help is needed.",
-    imageUrl: "/signals/assistance-required.svg",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Placeholder - replace with actual SLSA video
-    category: "water",
-  },
-  {
-    name: "All Clear",
-    description:
-      "Both arms raised straight above head, crossed at wrists. Indicates the rescue is complete or area is safe.",
-    imageUrl: "/signals/all-clear.svg",
+      "Both arms crossed above the head, waving side to side. Used to attract the attention of swimmers or water users from the beach.",
+    imageUrl: "/signals/beach-to-water/attract-attention.png",
     videoUrl: null,
-    category: "water",
+    category: "beach-to-water",
   },
   {
     name: "Pick Up Swimmers",
     description:
-      "One arm raised high with hand open, then closed into fist repeatedly. Signals for rescue craft to collect swimmers from the water.",
-    imageUrl: "/signals/pick-up-swimmers.svg",
+      "One arm extended horizontally pointing in the direction of the swimmers, other arm raised above head making a circular motion. Signals rescue craft to pick up swimmers from the water.",
+    imageUrl: "/signals/beach-to-water/pickup-swimmers.png",
     videoUrl: null,
-    category: "water",
-  },
-
-  // LAND SIGNALS - Signals given from the beach
-  {
-    name: "Return to Shore",
-    description:
-      "Both arms raised above head, swept together in a diagonal motion toward shore. Directs swimmers to return to the beach immediately.",
-    imageUrl: "/signals/return-to-shore.svg",
-    videoUrl: null,
-    category: "land",
+    category: "beach-to-water",
   },
   {
-    name: "Go Further Out",
+    name: "Proceed Further Out to Sea",
     description:
-      "Both arms raised above head, swept outward away from body. Indicates swimmers should move further out from shore.",
-    imageUrl: "/signals/go-further-out.svg",
+      "Both arms raised straight above the head with palms facing outward, sweeping upward. Directs swimmers or craft to move further out from shore.",
+    imageUrl: "/signals/beach-to-water/proceed-further-out.png",
     videoUrl: null,
-    category: "land",
+    category: "beach-to-water",
   },
   {
-    name: "Move Left",
+    name: "Go to the Right or Left",
     description:
-      "Left arm extended horizontally, right arm raised and swept toward the left. Directs swimmers to move to their left (lifesaver's right).",
-    imageUrl: "/signals/move-left.svg",
+      "One arm extended horizontally pointing in the desired direction. Directs swimmers or craft to move to the right or left as indicated.",
+    imageUrl: "/signals/beach-to-water/go-right-or-left.png",
     videoUrl: null,
-    category: "land",
-  },
-  {
-    name: "Move Right",
-    description:
-      "Right arm extended horizontally, left arm raised and swept toward the right. Directs swimmers to move to their right (lifesaver's left).",
-    imageUrl: "/signals/move-right.svg",
-    videoUrl: null,
-    category: "land",
+    category: "beach-to-water",
   },
   {
     name: "Remain Stationary",
     description:
-      "Both arms extended horizontally to sides, palms facing forward. Indicates swimmers should stay in their current position.",
-    imageUrl: "/signals/remain-stationary.svg",
+      "Both arms extended horizontally to the sides with palms facing forward. Instructs swimmers or craft to stay in their current position.",
+    imageUrl: "/signals/beach-to-water/remain-stationary.png",
     videoUrl: null,
-    category: "land",
+    category: "beach-to-water",
   },
   {
-    name: "Message Received/Understood",
+    name: "Message Understood, All Clear",
     description:
-      "Both arms raised above head and brought together so hands touch above head. Acknowledges that a signal has been seen and understood.",
-    imageUrl: "/signals/message-received.svg",
+      "One arm raised straight above the head then brought down to the side. Acknowledges that a signal from the water has been received and understood.",
+    imageUrl: "/signals/beach-to-water/message-understood.png",
     videoUrl: null,
-    category: "land",
+    category: "beach-to-water",
   },
   {
-    name: "Investigate",
+    name: "Pick Up or Adjust Buoys",
     description:
-      "One arm extended, pointing at area of concern. Used to direct attention to a specific location that needs checking.",
-    imageUrl: "/signals/investigate.svg",
+      "Both arms extended to the sides with a circular waving motion. Instructs personnel to pick up or adjust the swimming area buoys.",
+    imageUrl: "/signals/beach-to-water/pickup-adjust-buoys.png",
     videoUrl: null,
-    category: "land",
+    category: "beach-to-water",
   },
   {
-    name: "Stop",
+    name: "Return to Shore",
     description:
-      "One arm raised straight up with open palm facing forward. Signals to stop current activity immediately.",
-    imageUrl: "/signals/stop.svg",
+      "One arm raised above the head with palm facing forward. Directs swimmers or craft to return to shore immediately.",
+    imageUrl: "/signals/beach-to-water/return-to-shore.png",
     videoUrl: null,
-    category: "land",
+    category: "beach-to-water",
   },
 
-  // IRB SIGNALS - Signals for Inflatable Rescue Boat operations
+  // WATER TO BEACH SIGNALS
   {
-    name: "Increase Speed",
+    name: "Assistance Required",
     description:
-      "Arm extended forward with hand making rapid circular motion. Signals IRB driver to increase speed.",
-    imageUrl: "/signals/increase-speed.svg",
+      "One arm raised above the head, waved side to side while in the water on a rescue board. Indicates that the lifesaver or swimmer needs help.",
+    imageUrl: "/signals/water-to-beach/assistance-required.png",
     videoUrl: null,
-    category: "irb",
+    category: "water-to-beach",
   },
   {
-    name: "Decrease Speed",
+    name: "Shore Signal Received and Understood",
     description:
-      "Arm extended to side, palm facing down, moving up and down slowly. Signals IRB driver to slow down.",
-    imageUrl: "/signals/decrease-speed.svg",
+      "One arm raised straight above the head then brought down, performed while in the water. Confirms that a signal from the shore has been received and understood.",
+    imageUrl: "/signals/water-to-beach/shore-signal-received.png",
     videoUrl: null,
-    category: "irb",
+    category: "water-to-beach",
   },
   {
-    name: "Turn Left (IRB)",
+    name: "Emergency Evacuation Alarm",
     description:
-      "Left arm extended horizontally, pointing in direction of turn. Signals IRB driver to turn left.",
-    imageUrl: "/signals/irb-turn-left.svg",
+      "Both arms raised straight above the head while in the water. Signals an emergency requiring immediate evacuation of the water.",
+    imageUrl: "/signals/water-to-beach/emergency-evacuation.png",
     videoUrl: null,
-    category: "irb",
+    category: "water-to-beach",
   },
   {
-    name: "Turn Right (IRB)",
+    name: "Submerged Victim Missing",
     description:
-      "Right arm extended horizontally, pointing in direction of turn. Signals IRB driver to turn right.",
-    imageUrl: "/signals/irb-turn-right.svg",
+      "Both arms crossed above the head while in the water. Indicates that a person is missing or has been submerged and cannot be located.",
+    imageUrl: "/signals/water-to-beach/submerged-victim.png",
     videoUrl: null,
-    category: "irb",
+    category: "water-to-beach",
   },
   {
-    name: "Stop Engine",
+    name: "All Clear / OK",
     description:
-      "Hand drawn across throat in cutting motion. Signals IRB driver to stop the engine immediately.",
-    imageUrl: "/signals/stop-engine.svg",
+      "One arm raised and touching the top of the head in a circular motion while in the water. Signals that everything is OK and the situation is all clear.",
+    imageUrl: "/signals/water-to-beach/all-clear-ok.png",
     videoUrl: null,
-    category: "irb",
+    category: "water-to-beach",
+  },
+  {
+    name: "Powercraft Wishes to Return to Shore",
+    description:
+      "From a rescue boat, one arm raised and waved in a circular motion. Signals that the powercraft needs to return to shore.",
+    imageUrl: "/signals/water-to-beach/powercraft-return.png",
+    videoUrl: null,
+    category: "water-to-beach",
   },
 ];
 
 async function main() {
   console.log("Seeding database...");
+
+  // Delete old signals that are no longer used
+  await prisma.signal.deleteMany({
+    where: {
+      name: {
+        notIn: signals.map((s) => s.name),
+      },
+    },
+  });
+  console.log("Removed old signals");
 
   for (const signal of signals) {
     await prisma.signal.upsert({

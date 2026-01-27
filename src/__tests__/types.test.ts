@@ -8,15 +8,15 @@ describe("Types", () => {
         id: "1",
         name: "Test Signal",
         description: "A test signal",
-        imageUrl: "/signals/test.svg",
-        category: "water",
+        imageUrl: "/signals/beach-to-water/test.png",
+        category: "beach-to-water",
       };
 
       expect(signal.id).toBe("1");
       expect(signal.name).toBe("Test Signal");
       expect(signal.description).toBe("A test signal");
-      expect(signal.imageUrl).toBe("/signals/test.svg");
-      expect(signal.category).toBe("water");
+      expect(signal.imageUrl).toBe("/signals/beach-to-water/test.png");
+      expect(signal.category).toBe("beach-to-water");
     });
 
     it("should allow optional videoUrl", () => {
@@ -24,8 +24,8 @@ describe("Types", () => {
         id: "1",
         name: "Test Signal",
         description: "A test signal",
-        imageUrl: "/signals/test.svg",
-        category: "water",
+        imageUrl: "/signals/beach-to-water/test.png",
+        category: "beach-to-water",
         videoUrl: "https://youtube.com/embed/abc123",
       };
 
@@ -44,14 +44,12 @@ describe("Types", () => {
   });
 
   describe("SignalCategory", () => {
-    it("should only allow water, land, or irb", () => {
-      const water: SignalCategory = "water";
-      const land: SignalCategory = "land";
-      const irb: SignalCategory = "irb";
+    it("should only allow beach-to-water or water-to-beach", () => {
+      const beachToWater: SignalCategory = "beach-to-water";
+      const waterToBeach: SignalCategory = "water-to-beach";
 
-      expect(water).toBe("water");
-      expect(land).toBe("land");
-      expect(irb).toBe("irb");
+      expect(beachToWater).toBe("beach-to-water");
+      expect(waterToBeach).toBe("water-to-beach");
     });
   });
 
@@ -59,12 +57,12 @@ describe("Types", () => {
     it("should have all required properties", () => {
       const config: SessionConfig = {
         mode: "identify",
-        category: "water",
+        category: "beach-to-water",
         count: 10,
       };
 
       expect(config.mode).toBe("identify");
-      expect(config.category).toBe("water");
+      expect(config.category).toBe("beach-to-water");
       expect(config.count).toBe(10);
     });
 

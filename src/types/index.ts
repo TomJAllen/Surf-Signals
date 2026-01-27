@@ -1,5 +1,5 @@
 export type StudyMode = "identify" | "perform";
-export type SignalCategory = "water" | "land" | "irb";
+export type SignalCategory = "beach-to-water" | "water-to-beach";
 
 export interface Signal {
   id: string;

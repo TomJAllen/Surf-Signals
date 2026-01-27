@@ -22,9 +22,8 @@ export default function IdentifyPage() {
   const [error, setError] = useState("");
   const [totalSignals, setTotalSignals] = useState(0);
   const [signalsByCategory, setSignalsByCategory] = useState<Record<SignalCategory, number>>({
-    water: 0,
-    land: 0,
-    irb: 0,
+    "beach-to-water": 0,
+    "water-to-beach": 0,
   });
 
   // Fetch all signals to get counts
@@ -37,9 +36,8 @@ export default function IdentifyPage() {
 
         setTotalSignals(data.length);
         setSignalsByCategory({
-          water: data.filter((s) => s.category === "water").length,
-          land: data.filter((s) => s.category === "land").length,
-          irb: data.filter((s) => s.category === "irb").length,
+          "beach-to-water": data.filter((s) => s.category === "beach-to-water").length,
+          "water-to-beach": data.filter((s) => s.category === "water-to-beach").length,
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");

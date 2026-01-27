@@ -78,7 +78,7 @@ export default function SessionSetup({
           <label className="block text-sm font-bold text-gray-700 mb-3">
             Signal Category
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => setCategory(null)}
               className={`p-3 rounded-xl text-sm font-bold transition-all ${
@@ -90,34 +90,24 @@ export default function SessionSetup({
               All ({totalSignals})
             </button>
             <button
-              onClick={() => setCategory("water")}
+              onClick={() => setCategory("beach-to-water")}
               className={`p-3 rounded-xl text-sm font-bold transition-all ${
-                category === "water"
+                category === "beach-to-water"
+                  ? "bg-amber-500 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Beach ({signalsByCategory["beach-to-water"]})
+            </button>
+            <button
+              onClick={() => setCategory("water-to-beach")}
+              className={`p-3 rounded-xl text-sm font-bold transition-all ${
+                category === "water-to-beach"
                   ? "bg-blue-500 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              Water ({signalsByCategory.water})
-            </button>
-            <button
-              onClick={() => setCategory("land")}
-              className={`p-3 rounded-xl text-sm font-bold transition-all ${
-                category === "land"
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Land ({signalsByCategory.land})
-            </button>
-            <button
-              onClick={() => setCategory("irb")}
-              className={`p-3 rounded-xl text-sm font-bold transition-all ${
-                category === "irb"
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              IRB ({signalsByCategory.irb})
+              Water ({signalsByCategory["water-to-beach"]})
             </button>
           </div>
         </div>

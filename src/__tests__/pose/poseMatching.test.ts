@@ -46,15 +46,6 @@ function createBasePose(): PoseLandmarks {
   return landmarks;
 }
 
-// Helper to create a "Stop" signal pose (one arm raised)
-function createStopPose(): PoseLandmarks {
-  const pose = createBasePose();
-  // Right arm raised above head
-  pose[POSE_LANDMARKS.RIGHT_ELBOW] = createLandmark(0.6, 0.25);
-  pose[POSE_LANDMARKS.RIGHT_WRIST] = createLandmark(0.6, 0.1);
-  return pose;
-}
-
 // Helper to create a "Remain Stationary" pose (both arms horizontal)
 function createRemainStationaryPose(): PoseLandmarks {
   const pose = createBasePose();
@@ -67,17 +58,17 @@ function createRemainStationaryPose(): PoseLandmarks {
   return pose;
 }
 
-// Helper to create a "Turn Left IRB" pose (left arm horizontal only)
-function createTurnLeftIRBPose(): PoseLandmarks {
+// Helper to create a "Return to Shore" pose (one arm raised)
+function createReturnToShorePose(): PoseLandmarks {
   const pose = createBasePose();
-  // Left arm horizontal
-  pose[POSE_LANDMARKS.LEFT_ELBOW] = createLandmark(0.25, 0.35);
-  pose[POSE_LANDMARKS.LEFT_WRIST] = createLandmark(0.1, 0.35);
+  // Right arm raised above head
+  pose[POSE_LANDMARKS.RIGHT_ELBOW] = createLandmark(0.6, 0.25);
+  pose[POSE_LANDMARKS.RIGHT_WRIST] = createLandmark(0.6, 0.1);
   return pose;
 }
 
-// Helper to create a "Turn Right IRB" pose (right arm horizontal only)
-function createTurnRightIRBPose(): PoseLandmarks {
+// Helper to create a "Go Right or Left" pose (one arm horizontal)
+function createGoRightOrLeftPose(): PoseLandmarks {
   const pose = createBasePose();
   // Right arm horizontal
   pose[POSE_LANDMARKS.RIGHT_ELBOW] = createLandmark(0.75, 0.35);
@@ -85,8 +76,20 @@ function createTurnRightIRBPose(): PoseLandmarks {
   return pose;
 }
 
-// Helper to create a "Message Received" pose (both arms raised, hands touching)
-function createMessageReceivedPose(): PoseLandmarks {
+// Helper to create an "Emergency Evacuation" pose (both arms raised)
+function createEmergencyEvacuationPose(): PoseLandmarks {
+  const pose = createBasePose();
+  // Left arm raised
+  pose[POSE_LANDMARKS.LEFT_ELBOW] = createLandmark(0.4, 0.25);
+  pose[POSE_LANDMARKS.LEFT_WRIST] = createLandmark(0.4, 0.1);
+  // Right arm raised
+  pose[POSE_LANDMARKS.RIGHT_ELBOW] = createLandmark(0.6, 0.25);
+  pose[POSE_LANDMARKS.RIGHT_WRIST] = createLandmark(0.6, 0.1);
+  return pose;
+}
+
+// Helper to create a "Submerged Victim" pose (both arms raised, hands touching)
+function createSubmergedVictimPose(): PoseLandmarks {
   const pose = createBasePose();
   // Left arm raised
   pose[POSE_LANDMARKS.LEFT_ELBOW] = createLandmark(0.4, 0.25);
@@ -99,23 +102,6 @@ function createMessageReceivedPose(): PoseLandmarks {
 
 describe("poseMatching", () => {
   describe("matchPoseToSignal", () => {
-    describe("Stop signal", () => {
-      it("matches when right arm is raised", () => {
-        const pose = createStopPose();
-        const result = matchPoseToSignal(pose, "Stop");
-
-        expect(result.confidence).toBeGreaterThan(0.5);
-      });
-
-      it("provides feedback when pose is incorrect", () => {
-        const pose = createBasePose(); // Arms at side
-        const result = matchPoseToSignal(pose, "Stop");
-
-        expect(result.isMatch).toBe(false);
-        expect(result.feedback.length).toBeGreaterThan(0);
-      });
-    });
-
     describe("Remain Stationary signal", () => {
       it("matches when both arms extended horizontally", () => {
         const pose = createRemainStationaryPose();
@@ -125,50 +111,66 @@ describe("poseMatching", () => {
       });
 
       it("does not match with only one arm horizontal", () => {
-        const pose = createTurnLeftIRBPose(); // Only left arm horizontal
+        const pose = createGoRightOrLeftPose();
         const result = matchPoseToSignal(pose, "Remain Stationary");
 
         expect(result.isMatch).toBe(false);
       });
     });
 
-    describe("Turn Left (IRB) signal", () => {
-      it("matches when left arm is horizontal and right arm at side", () => {
-        const pose = createTurnLeftIRBPose();
-        const result = matchPoseToSignal(pose, "Turn Left (IRB)");
+    describe("Return to Shore signal", () => {
+      it("matches when one arm is raised", () => {
+        const pose = createReturnToShorePose();
+        const result = matchPoseToSignal(pose, "Return to Shore");
 
         expect(result.confidence).toBeGreaterThan(0.5);
       });
 
-      it("does not match when both arms horizontal", () => {
-        const pose = createRemainStationaryPose();
-        const result = matchPoseToSignal(pose, "Turn Left (IRB)");
+      it("provides feedback when pose is incorrect", () => {
+        const pose = createBasePose(); // Arms at side
+        const result = matchPoseToSignal(pose, "Return to Shore");
 
-        // Should have lower confidence because right arm is not at side
-        expect(result.confidence).toBeLessThan(0.9);
+        expect(result.isMatch).toBe(false);
+        expect(result.feedback.length).toBeGreaterThan(0);
       });
     });
 
-    describe("Turn Right (IRB) signal", () => {
-      it("matches when right arm is horizontal and left arm at side", () => {
-        const pose = createTurnRightIRBPose();
-        const result = matchPoseToSignal(pose, "Turn Right (IRB)");
+    describe("Go to the Right or Left signal", () => {
+      it("matches when one arm is horizontal and other at side", () => {
+        const pose = createGoRightOrLeftPose();
+        const result = matchPoseToSignal(pose, "Go to the Right or Left");
 
         expect(result.confidence).toBeGreaterThan(0.5);
       });
     });
 
-    describe("Message Received/Understood signal", () => {
-      it("matches when both arms raised with hands touching", () => {
-        const pose = createMessageReceivedPose();
-        const result = matchPoseToSignal(pose, "Message Received/Understood");
+    describe("Emergency Evacuation Alarm signal", () => {
+      it("matches when both arms raised above head", () => {
+        const pose = createEmergencyEvacuationPose();
+        const result = matchPoseToSignal(pose, "Emergency Evacuation Alarm");
 
         expect(result.confidence).toBeGreaterThan(0.5);
       });
 
       it("does not match when only one arm raised", () => {
-        const pose = createStopPose(); // Only right arm raised
-        const result = matchPoseToSignal(pose, "Message Received/Understood");
+        const pose = createReturnToShorePose();
+        const result = matchPoseToSignal(pose, "Emergency Evacuation Alarm");
+
+        expect(result.isMatch).toBe(false);
+      });
+    });
+
+    describe("Submerged Victim Missing signal", () => {
+      it("matches when both arms raised with hands touching", () => {
+        const pose = createSubmergedVictimPose();
+        const result = matchPoseToSignal(pose, "Submerged Victim Missing");
+
+        expect(result.confidence).toBeGreaterThan(0.5);
+      });
+
+      it("does not match when only one arm raised", () => {
+        const pose = createReturnToShorePose();
+        const result = matchPoseToSignal(pose, "Submerged Victim Missing");
 
         expect(result.isMatch).toBe(false);
       });
@@ -188,34 +190,34 @@ describe("poseMatching", () => {
 
   describe("isSignalDetectable", () => {
     it("returns true for detectable signals", () => {
-      expect(isSignalDetectable("Stop")).toBe(true);
       expect(isSignalDetectable("Remain Stationary")).toBe(true);
-      expect(isSignalDetectable("Turn Left (IRB)")).toBe(true);
-      expect(isSignalDetectable("Turn Right (IRB)")).toBe(true);
-      expect(isSignalDetectable("Message Received/Understood")).toBe(true);
+      expect(isSignalDetectable("Return to Shore")).toBe(true);
+      expect(isSignalDetectable("Go to the Right or Left")).toBe(true);
+      expect(isSignalDetectable("Emergency Evacuation Alarm")).toBe(true);
+      expect(isSignalDetectable("Submerged Victim Missing")).toBe(true);
     });
 
     it("returns false for non-detectable signals", () => {
-      expect(isSignalDetectable("Assistance Required")).toBe(false);
-      expect(isSignalDetectable("Return to Shore")).toBe(false);
+      expect(isSignalDetectable("Attract Attention")).toBe(false);
+      expect(isSignalDetectable("Pick Up Swimmers")).toBe(false);
       expect(isSignalDetectable("Unknown Signal")).toBe(false);
     });
   });
 
   describe("DETECTABLE_SIGNAL_NAMES", () => {
-    it("contains all 5 MVP signals", () => {
-      expect(DETECTABLE_SIGNAL_NAMES).toContain("Stop");
+    it("contains all 5 detectable signals", () => {
       expect(DETECTABLE_SIGNAL_NAMES).toContain("Remain Stationary");
-      expect(DETECTABLE_SIGNAL_NAMES).toContain("Turn Left (IRB)");
-      expect(DETECTABLE_SIGNAL_NAMES).toContain("Turn Right (IRB)");
-      expect(DETECTABLE_SIGNAL_NAMES).toContain("Message Received/Understood");
+      expect(DETECTABLE_SIGNAL_NAMES).toContain("Return to Shore");
+      expect(DETECTABLE_SIGNAL_NAMES).toContain("Go to the Right or Left");
+      expect(DETECTABLE_SIGNAL_NAMES).toContain("Emergency Evacuation Alarm");
+      expect(DETECTABLE_SIGNAL_NAMES).toContain("Submerged Victim Missing");
       expect(DETECTABLE_SIGNAL_NAMES).toHaveLength(5);
     });
   });
 
   describe("getSignalPoseDescription", () => {
     it("returns description for detectable signals", () => {
-      const description = getSignalPoseDescription("Stop");
+      const description = getSignalPoseDescription("Remain Stationary");
       expect(description).toBeTruthy();
       expect(description.toLowerCase()).toContain("arm");
     });
