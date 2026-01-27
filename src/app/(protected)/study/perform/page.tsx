@@ -6,6 +6,9 @@ import SessionSetup from "@/components/SessionSetup";
 import SessionSummary from "@/components/SessionSummary";
 import type { Signal, SignalCategory, SessionConfig } from "@/types";
 
+// LocalStorage key for camera preference
+const CAMERA_ENABLED_KEY = "surf-signals-camera-enabled";
+
 type SessionPhase = "setup" | "study" | "summary";
 
 interface SessionResult {
@@ -26,6 +29,25 @@ export default function PerformPage() {
     land: 0,
     irb: 0,
   });
+  const [cameraEnabled, setCameraEnabled] = useState(true);
+
+  // Load camera preference from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(CAMERA_ENABLED_KEY);
+      if (saved !== null) {
+        setCameraEnabled(saved === "true");
+      }
+    }
+  }, []);
+
+  // Save camera preference to localStorage
+  const handleCameraToggle = useCallback((enabled: boolean) => {
+    setCameraEnabled(enabled);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(CAMERA_ENABLED_KEY, String(enabled));
+    }
+  }, []);
 
   // Fetch all signals to get counts
   useEffect(() => {
@@ -151,6 +173,8 @@ export default function PerformPage() {
           totalSignals={totalSignals}
           signalsByCategory={signalsByCategory}
           onStart={startSession}
+          cameraEnabled={cameraEnabled}
+          onCameraToggle={handleCameraToggle}
         />
       </div>
     );
@@ -238,6 +262,7 @@ export default function PerformPage() {
         mode="perform"
         onResult={handleResult}
         onNext={handleNext}
+        cameraEnabled={cameraEnabled}
       />
     </div>
   );

@@ -8,6 +8,8 @@ interface SessionSetupProps {
   totalSignals: number;
   signalsByCategory: Record<SignalCategory, number>;
   onStart: (config: SessionConfig) => void;
+  cameraEnabled?: boolean;
+  onCameraToggle?: (enabled: boolean) => void;
 }
 
 export default function SessionSetup({
@@ -15,9 +17,13 @@ export default function SessionSetup({
   totalSignals,
   signalsByCategory,
   onStart,
+  cameraEnabled = false,
+  onCameraToggle,
 }: SessionSetupProps) {
   const [category, setCategory] = useState<SignalCategory | null>(null);
   const [count, setCount] = useState<number>(10);
+
+  const isPerformMode = mode === "perform";
 
   const availableSignals = category
     ? signalsByCategory[category]
@@ -117,7 +123,7 @@ export default function SessionSetup({
         </div>
 
         {/* Count Selection */}
-        <div className="mb-8">
+        <div className="mb-6">
           <label className="block text-sm font-bold text-gray-700 mb-3">
             Number of Signals
           </label>
@@ -140,6 +146,44 @@ export default function SessionSetup({
             ))}
           </div>
         </div>
+
+        {/* Camera Toggle (Perform Mode Only) */}
+        {isPerformMode && onCameraToggle && (
+          <div className="mb-8">
+            <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-all">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${cameraEnabled ? "bg-accent/20" : "bg-gray-200"}`}>
+                  <svg
+                    className={`w-5 h-5 ${cameraEnabled ? "text-accent" : "text-gray-500"}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <span className="font-bold text-gray-900 block">Camera Detection</span>
+                  <span className="text-xs text-gray-500">Auto-check your signal performance</span>
+                </div>
+              </div>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={cameraEnabled}
+                  onChange={(e) => onCameraToggle(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+              </div>
+            </label>
+          </div>
+        )}
 
         {/* Start Button */}
         <button
