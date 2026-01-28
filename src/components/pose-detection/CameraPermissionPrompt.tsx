@@ -17,9 +17,9 @@ export default function CameraPermissionPrompt({
     <div className="text-center p-6 bg-white rounded-xl border border-gray-200">
       {/* Camera icon */}
       <div className="mb-4">
-        <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
           <svg
-            className="w-8 h-8 text-accent"
+            className="w-8 h-8 text-primary"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -53,7 +53,7 @@ export default function CameraPermissionPrompt({
         {!isPermissionDenied && (
           <button
             onClick={onRequestPermission}
-            className="w-full py-3 px-4 bg-accent text-white rounded-xl font-bold hover:bg-accent-dark transition-all active:scale-[0.98]"
+            className="w-full py-3 px-4 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98]"
           >
             Enable Camera
           </button>

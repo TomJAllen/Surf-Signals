@@ -88,8 +88,8 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-white border border-white/10 hover:border-accent/50 transition-colors">
-            <div className="w-14 h-14 bg-accent rounded-xl flex items-center justify-center mb-5">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-white border border-white/10 hover:border-primary/50 transition-colors">
+            <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center mb-5">
               <svg
                 className="w-7 h-7 text-white"
                 fill="none"
@@ -111,8 +111,8 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-white border border-white/10 hover:border-success/50 transition-colors">
-            <div className="w-14 h-14 bg-success rounded-xl flex items-center justify-center mb-5">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-white border border-white/10 hover:border-secondary/50 transition-colors">
+            <div className="w-14 h-14 bg-secondary rounded-xl flex items-center justify-center mb-5">
               <svg
                 className="w-7 h-7 text-gray-900"
                 fill="none"

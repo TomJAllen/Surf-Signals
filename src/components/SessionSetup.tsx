@@ -21,7 +21,6 @@ export default function SessionSetup({
   onCameraToggle,
 }: SessionSetupProps) {
   const [category, setCategory] = useState<SignalCategory | null>(null);
-  const [count, setCount] = useState<number>(10);
 
   const isPerformMode = mode === "perform";
 
@@ -29,15 +28,11 @@ export default function SessionSetup({
     ? signalsByCategory[category]
     : totalSignals;
 
-  const countOptions = [5, 10, availableSignals].filter(
-    (n, i, arr) => n <= availableSignals && arr.indexOf(n) === i
-  );
-
   const handleStart = () => {
     onStart({
       mode,
       category,
-      count: Math.min(count, availableSignals),
+      count: availableSignals,
     });
   };
 
@@ -49,7 +44,7 @@ export default function SessionSetup({
         {/* Header */}
         <div className="text-center mb-8">
           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg mb-4 ${
-            isIdentify ? "bg-secondary" : "bg-accent"
+            isIdentify ? "bg-secondary" : "bg-primary"
           }`}>
             {isIdentify ? (
               <svg className="w-5 h-5 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,7 +64,7 @@ export default function SessionSetup({
             Set Up Your Session
           </h1>
           <p className="text-gray-600">
-            Choose how many signals you want to practice
+            Select a category to begin
           </p>
         </div>
 
@@ -97,7 +92,7 @@ export default function SessionSetup({
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              Beach ({signalsByCategory["beach-to-water"]})
+              Beach to Water ({signalsByCategory["beach-to-water"]})
             </button>
             <button
               onClick={() => setCategory("water-to-beach")}
@@ -107,33 +102,8 @@ export default function SessionSetup({
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              Water ({signalsByCategory["water-to-beach"]})
+              Water to Beach ({signalsByCategory["water-to-beach"]})
             </button>
-          </div>
-        </div>
-
-        {/* Count Selection */}
-        <div className="mb-6">
-          <label className="block text-sm font-bold text-gray-700 mb-3">
-            Number of Signals
-          </label>
-          <div className="flex gap-2">
-            {countOptions.map((option) => (
-              <button
-                key={option}
-                onClick={() => setCount(option)}
-                className={`flex-1 p-4 rounded-xl font-bold transition-all ${
-                  count === option
-                    ? "bg-secondary text-gray-900 shadow-md"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {option === availableSignals ? "All" : option}
-                <span className="block text-xs font-medium opacity-70">
-                  signals
-                </span>
-              </button>
-            ))}
           </div>
         </div>
 
@@ -142,9 +112,9 @@ export default function SessionSetup({
           <div className="mb-8">
             <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-all">
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${cameraEnabled ? "bg-accent/20" : "bg-gray-200"}`}>
+                <div className={`p-2 rounded-lg ${cameraEnabled ? "bg-primary/20" : "bg-gray-200"}`}>
                   <svg
-                    className={`w-5 h-5 ${cameraEnabled ? "text-accent" : "text-gray-500"}`}
+                    className={`w-5 h-5 ${cameraEnabled ? "text-primary" : "text-gray-500"}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -169,7 +139,7 @@ export default function SessionSetup({
                   onChange={(e) => onCameraToggle(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </div>
             </label>
           </div>
@@ -182,7 +152,7 @@ export default function SessionSetup({
           className={`w-full py-4 px-6 rounded-xl font-bold transition-all active:scale-[0.98] shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
             isIdentify
               ? "bg-secondary text-gray-900 hover:bg-secondary-light"
-              : "bg-accent text-white hover:bg-accent-dark"
+              : "bg-primary text-white hover:bg-primary-dark"
           }`}
         >
           Start Session

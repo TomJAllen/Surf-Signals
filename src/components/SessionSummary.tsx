@@ -27,9 +27,9 @@ export default function SessionSummary({
 
   // Determine performance level
   const getPerformanceLevel = () => {
-    if (accuracy >= 90) return { label: "Excellent!", color: "text-success-dark", bg: "bg-success/10" };
+    if (accuracy >= 90) return { label: "Excellent!", color: "text-secondary-dark", bg: "bg-secondary/10" };
     if (accuracy >= 70) return { label: "Good Job!", color: "text-secondary-dark", bg: "bg-secondary/10" };
-    if (accuracy >= 50) return { label: "Keep Practicing", color: "text-accent-dark", bg: "bg-accent/10" };
+    if (accuracy >= 50) return { label: "Keep Practicing", color: "text-primary", bg: "bg-primary/10" };
     return { label: "Needs Work", color: "text-primary", bg: "bg-primary/10" };
   };
 
@@ -65,8 +65,8 @@ export default function SessionSummary({
             <div className="text-3xl font-bold text-gray-900">{total}</div>
             <div className="text-xs font-medium text-gray-500">Total</div>
           </div>
-          <div className="text-center p-4 bg-success/10 rounded-xl">
-            <div className="text-3xl font-bold text-success-dark">{correct}</div>
+          <div className="text-center p-4 bg-secondary/10 rounded-xl">
+            <div className="text-3xl font-bold text-secondary-dark">{correct}</div>
             <div className="text-xs font-medium text-gray-500">Correct</div>
           </div>
           <div className={`text-center p-4 rounded-xl ${performance.bg}`}>
@@ -83,7 +83,7 @@ export default function SessionSummary({
               <div
                 key={index}
                 className={`flex items-center justify-between p-3 rounded-lg ${
-                  result.correct ? "bg-success/10" : "bg-primary/10"
+                  result.correct ? "bg-secondary/10" : "bg-primary/10"
                 }`}
               >
                 <span className="font-medium text-gray-900 text-sm">
@@ -92,7 +92,7 @@ export default function SessionSummary({
                 <span
                   className={`px-2 py-1 rounded text-xs font-bold ${
                     result.correct
-                      ? "bg-success/20 text-success-dark"
+                      ? "bg-secondary/20 text-secondary-dark"
                       : "bg-primary/20 text-primary"
                   }`}
                 >
@@ -110,7 +110,7 @@ export default function SessionSummary({
             className={`w-full py-4 px-6 rounded-xl font-bold transition-all active:scale-[0.98] shadow-md ${
               isIdentify
                 ? "bg-secondary text-gray-900 hover:bg-secondary-light"
-                : "bg-accent text-white hover:bg-accent-dark"
+                : "bg-primary text-white hover:bg-primary-dark"
             }`}
           >
             Practice Again

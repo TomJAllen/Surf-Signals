@@ -147,8 +147,8 @@ export default function CameraView({
   return (
     <div className="space-y-4">
       {/* Pose description */}
-      <div className="text-center bg-accent/10 rounded-lg p-3">
-        <p className="text-sm font-medium text-accent-dark">{poseDescription}</p>
+      <div className="text-center bg-primary/10 rounded-lg p-3">
+        <p className="text-sm font-medium text-primary-dark">{poseDescription}</p>
       </div>
 
       {/* Camera container */}
@@ -249,7 +249,7 @@ export default function CameraView({
           </button>
           <button
             onClick={onMatch}
-            className="flex-1 py-3 px-4 bg-success text-gray-900 rounded-xl font-bold hover:bg-success-light transition-all"
+            className="flex-1 py-3 px-4 bg-secondary text-gray-900 rounded-xl font-bold hover:bg-secondary-light transition-all"
           >
             I Did It
           </button>

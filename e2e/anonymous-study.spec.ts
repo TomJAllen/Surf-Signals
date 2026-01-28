@@ -35,13 +35,12 @@ test.describe("Anonymous Study Flow", () => {
   test("can start an identify session", async ({ page }) => {
     await page.goto("/study/identify");
 
-    // Select count and start
-    await page.getByRole("button", { name: /5\s*signals/i }).click();
+    // Start session (no count selector — uses all signals)
     await page.getByRole("button", { name: "Start Session" }).click();
 
     // Should see the flashcard
     await expect(page.getByText("What signal is this?")).toBeVisible();
-    await expect(page.getByText("Signal 1 of 5")).toBeVisible();
+    await expect(page.getByText(/Signal 1 of \d+/)).toBeVisible();
   });
 
   test("can filter by category", async ({ page }) => {
@@ -70,26 +69,30 @@ test.describe("Session Flow", () => {
   test("completes a full session and shows summary", async ({ page }) => {
     await page.goto("/study/identify");
 
-    // Start a session with minimum signals
-    await page.getByRole("button", { name: /5\s*signals/i }).click();
+    // Select a category to limit signal count, then start
+    await page.getByRole("button", { name: /Water to Beach/i }).click();
     await page.getByRole("button", { name: "Start Session" }).click();
 
-    // Complete 5 signals
-    for (let i = 0; i < 5; i++) {
+    // Wait for the first flashcard to appear
+    await expect(page.getByText("What signal is this?")).toBeVisible();
+
+    // Read total from the progress indicator
+    const progressText = await page.getByText(/Signal 1 of \d+/).textContent();
+    const totalSignals = parseInt(progressText!.match(/of (\d+)/)![1], 10);
+
+    // Complete all signals in the category
+    for (let i = 0; i < totalSignals; i++) {
       // Reveal answer
       await page.getByRole("button", { name: "Reveal Answer" }).click();
 
       // Mark as correct (use exact match to avoid matching "Incorrect")
       await page.getByRole("button", { name: "Correct", exact: true }).click();
 
-      // Click next (unless it's the last one)
-      if (i < 4) {
-        await page.getByRole("button", { name: "Next Signal" }).click();
-      }
+      // Click next
+      await page.getByRole("button", { name: "Next Signal" }).click();
     }
 
     // Should see session summary
-    await page.getByRole("button", { name: "Next Signal" }).click();
     await expect(page.getByText("Session Complete")).toBeVisible();
     await expect(page.getByText("100%")).toBeVisible(); // Perfect score
   });

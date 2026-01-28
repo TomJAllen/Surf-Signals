@@ -139,7 +139,7 @@ export default function PerformPage() {
   if (loading && phase === "setup") {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -197,62 +197,27 @@ export default function PerformPage() {
   if (loading || !currentSignal) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="text-center">
-        <div className="inline-flex items-center gap-2 bg-accent px-4 py-2 rounded-lg mb-4">
-          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
-          </svg>
-          <span className="font-bold text-white">Perform Mode</span>
-        </div>
-
-        {/* Progress Indicator */}
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <span className="text-sm font-medium text-gray-500">
+    <div className="space-y-4 pb-8">
+      {/* Compact Progress */}
+      <div className="max-w-md mx-auto px-4">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-500 whitespace-nowrap">
             Signal {currentIndex + 1} of {signals.length}
           </span>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="max-w-md mx-auto px-4">
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-accent transition-all duration-300"
+              className="h-full bg-primary transition-all duration-300"
               style={{ width: `${((currentIndex) / signals.length) * 100}%` }}
             />
           </div>
         </div>
       </div>
-
-      {/* Session Stats */}
-      {results.length > 0 && (
-        <div className="flex justify-center gap-4 md:gap-8">
-          <div className="text-center p-3 bg-accent/10 rounded-xl min-w-[80px]">
-            <div className="text-2xl font-bold text-gray-900">
-              {results.length}
-            </div>
-            <div className="text-xs font-medium text-gray-500">Done</div>
-          </div>
-          <div className="text-center p-3 bg-success/10 rounded-xl min-w-[80px]">
-            <div className="text-2xl font-bold text-success-dark">
-              {results.filter((r) => r.correct).length}
-            </div>
-            <div className="text-xs font-medium text-gray-500">Correct</div>
-          </div>
-          <div className="text-center p-3 bg-secondary/10 rounded-xl min-w-[80px]">
-            <div className="text-2xl font-bold text-secondary-dark">
-              {Math.round((results.filter((r) => r.correct).length / results.length) * 100)}%
-            </div>
-            <div className="text-xs font-medium text-gray-500">Accuracy</div>
-          </div>
-        </div>
-      )}
 
       {/* Flashcard */}
       <FlashCard

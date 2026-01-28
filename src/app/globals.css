@@ -27,7 +27,7 @@ body {
 @layer base {
   /* Custom focus styles for accessibility */
   *:focus-visible {
-    outline: 2px solid var(--slsa-pink);
+    outline: 2px solid var(--slsa-red);
     outline-offset: 2px;
   }
 }
@@ -93,7 +93,7 @@ body {
 
   /* Gradient backgrounds */
   .gradient-slsa {
-    background: linear-gradient(135deg, var(--slsa-red) 0%, var(--slsa-pink) 50%, var(--slsa-yellow) 100%);
+    background: linear-gradient(135deg, var(--slsa-red) 0%, var(--slsa-yellow) 100%);
   }
 
   .gradient-slsa-subtle {

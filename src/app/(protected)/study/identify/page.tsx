@@ -179,26 +179,14 @@ export default function IdentifyPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="text-center">
-        <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-lg mb-4">
-          <svg className="w-5 h-5 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-          </svg>
-          <span className="font-bold text-gray-900">Identify Mode</span>
-        </div>
-
-        {/* Progress Indicator */}
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <span className="text-sm font-medium text-gray-500">
+    <div className="space-y-4 pb-8">
+      {/* Compact Progress */}
+      <div className="max-w-md mx-auto px-4">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-500 whitespace-nowrap">
             Signal {currentIndex + 1} of {signals.length}
           </span>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="max-w-md mx-auto px-4">
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-secondary transition-all duration-300"
               style={{ width: `${((currentIndex) / signals.length) * 100}%` }}
@@ -206,30 +194,6 @@ export default function IdentifyPage() {
           </div>
         </div>
       </div>
-
-      {/* Session Stats */}
-      {results.length > 0 && (
-        <div className="flex justify-center gap-4 md:gap-8">
-          <div className="text-center p-3 bg-secondary/10 rounded-xl min-w-[80px]">
-            <div className="text-2xl font-bold text-gray-900">
-              {results.length}
-            </div>
-            <div className="text-xs font-medium text-gray-500">Done</div>
-          </div>
-          <div className="text-center p-3 bg-success/10 rounded-xl min-w-[80px]">
-            <div className="text-2xl font-bold text-success-dark">
-              {results.filter((r) => r.correct).length}
-            </div>
-            <div className="text-xs font-medium text-gray-500">Correct</div>
-          </div>
-          <div className="text-center p-3 bg-accent/10 rounded-xl min-w-[80px]">
-            <div className="text-2xl font-bold text-accent-dark">
-              {Math.round((results.filter((r) => r.correct).length / results.length) * 100)}%
-            </div>
-            <div className="text-xs font-medium text-gray-500">Accuracy</div>
-          </div>
-        </div>
-      )}
 
       {/* Flashcard */}
       <FlashCard

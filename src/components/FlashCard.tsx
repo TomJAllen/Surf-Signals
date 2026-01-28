@@ -198,7 +198,7 @@ export default function FlashCard({
                     </button>
                     <button
                       onClick={() => handleAnswer(true)}
-                      className="flex-1 py-4 px-6 bg-success text-gray-900 rounded-xl font-bold hover:bg-success-light transition-all active:scale-[0.98] shadow-md"
+                      className="flex-1 py-4 px-6 bg-secondary text-gray-900 rounded-xl font-bold hover:bg-secondary-light transition-all active:scale-[0.98] shadow-md"
                     >
                       Correct
                     </button>
@@ -254,12 +254,12 @@ export default function FlashCard({
             <div className="text-center">
               {shouldShowCamera ? (
                 <>
-                  <div className="mb-6 p-6 bg-accent/10 rounded-xl border-2 border-dashed border-accent/30">
+                  <div className="mb-6 p-6 bg-primary/10 rounded-xl border-2 border-dashed border-primary/30">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <svg className="w-6 h-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                      <span className="font-bold text-accent">Camera Detection Available</span>
+                      <span className="font-bold text-primary">Camera Detection Available</span>
                     </div>
                     <p className="text-gray-700 text-sm">
                       Use your camera to automatically check if you&apos;re performing the signal correctly.
@@ -267,7 +267,7 @@ export default function FlashCard({
                   </div>
                   <button
                     onClick={handleStartDetection}
-                    className="w-full py-4 px-6 bg-accent text-white rounded-xl font-bold hover:bg-accent-dark transition-all active:scale-[0.98] shadow-md mb-3"
+                    className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md mb-3"
                   >
                     Start Camera Detection
                   </button>
@@ -287,7 +287,7 @@ export default function FlashCard({
                   </div>
                   <button
                     onClick={handleReveal}
-                    className="w-full py-4 px-6 bg-accent text-white rounded-xl font-bold hover:bg-accent-dark transition-all active:scale-[0.98] shadow-md"
+                    className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
                   >
                     Reveal Reference
                   </button>
@@ -321,7 +321,7 @@ export default function FlashCard({
                 </button>
                 <button
                   onClick={() => handleAnswer(true)}
-                  className="flex-1 py-4 px-6 bg-success text-gray-900 rounded-xl font-bold hover:bg-success-light transition-all active:scale-[0.98] shadow-md"
+                  className="flex-1 py-4 px-6 bg-secondary text-gray-900 rounded-xl font-bold hover:bg-secondary-light transition-all active:scale-[0.98] shadow-md"
                 >
                   Correct
                 </button>
