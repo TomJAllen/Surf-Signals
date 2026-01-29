@@ -6,7 +6,8 @@
       "Bash(cat:*)",
       "Bash(npx vitest:*)",
       "Bash(npx tsc:*)",
-      "Bash(vercel ls:*)"
+      "Bash(vercel ls:*)",
+      "Bash(npx next lint:*)"
     ]
   }
 }

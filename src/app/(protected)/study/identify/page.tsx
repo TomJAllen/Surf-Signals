@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import FlashCard from "@/components/FlashCard";
+import MultipleChoiceCard from "@/components/MultipleChoiceCard";
 import SessionSetup from "@/components/SessionSetup";
 import SessionSummary from "@/components/SessionSummary";
 import type { Signal, SignalCategory, SessionConfig } from "@/types";
@@ -20,6 +20,7 @@ export default function IdentifyPage() {
   const [results, setResults] = useState<SessionResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [allSignals, setAllSignals] = useState<Signal[]>([]);
   const [totalSignals, setTotalSignals] = useState(0);
   const [signalsByCategory, setSignalsByCategory] = useState<Record<SignalCategory, number>>({
     "beach-to-water": 0,
@@ -34,6 +35,7 @@ export default function IdentifyPage() {
         if (!response.ok) throw new Error("Failed to fetch signals");
         const data: Signal[] = await response.json();
 
+        setAllSignals(data);
         setTotalSignals(data.length);
         setSignalsByCategory({
           "beach-to-water": data.filter((s) => s.category === "beach-to-water").length,
@@ -195,10 +197,10 @@ export default function IdentifyPage() {
         </div>
       </div>
 
-      {/* Flashcard */}
-      <FlashCard
+      {/* Multiple Choice */}
+      <MultipleChoiceCard
         signal={currentSignal}
-        mode="identify"
+        allSignals={allSignals}
         onResult={handleResult}
         onNext={handleNext}
       />
