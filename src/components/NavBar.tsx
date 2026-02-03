@@ -15,6 +15,9 @@ export default function NavBar() {
         { href: "/study/identify", label: "Identify" },
         { href: "/study/perform", label: "Perform" },
         { href: "/history", label: "History" },
+        ...(session.user.role === "admin"
+          ? [{ href: "/admin", label: "Admin" }]
+          : []),
       ]
     : [
         { href: "/study/identify", label: "Identify" },
@@ -36,7 +39,7 @@ export default function NavBar() {
                 key={link.href}
                 href={link.href}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  pathname === link.href
+                  pathname === link.href || (link.href === "/admin" && pathname.startsWith("/admin"))
                     ? "bg-secondary text-gray-900"
                     : "hover:bg-primary-dark"
                 }`}
@@ -106,7 +109,7 @@ function MobileMenu({
               key={link.href}
               href={link.href}
               className={`block px-4 py-3 text-sm font-medium ${
-                pathname === link.href
+                pathname === link.href || (link.href === "/admin" && pathname.startsWith("/admin"))
                   ? "bg-secondary text-gray-900"
                   : "text-gray-700 hover:bg-gray-50"
               }`}

@@ -11,6 +11,7 @@ model User {
   email        String    @unique
   name         String?
   passwordHash String
+  role         String    @default("user")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   attempts     Attempt[]
@@ -24,6 +25,7 @@ model Signal {
   imageUrl    String
   videoUrl    String?   // YouTube embed URL for the signal demonstration
   category    String    @default("beach-to-water") // "beach-to-water" | "water-to-beach"
+  poseHint    String?   // Editable pose hint, overrides hardcoded SIGNAL_POSE_DESCRIPTIONS
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   attempts    Attempt[]

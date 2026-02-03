@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import bcrypt from "bcryptjs";
 import "dotenv/config";
 
 const pool = new Pool({
@@ -26,6 +27,7 @@ const signals = [
     imageUrl: "/signals/beach-to-water/attract-attention.png",
     videoUrl: null,
     category: "beach-to-water",
+    poseHint: "Cross both arms above your head with hands touching",
   },
   {
     name: "Pick Up Swimmers",
@@ -34,6 +36,7 @@ const signals = [
     imageUrl: "/signals/beach-to-water/pickup-swimmers.png",
     videoUrl: null,
     category: "beach-to-water",
+    poseHint: "One arm extended horizontally, the other raised above your head",
   },
   {
     name: "Proceed Further Out to Sea",
@@ -42,6 +45,7 @@ const signals = [
     imageUrl: "/signals/beach-to-water/proceed-further-out.png",
     videoUrl: null,
     category: "beach-to-water",
+    poseHint: "Raise both arms straight above your head",
   },
   {
     name: "Go to the Right or Left",
@@ -50,6 +54,7 @@ const signals = [
     imageUrl: "/signals/beach-to-water/go-right-or-left.png",
     videoUrl: null,
     category: "beach-to-water",
+    poseHint: "Extend one arm horizontally to the side, pointing in the direction",
   },
   {
     name: "Remain Stationary",
@@ -58,6 +63,7 @@ const signals = [
     imageUrl: "/signals/beach-to-water/remain-stationary.png",
     videoUrl: null,
     category: "beach-to-water",
+    poseHint: "Extend both arms out to your sides horizontally",
   },
   {
     name: "Message Understood, All Clear",
@@ -66,6 +72,7 @@ const signals = [
     imageUrl: "/signals/beach-to-water/message-understood.png",
     videoUrl: null,
     category: "beach-to-water",
+    poseHint: "Raise one arm straight up above your head",
   },
   {
     name: "Pick Up or Adjust Buoys",
@@ -74,6 +81,7 @@ const signals = [
     imageUrl: "/signals/beach-to-water/pickup-adjust-buoys.png",
     videoUrl: null,
     category: "beach-to-water",
+    poseHint: "Extend both arms out to your sides horizontally",
   },
   {
     name: "Return to Shore",
@@ -82,6 +90,7 @@ const signals = [
     imageUrl: "/signals/beach-to-water/return-to-shore.png",
     videoUrl: null,
     category: "beach-to-water",
+    poseHint: "Raise one arm straight up above your head",
   },
 
   // WATER TO BEACH SIGNALS
@@ -92,6 +101,7 @@ const signals = [
     imageUrl: "/signals/water-to-beach/assistance-required.png",
     videoUrl: null,
     category: "water-to-beach",
+    poseHint: "Raise one arm straight up above your head",
   },
   {
     name: "Shore Signal Received and Understood",
@@ -100,6 +110,7 @@ const signals = [
     imageUrl: "/signals/water-to-beach/shore-signal-received.png",
     videoUrl: null,
     category: "water-to-beach",
+    poseHint: "Raise one arm straight up above your head",
   },
   {
     name: "Emergency Evacuation Alarm",
@@ -108,6 +119,7 @@ const signals = [
     imageUrl: "/signals/water-to-beach/emergency-evacuation.png",
     videoUrl: null,
     category: "water-to-beach",
+    poseHint: "Raise both arms straight above your head",
   },
   {
     name: "Submerged Victim Missing",
@@ -116,6 +128,7 @@ const signals = [
     imageUrl: "/signals/water-to-beach/submerged-victim.png",
     videoUrl: null,
     category: "water-to-beach",
+    poseHint: "Cross both arms above your head with hands touching",
   },
   {
     name: "All Clear / OK",
@@ -124,6 +137,7 @@ const signals = [
     imageUrl: "/signals/water-to-beach/all-clear-ok.png",
     videoUrl: null,
     category: "water-to-beach",
+    poseHint: "Place one hand on top of your head",
   },
   {
     name: "Powercraft Wishes to Return to Shore",
@@ -132,6 +146,7 @@ const signals = [
     imageUrl: "/signals/water-to-beach/powercraft-return.png",
     videoUrl: null,
     category: "water-to-beach",
+    poseHint: "Raise one arm straight up above your head",
   },
 ];
 
@@ -156,6 +171,23 @@ async function main() {
     });
     console.log(`Created/updated signal: ${signal.name}`);
   }
+
+  // Seed admin user
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@surflifesaving.com";
+  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+  const adminHash = await bcrypt.hash(adminPassword, 10);
+
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: { role: "admin" },
+    create: {
+      email: adminEmail,
+      name: "Admin",
+      passwordHash: adminHash,
+      role: "admin",
+    },
+  });
+  console.log(`Admin user created/updated: ${adminEmail}`);
 
   console.log("Seeding complete!");
 }

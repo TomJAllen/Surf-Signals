@@ -143,7 +143,8 @@ export function matchPoseToSignal(
 }
 
 // Get a user-friendly description of how to perform a signal
-export function getSignalPoseDescription(signalName: string): string {
+export function getSignalPoseDescription(signalName: string, dbPoseHint?: string | null): string {
+  if (dbPoseHint) return dbPoseHint;
   return SIGNAL_POSE_DESCRIPTIONS[signalName] || "Perform the signal as shown";
 }
 

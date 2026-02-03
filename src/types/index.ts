@@ -8,6 +8,7 @@ export interface Signal {
   imageUrl: string;
   videoUrl?: string | null;
   category: SignalCategory;
+  poseHint?: string | null;
 }
 
 export interface AttemptStats {
