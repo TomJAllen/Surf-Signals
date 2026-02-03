@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import type { Signal, StudyMode } from "@/types";
 import { CameraView } from "@/components/pose-detection";
@@ -12,6 +12,7 @@ interface FlashCardProps {
   onResult: (correct: boolean) => void;
   onNext: () => void;
   cameraEnabled?: boolean;
+  cameraPermissionGranted?: boolean;
 }
 
 // YouTube Video Embed Component
@@ -29,8 +30,10 @@ function VideoEmbed({ url, title }: { url: string; title: string }) {
   );
 }
 
-// Perform mode phases: prompt → detecting → revealed → answered
-type PerformPhase = "prompt" | "detecting" | "revealed" | "answered";
+// Perform mode phases
+type PerformPhase = "prompt" | "detecting" | "revealed" | "answered" | "timeout" | "success";
+
+const TIMER_DURATION = 15;
 
 export default function FlashCard({
   signal,
@@ -38,15 +41,87 @@ export default function FlashCard({
   onResult,
   onNext,
   cameraEnabled = false,
+  cameraPermissionGranted = false,
 }: FlashCardProps) {
   const [revealed, setRevealed] = useState(false);
   const [answered, setAnswered] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [performPhase, setPerformPhase] = useState<PerformPhase>("prompt");
   const [cameraSkipped, setCameraSkipped] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(TIMER_DURATION);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const pauseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const isDetectable = isSignalDetectable(signal.name);
-  const shouldShowCamera = mode === "perform" && cameraEnabled && isDetectable && !cameraSkipped;
+
+  // Show description only after performance (not during detecting phase)
+  const showDescription = performPhase !== "prompt" && performPhase !== "detecting";
+
+  // Auto-enter detecting phase when camera permission is granted
+  useEffect(() => {
+    if (mode === "perform" && cameraPermissionGranted && cameraEnabled && !cameraSkipped) {
+      setPerformPhase("detecting");
+      setTimeRemaining(TIMER_DURATION);
+    }
+  }, [signal.name, mode, cameraPermissionGranted, cameraEnabled, cameraSkipped]);
+
+  // Timer countdown during detecting phase
+  useEffect(() => {
+    if (performPhase === "detecting") {
+      timerRef.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            // Timer expired
+            if (timerRef.current) clearInterval(timerRef.current);
+            setPerformPhase("timeout");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+      };
+    }
+  }, [performPhase]);
+
+  // Auto-advance from timeout phase after 2 seconds
+  useEffect(() => {
+    if (performPhase === "timeout") {
+      pauseTimerRef.current = setTimeout(() => {
+        setRevealed(true);
+        setAnswered(true);
+        onResult(false);
+        setPerformPhase("answered");
+      }, 2000);
+
+      return () => {
+        if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+      };
+    }
+  }, [performPhase, onResult]);
+
+  // Auto-advance from success phase after 2 seconds
+  useEffect(() => {
+    if (performPhase === "success") {
+      pauseTimerRef.current = setTimeout(() => {
+        setPerformPhase("answered");
+      }, 2000);
+
+      return () => {
+        if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+      };
+    }
+  }, [performPhase]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+    };
+  }, []);
 
   const handleReveal = () => {
     setRevealed(true);
@@ -55,34 +130,42 @@ export default function FlashCard({
 
   const handleAnswer = (correct: boolean) => {
     setAnswered(true);
-    setPerformPhase("answered");
     onResult(correct);
+    if (correct) {
+      setPerformPhase("success");
+      setRevealed(true);
+    } else {
+      setPerformPhase("answered");
+      setRevealed(true);
+    }
   };
 
   const handleNext = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
     setRevealed(false);
     setAnswered(false);
     setShowVideo(false);
     setPerformPhase("prompt");
     setCameraSkipped(false);
+    setTimeRemaining(TIMER_DURATION);
     onNext();
   };
 
   // Camera detection handlers
-  const handleStartDetection = useCallback(() => {
-    setPerformPhase("detecting");
-  }, []);
-
   const handleCameraMatch = useCallback(() => {
-    // Auto-mark as correct when camera detects the signal
-    setPerformPhase("revealed");
+    // Stop timer
+    if (timerRef.current) clearInterval(timerRef.current);
+    // Show success pause
+    setPerformPhase("success");
     setRevealed(true);
     setAnswered(true);
     onResult(true);
   }, [onResult]);
 
   const handleSkipCamera = useCallback(() => {
-    // Skip camera and go to manual mode
+    // Stop timer and skip camera, go to manual mode
+    if (timerRef.current) clearInterval(timerRef.current);
     setCameraSkipped(true);
     setPerformPhase("revealed");
     setRevealed(true);
@@ -227,7 +310,10 @@ export default function FlashCard({
         <div className="flashcard-header">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium opacity-80">
-              {performPhase === "detecting" ? "Camera Detection" : "Perform Mode"}
+              {performPhase === "detecting" ? "Camera Detection" :
+               performPhase === "success" ? "Well Done!" :
+               performPhase === "timeout" ? "Time's Up!" :
+               "Perform Mode"}
             </span>
             {signal.category && (
               <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
@@ -241,58 +327,56 @@ export default function FlashCard({
           <h2 className="text-2xl font-bold">
             {signal.name}
           </h2>
-          <p className="opacity-80 mt-1">{signal.description}</p>
+          {showDescription && (
+            <p className="opacity-80 mt-1">{signal.description}</p>
+          )}
         </div>
 
-        {/* Media Section (hidden until revealed, not shown during detection) */}
+        {/* Success overlay */}
+        {performPhase === "success" && (
+          <div className="p-8 bg-green-50 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-green-700">Correct!</h3>
+            <p className="text-green-600 text-sm mt-1">Well done!</p>
+          </div>
+        )}
+
+        {/* Timeout overlay */}
+        {performPhase === "timeout" && (
+          <div className="p-8 bg-red-50 text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-red-700">Time&apos;s Up!</h3>
+            <p className="text-red-600 text-sm mt-1">The correct signal is shown below</p>
+          </div>
+        )}
+
+        {/* Media Section - shown for success, timeout, revealed, answered */}
         {revealed && performPhase !== "detecting" && <MediaDisplay showBadge={false} />}
 
         {/* Card Content */}
         <div className="p-6 bg-white">
-          {/* Prompt phase - show camera option or reveal button */}
+          {/* Prompt phase - no camera, show reveal button */}
           {performPhase === "prompt" && (
             <div className="text-center">
-              {shouldShowCamera ? (
-                <>
-                  <div className="mb-6 p-6 bg-primary/10 rounded-xl border-2 border-dashed border-primary/30">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      <span className="font-bold text-primary">Camera Detection Available</span>
-                    </div>
-                    <p className="text-gray-700 text-sm">
-                      Use your camera to automatically check if you&apos;re performing the signal correctly.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleStartDetection}
-                    className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md mb-3"
-                  >
-                    Start Camera Detection
-                  </button>
-                  <button
-                    onClick={handleSkipCamera}
-                    className="text-sm text-gray-500 hover:text-gray-700 transition-all"
-                  >
-                    Skip and self-assess instead
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="mb-6 p-6 bg-secondary/10 rounded-xl border-2 border-dashed border-secondary/30">
-                    <p className="text-gray-700 font-medium">
-                      Perform this signal physically, then reveal the reference to check your form.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleReveal}
-                    className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
-                  >
-                    Reveal Reference
-                  </button>
-                </>
-              )}
+              <div className="mb-6 p-6 bg-secondary/10 rounded-xl border-2 border-dashed border-secondary/30">
+                <p className="text-gray-700 font-medium">
+                  Perform this signal physically, then reveal the reference to check your form.
+                </p>
+              </div>
+              <button
+                onClick={handleReveal}
+                className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
+              >
+                Reveal Reference
+              </button>
             </div>
           )}
 
@@ -303,10 +387,14 @@ export default function FlashCard({
               onMatch={handleCameraMatch}
               onSkipCamera={handleSkipCamera}
               enabled={true}
+              cameraPermissionGranted={cameraPermissionGranted}
+              timeRemaining={timeRemaining}
+              isDetectable={isDetectable}
+              onSelfAssess={handleAnswer}
             />
           )}
 
-          {/* Revealed phase - show self-assessment or success */}
+          {/* Revealed phase - show self-assessment */}
           {performPhase === "revealed" && !answered && (
             <div>
               <p className="text-center text-gray-600 mb-4 text-sm">
@@ -330,7 +418,7 @@ export default function FlashCard({
           )}
 
           {/* Answered phase - show next button */}
-          {answered && (
+          {performPhase === "answered" && (
             <button
               onClick={handleNext}
               className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"

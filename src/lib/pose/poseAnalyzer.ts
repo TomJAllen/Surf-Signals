@@ -1,6 +1,26 @@
 import type { NormalizedLandmark, PoseLandmarks, ArmPosition } from "@/types/pose";
 import { POSE_LANDMARKS } from "@/types/pose";
 
+// Check if either wrist is near the top of the head (nose area)
+// Used for "All Clear / OK" signal where hand touches head
+export function isHandNearHead(landmarks: PoseLandmarks): boolean {
+  const nose = landmarks[POSE_LANDMARKS.NOSE];
+  const leftWrist = landmarks[POSE_LANDMARKS.LEFT_WRIST];
+  const rightWrist = landmarks[POSE_LANDMARKS.RIGHT_WRIST];
+
+  if (!nose) return false;
+
+  const threshold = 0.12; // normalized distance
+
+  const checkWrist = (wrist: NormalizedLandmark | undefined): boolean => {
+    if (!wrist || (wrist.visibility ?? 0) < 0.5) return false;
+    const dist = Math.sqrt((wrist.x - nose.x) ** 2 + (wrist.y - nose.y) ** 2);
+    return dist < threshold;
+  };
+
+  return checkWrist(leftWrist) || checkWrist(rightWrist);
+}
+
 // Thresholds for pose classification
 const THRESHOLDS = {
   // Y position relative to shoulder for "above head" detection

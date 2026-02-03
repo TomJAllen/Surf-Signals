@@ -29,6 +29,7 @@ export default function PerformPage() {
     "water-to-beach": 0,
   });
   const [cameraEnabled, setCameraEnabled] = useState(true);
+  const [cameraPermissionGranted, setCameraPermissionGranted] = useState(false);
 
   // Load camera preference from localStorage
   useEffect(() => {
@@ -89,6 +90,20 @@ export default function PerformPage() {
       // Shuffle signals
       const shuffled = [...data].sort(() => Math.random() - 0.5);
 
+      // Request camera permission once at session start
+      if (cameraEnabled) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          // Stop the test stream immediately - we just need the browser to grant permission
+          stream.getTracks().forEach((track) => track.stop());
+          setCameraPermissionGranted(true);
+        } catch {
+          // Permission denied or error - disable camera for this session
+          setCameraPermissionGranted(false);
+          setCameraEnabled(false);
+        }
+      }
+
       setSignals(shuffled.slice(0, config.count));
       setCurrentIndex(0);
       setResults([]);
@@ -98,7 +113,7 @@ export default function PerformPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [cameraEnabled]);
 
   const handleResult = async (correct: boolean) => {
     const signal = signals[currentIndex];
@@ -226,6 +241,7 @@ export default function PerformPage() {
         onResult={handleResult}
         onNext={handleNext}
         cameraEnabled={cameraEnabled}
+        cameraPermissionGranted={cameraPermissionGranted}
       />
     </div>
   );
