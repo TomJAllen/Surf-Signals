@@ -6,6 +6,7 @@ import { usePoseDetection } from "@/hooks/usePoseDetection";
 import PoseOverlay from "./PoseOverlay";
 import DetectionFeedback from "./DetectionFeedback";
 import { getSignalsWithSameShape } from "@/lib/pose/signalDefinitions";
+import MotionIndicator from "./MotionIndicator";
 
 interface CameraViewProps {
   signalName: string;
@@ -45,6 +46,8 @@ export default function CameraView({
     confidence,
     feedback,
     isMatch,
+    motionType,
+    motionMetrics,
     initializeDetector,
     startDetection,
     stopDetection,
@@ -256,6 +259,11 @@ export default function CameraView({
           </button>
         </div>
       </div>
+
+      {/* Live movement meter for waving / circling signals */}
+      {isDetectable && motionType && !isMatch && (
+        <MotionIndicator motion={motionType} metrics={motionMetrics} />
+      )}
 
       {/* Detection feedback (only for detectable signals) */}
       {isDetectable && (
