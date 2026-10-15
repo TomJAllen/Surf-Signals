@@ -400,20 +400,20 @@ export default function FlashCard({
           {performPhase === "revealed" && !answered && (
             <div>
               <p className="text-center text-gray-600 mb-4 text-sm">
-                Did you perform the signal correctly?
+                Compare with the picture. Did you get it right?
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => handleAnswer(false)}
                   className="flex-1 py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
                 >
-                  Incorrect
+                  ✗ I got it wrong
                 </button>
                 <button
                   onClick={() => handleAnswer(true)}
                   className="flex-1 py-4 px-6 bg-secondary text-gray-900 rounded-xl font-bold hover:bg-secondary-light transition-all active:scale-[0.98] shadow-md"
                 >
-                  Correct
+                  ✓ I got it right
                 </button>
               </div>
             </div>

@@ -30,31 +30,41 @@ export default function Home() {
         <div className="text-center text-white">
           <div className="inline-block mb-6">
             <span className="bg-secondary text-gray-900 px-4 py-2 rounded-lg text-lg font-black tracking-wide">
-              SURF LIFE SAVING AUSTRALIA
+              FOR SURF LIFE SAVING MEMBERS
             </span>
           </div>
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
             Surf Signals
           </h1>
-          <p className="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto">
-            Master surf lifesaving signals with interactive flashcard training.
-            Learn to identify signals and practice performing them correctly.
+          <p className="text-xl md:text-2xl text-white/80 mb-4 max-w-2xl mx-auto">
+            Learn the 14 surf lifesaving hand signals for your Bronze Medallion,
+            SRC or patrol, in a few minutes a day.
+          </p>
+          <p className="text-base md:text-lg text-white/60 mb-10 max-w-2xl mx-auto">
+            Name each signal from a picture, then perform it in front of your
+            camera and get instant feedback.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/signup"
+              href="/study/identify"
               className="px-8 py-4 bg-secondary text-gray-900 rounded-xl font-bold text-lg hover:bg-secondary-light transition-all active:scale-95 shadow-lg"
             >
-              Get Started Free
+              Try it now
             </Link>
             <Link
-              href="/login"
+              href="/signup"
               className="px-8 py-4 bg-white/10 backdrop-blur text-white rounded-xl font-semibold text-lg hover:bg-white/20 transition-all border-2 border-white/30"
             >
-              Sign In
+              Create free account
             </Link>
           </div>
+          <p className="mt-4 text-sm text-white/60">
+            No account needed to practise. Sign up to save your progress across devices.{" "}
+            <Link href="/login" className="underline hover:text-white">
+              Already have an account? Sign in
+            </Link>
+          </p>
         </div>
 
         {/* Features Section */}
@@ -83,8 +93,8 @@ export default function Home() {
             </div>
             <h3 className="text-xl font-bold mb-3">Identify Mode</h3>
             <p className="text-white/70">
-              See a signal image and test your knowledge by identifying it
-              correctly.
+              See a signal and pick its name from five options. Builds the
+              recognition you need on patrol.
             </p>
           </div>
 
@@ -106,8 +116,9 @@ export default function Home() {
             </div>
             <h3 className="text-xl font-bold mb-3">Perform Mode</h3>
             <p className="text-white/70">
-              Practice performing signals physically and compare with reference
-              images.
+              Perform each signal in front of your webcam. The camera checks your
+              arm positions, including waves and circles. Video never leaves your
+              device.
             </p>
           </div>
 
@@ -129,8 +140,8 @@ export default function Home() {
             </div>
             <h3 className="text-xl font-bold mb-3">Track Progress</h3>
             <p className="text-white/70">
-              Monitor your accuracy and improvement over time with detailed
-              statistics.
+              See your accuracy for every signal, so you know which ones to
+              practise before your assessment.
             </p>
           </div>
         </div>
@@ -138,18 +149,21 @@ export default function Home() {
         {/* Categories Preview */}
         <div className="mt-20 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-8">
-            Learn All Signal Categories
+            Both directions covered
           </h2>
-          <div className="flex flex-wrap justify-center gap-4">
-            <span className="px-6 py-3 bg-blue-500/20 text-blue-200 rounded-full font-medium border border-blue-400/30">
-              Water Signals
-            </span>
-            <span className="px-6 py-3 bg-green-500/20 text-green-200 rounded-full font-medium border border-green-400/30">
-              Land Signals
-            </span>
-            <span className="px-6 py-3 bg-orange-500/20 text-orange-200 rounded-full font-medium border border-orange-400/30">
-              IRB Signals
-            </span>
+          <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto text-left">
+            <div className="px-6 py-4 bg-amber-500/15 rounded-2xl border border-amber-400/30">
+              <div className="font-bold text-amber-200">Beach to Water</div>
+              <p className="text-white/70 text-sm mt-1">
+                Signals from the beach to swimmers, lifesavers and craft in the water.
+              </p>
+            </div>
+            <div className="px-6 py-4 bg-blue-500/15 rounded-2xl border border-blue-400/30">
+              <div className="font-bold text-blue-200">Water to Beach</div>
+              <p className="text-white/70 text-sm mt-1">
+                Signals from a lifesaver in the water back to the beach.
+              </p>
+            </div>
           </div>
         </div>
       </div>
