@@ -74,6 +74,7 @@ export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
     additionalChecks: (landmarks: PoseLandmarks) => {
       return areBothArmsRaised(landmarks) && areHandsTouching(landmarks);
     },
+    motion: "wave",
   },
 
   {
@@ -120,6 +121,7 @@ export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
     // Both arms extended horizontally
     rightArm: "extended_horizontal",
     leftArm: "extended_horizontal",
+    motion: "circle",
   },
 
   {
@@ -128,6 +130,7 @@ export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
     // One arm raised above head - right variant
     rightArm: "raised_above_head",
     leftArm: "at_side",
+    motion: "wave",
   },
   {
     signalId: "assistance-required-alt",
@@ -135,6 +138,7 @@ export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
     // One arm raised above head - left variant
     leftArm: "raised_above_head",
     rightArm: "at_side",
+    motion: "wave",
   },
 
   {
@@ -178,6 +182,7 @@ export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
     // One arm raised above head - right variant
     rightArm: "raised_above_head",
     leftArm: "at_side",
+    motion: "circle",
   },
   {
     signalId: "powercraft-return-alt",
@@ -185,6 +190,7 @@ export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
     // One arm raised above head - left variant
     leftArm: "raised_above_head",
     rightArm: "at_side",
+    motion: "circle",
   },
 ];
 
@@ -235,13 +241,29 @@ export const SIGNAL_POSE_DESCRIPTIONS: Record<string, string> = {
   "Go to the Right or Left": "Extend one arm horizontally to the side, pointing in the direction",
   "Emergency Evacuation Alarm": "Raise both arms straight above your head",
   "Submerged Victim Missing": "Cross both arms above your head with hands touching",
-  "Attract Attention": "Cross both arms above your head with hands touching",
+  "Attract Attention": "Cross both arms above your head and wave them side to side",
   "Pick Up Swimmers": "One arm extended horizontally, the other raised above your head",
   "Proceed Further Out to Sea": "Raise both arms straight above your head",
   "Message Understood, All Clear": "Raise one arm straight up above your head",
-  "Pick Up or Adjust Buoys": "Extend both arms out to your sides horizontally",
-  "Assistance Required": "Raise one arm straight up above your head",
+  "Pick Up or Adjust Buoys": "Extend both arms out to your sides and move them in circles",
+  "Assistance Required": "Raise one arm above your head and wave it side to side",
   "Shore Signal Received and Understood": "Raise one arm straight up above your head",
   "All Clear / OK": "Place one hand on top of your head",
-  "Powercraft Wishes to Return to Shore": "Raise one arm straight up above your head",
+  "Powercraft Wishes to Return to Shore": "Raise one arm and move it in a circle",
 };
+
+// What the camera actually checks for a definition, ignoring which arm is which
+function shapeKey(def: SignalPoseDefinition): string {
+  const arms = [def.leftArm ?? "-", def.rightArm ?? "-"].sort().join("+");
+  return [arms, def.handsTouching ? "touch" : "", def.additionalChecks ? "extra" : "", def.motion ?? ""].join("|");
+}
+
+// Other signals the camera can't tell apart from this one (same arm shape and movement).
+// Used to be upfront in the UI that a camera "match" only confirms the shape.
+export function getSignalsWithSameShape(signalName: string): string[] {
+  const mine = new Set(getSignalDefinitions(signalName).map(shapeKey));
+  if (mine.size === 0) return [];
+  return Object.entries(SIGNAL_DEFINITIONS_BY_NAME)
+    .filter(([name, defs]) => name !== signalName && defs.some((d) => mine.has(shapeKey(d))))
+    .map(([name]) => name);
+}

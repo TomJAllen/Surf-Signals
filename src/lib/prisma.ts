@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool, types } from "pg";
+import { pgSslConfig } from "./dbSsl";
 
 // Fix for BigInt serialization
 types.setTypeParser(20, (val) => parseInt(val, 10));
@@ -14,9 +15,7 @@ const connectionString = process.env.DATABASE_URL || "";
 
 const pool = globalForPrisma.pool ?? new Pool({
   connectionString,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: pgSslConfig(connectionString),
 });
 
 const adapter = new PrismaPg(pool);

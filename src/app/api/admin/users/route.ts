@@ -7,18 +7,29 @@ export async function GET() {
   if (error) return error;
 
   try {
-    const users = await prisma.user.findMany({
-      include: {
-        attempts: {
-          select: { correct: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const [users, grouped] = await Promise.all([
+      prisma.user.findMany({
+        select: { id: true, email: true, name: true, role: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.attempt.groupBy({
+        by: ["userId", "correct"],
+        where: { userId: { not: null } },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const counts = new Map<string, { total: number; correct: number }>();
+    for (const row of grouped) {
+      if (!row.userId) continue;
+      const c = counts.get(row.userId) ?? { total: 0, correct: 0 };
+      c.total += row._count._all;
+      if (row.correct) c.correct += row._count._all;
+      counts.set(row.userId, c);
+    }
 
     const result = users.map((user) => {
-      const total = user.attempts.length;
-      const correct = user.attempts.filter((a) => a.correct).length;
+      const { total, correct } = counts.get(user.id) ?? { total: 0, correct: 0 };
       return {
         id: user.id,
         email: user.email,

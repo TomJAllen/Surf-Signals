@@ -1,14 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import { pgSslConfig } from "../src/lib/dbSsl";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import "dotenv/config";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: pgSslConfig(process.env.DATABASE_URL),
 });
 
 const adapter = new PrismaPg(pool);
@@ -164,29 +164,44 @@ async function main() {
   console.log("Removed old signals");
 
   for (const signal of signals) {
+    // imageUrl and poseHint are editable in the admin page, so don't clobber them on re-seed
+    const { imageUrl: _imageUrl, poseHint: _poseHint, ...seedOwned } = signal;
     await prisma.signal.upsert({
       where: { name: signal.name },
-      update: signal,
+      update: seedOwned,
       create: signal,
     });
     console.log(`Created/updated signal: ${signal.name}`);
   }
 
-  // Seed admin user
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@surflifesaving.com";
-  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
-  const adminHash = await bcrypt.hash(adminPassword, 10);
+  // Seed admin user. Never fall back to a known password.
+  const adminEmail = (process.env.ADMIN_EMAIL || "admin@surflifesaving.com").trim().toLowerCase();
+  let adminPassword = process.env.ADMIN_PASSWORD;
+  let generated = false;
+  if (!adminPassword) {
+    adminPassword = randomBytes(12).toString("base64url");
+    generated = true;
+  }
+  if (adminPassword.length < 8) {
+    throw new Error("ADMIN_PASSWORD must be at least 8 characters");
+  }
+  const adminHash = await bcrypt.hash(adminPassword, 12);
 
-  await prisma.user.upsert({
-    where: { email: adminEmail },
-    update: { role: "admin" },
-    create: {
-      email: adminEmail,
-      name: "Admin",
-      passwordHash: adminHash,
-      role: "admin",
-    },
+  const existingAdmin = await prisma.user.findFirst({
+    where: { email: { equals: adminEmail, mode: "insensitive" } },
   });
+
+  if (existingAdmin) {
+    // Existing account: just make sure it's an admin. Password is left alone.
+    await prisma.user.update({ where: { id: existingAdmin.id }, data: { role: "admin" } });
+  } else {
+    await prisma.user.create({
+      data: { email: adminEmail, name: "Admin", passwordHash: adminHash, role: "admin" },
+    });
+    if (generated) {
+      console.log(`Generated admin password (shown once, save it now): ${adminPassword}`);
+    }
+  }
   console.log(`Admin user created/updated: ${adminEmail}`);
 
   console.log("Seeding complete!");

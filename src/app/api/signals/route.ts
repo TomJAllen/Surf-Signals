@@ -1,22 +1,28 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/admin";
+import { shuffle } from "@/lib/shuffle";
+import { clampLimit } from "@/lib/validation";
+
+const MAX_LIMIT = 100;
 
 export async function GET(request: Request) {
   // Allow anonymous access to signals list for practicing
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
-    const limit = searchParams.get("limit");
+    const limit = clampLimit(searchParams.get("limit"), MAX_LIMIT, MAX_LIMIT);
+    const wantShuffle = searchParams.get("shuffle") === "true";
 
     const signals = await prisma.signal.findMany({
       where: category ? { category } : undefined,
       orderBy: { name: "asc" },
-      take: limit ? parseInt(limit, 10) : undefined,
+      // When shuffling, fetch the full (small) set first so the sample is random
+      // rather than the first N alphabetically.
+      take: wantShuffle ? undefined : limit,
     });
 
-    return NextResponse.json(signals);
+    return NextResponse.json(wantShuffle ? shuffle(signals).slice(0, limit) : signals);
   } catch (error) {
     console.error("Error fetching signals:", error);
     return NextResponse.json(
@@ -27,11 +33,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { error } = await requireAdmin();
+  if (error) return error;
 
   try {
     const { name, description, imageUrl, category } = await request.json();
@@ -43,13 +46,12 @@ export async function POST(request: Request) {
       );
     }
 
+    if (category && category !== "beach-to-water" && category !== "water-to-beach") {
+      return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+    }
+
     const signal = await prisma.signal.create({
-      data: {
-        name,
-        description,
-        imageUrl,
-        category,
-      },
+      data: { name, description, imageUrl, category },
     });
 
     return NextResponse.json(signal);
