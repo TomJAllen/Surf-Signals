@@ -6,7 +6,7 @@ import NavBar from "@/components/NavBar";
 import Link from "next/link";
 
 // Pages that allow anonymous access
-const ANONYMOUS_ALLOWED_PATHS = ["/study/identify", "/study/perform"];
+const ANONYMOUS_ALLOWED_PATHS = ["/learn", "/study/identify", "/study/perform"];
 
 export default function ProtectedLayout({
   children,
