@@ -18,7 +18,7 @@ export default function AdminSignalsPage() {
   const [editingHints, setEditingHints] = useState<Record<string, string>>({});
   const [savingHint, setSavingHint] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
-  const [imageCacheBuster, setImageCacheBuster] = useState<Record<string, number>>({});
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/signals")
@@ -67,11 +67,19 @@ export default function AdminSignalsPage() {
         body: formData,
       });
 
-      if (res.ok) {
-        setImageCacheBuster((prev) => ({ ...prev, [signalId]: Date.now() }));
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.imageUrl) {
+        // Each upload gets a fresh Blob URL, so no cache-busting needed
+        setSignals((prev) =>
+          prev.map((s) => (s.id === signalId ? { ...s, imageUrl: data.imageUrl } : s))
+        );
+        setUploadError(null);
+      } else {
+        setUploadError(data.error || "Upload failed");
       }
     } catch (err) {
       console.error("Failed to upload image:", err);
+      setUploadError("Upload failed");
     } finally {
       setUploadingImage(null);
     }
@@ -89,18 +97,16 @@ export default function AdminSignalsPage() {
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Signals</h1>
 
+      {uploadError && (
+        <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{uploadError}</p>
+      )}
       <div className="space-y-6">
         {signals.map((signal) => (
           <div key={signal.id} className="card">
             <div className="flex gap-4">
               <div className="flex-shrink-0">
                 <Image
-                  src={
-                    signal.imageUrl +
-                    (imageCacheBuster[signal.id]
-                      ? `?v=${imageCacheBuster[signal.id]}`
-                      : "")
-                  }
+                  src={signal.imageUrl}
                   alt={signal.name}
                   width={80}
                   height={80}

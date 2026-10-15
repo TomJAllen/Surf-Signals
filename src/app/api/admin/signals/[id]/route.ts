@@ -4,13 +4,13 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const { error } = await requireAdmin();
   if (error) return error;
 
   try {
-    const { id } = await params;
+    const { id } = params;
     const body = await request.json();
     const { poseHint } = body;
 

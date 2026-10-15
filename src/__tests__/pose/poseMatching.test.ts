@@ -7,7 +7,12 @@ import {
   getConfidenceLevelBgColor,
   MATCH_CONFIDENCE_THRESHOLD,
 } from "@/lib/pose/poseMatching";
-import { isSignalDetectable, DETECTABLE_SIGNAL_NAMES } from "@/lib/pose/signalDefinitions";
+import {
+  isSignalDetectable,
+  DETECTABLE_SIGNAL_NAMES,
+  SIGNAL_DEFINITIONS_BY_NAME,
+  SIGNAL_POSE_DESCRIPTIONS,
+} from "@/lib/pose/signalDefinitions";
 import type { PoseLandmarks, NormalizedLandmark } from "@/types/pose";
 import { POSE_LANDMARKS } from "@/types/pose";
 
@@ -197,21 +202,25 @@ describe("poseMatching", () => {
       expect(isSignalDetectable("Submerged Victim Missing")).toBe(true);
     });
 
-    it("returns false for non-detectable signals", () => {
-      expect(isSignalDetectable("Attract Attention")).toBe(false);
-      expect(isSignalDetectable("Pick Up Swimmers")).toBe(false);
+    it("returns false for signals without a pose definition", () => {
       expect(isSignalDetectable("Unknown Signal")).toBe(false);
+      expect(isSignalDetectable("")).toBe(false);
     });
   });
 
   describe("DETECTABLE_SIGNAL_NAMES", () => {
-    it("contains all 5 detectable signals", () => {
-      expect(DETECTABLE_SIGNAL_NAMES).toContain("Remain Stationary");
-      expect(DETECTABLE_SIGNAL_NAMES).toContain("Return to Shore");
-      expect(DETECTABLE_SIGNAL_NAMES).toContain("Go to the Right or Left");
-      expect(DETECTABLE_SIGNAL_NAMES).toContain("Emergency Evacuation Alarm");
-      expect(DETECTABLE_SIGNAL_NAMES).toContain("Submerged Victim Missing");
-      expect(DETECTABLE_SIGNAL_NAMES).toHaveLength(5);
+    it("lists exactly the signals that have pose definitions", () => {
+      // Kept in sync with the definitions rather than a hard-coded count,
+      // so adding a signal doesn't silently leave this list stale.
+      expect([...DETECTABLE_SIGNAL_NAMES].sort()).toEqual(
+        Object.keys(SIGNAL_DEFINITIONS_BY_NAME).sort()
+      );
+    });
+
+    it("every detectable signal has a pose description", () => {
+      for (const name of DETECTABLE_SIGNAL_NAMES) {
+        expect(SIGNAL_POSE_DESCRIPTIONS[name], name).toBeTruthy();
+      }
     });
   });
 

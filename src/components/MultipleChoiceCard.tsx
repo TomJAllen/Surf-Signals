@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import type { Signal } from "@/types";
+import { shuffle } from "@/lib/shuffle";
 
 interface MultipleChoiceCardProps {
   signal: Signal;
@@ -44,12 +45,9 @@ export default function MultipleChoiceCard({
 
   // Generate 5 shuffled options: 1 correct + 4 random wrong
   const options = useMemo(() => {
-    const wrong = allSignals
-      .filter((s) => s.id !== signal.id)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 4);
+    const wrong = shuffle(allSignals.filter((s) => s.id !== signal.id)).slice(0, 4);
 
-    return [...wrong, signal].sort(() => Math.random() - 0.5);
+    return shuffle([...wrong, signal]);
   }, [signal, allSignals]);
 
   const handleSelect = (option: Signal) => {

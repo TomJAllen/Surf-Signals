@@ -9,10 +9,12 @@ Surf Signals helps lifesavers and trainees master the hand signals used in surf 
 ### Features
 
 - **Identify Mode**: See a signal image and select the correct name from multiple choices
-- **Perform Mode**: Given a signal name, practice performing it physically and compare with reference images
+- **Perform Mode**: Given a signal name, perform it; the camera checks arm position and movement, or you can self-assess
 - **Progress Tracking**: Monitor accuracy and improvement over time with detailed statistics
 - **Study Sessions**: Configurable sessions with customizable signal counts and category filters
-- **Signal Categories**: Water signals, Land signals, and IRB (Inflatable Rescue Boat) signals
+- **Signal Categories**: Beach-to-water and water-to-beach signals
+- **Guest Mode**: Practise without an account; progress is kept in the browser and imported on sign-in
+- **Admin**: Edit pose hints and upload signal images (stored in Vercel Blob)
 
 ## Tech Stack
 
@@ -21,7 +23,9 @@ Surf Signals helps lifesavers and trainees master the hand signals used in surf 
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: NextAuth.js (credentials provider)
 - **Styling**: Tailwind CSS
-- **Testing**: Vitest (unit tests), Playwright (E2E tests)
+- **Pose detection**: MediaPipe Tasks Vision (in-browser)
+- **Hosting**: Vercel (Postgres via Neon, images via Vercel Blob, Vercel Analytics)
+- **Testing**: Vitest (unit tests), Playwright (E2E tests), GitHub Actions CI
 
 ## Project Structure
 
@@ -38,7 +42,6 @@ src/
 │   │       ├── identify/ # Identify mode study page
 │   │       └── perform/  # Perform mode study page
 │   ├── api/
-│   │   ├── analytics/    # Analytics tracking
 │   │   ├── attempts/     # Record study attempts
 │   │   ├── auth/         # NextAuth routes
 │   │   ├── signals/      # Signal data API
@@ -53,7 +56,6 @@ src/
 │   ├── SessionSummary.tsx # Results after session
 │   └── SignalImage.tsx   # Signal image display
 ├── lib/
-│   ├── analytics.ts      # Analytics utilities
 │   ├── auth.ts           # NextAuth configuration
 │   ├── localStorage.ts   # Client-side storage
 │   └── prisma.ts         # Prisma client instance
@@ -62,7 +64,7 @@ src/
 └── __tests__/            # Unit tests
 prisma/
 ├── schema.prisma         # Database schema
-└── seed.ts               # Seed data (16 signals)
+└── seed.ts               # Seed data (14 signals + admin user)
 e2e/                      # Playwright E2E tests
 ```
 
@@ -83,7 +85,7 @@ e2e/                      # Playwright E2E tests
 
 ### Environment Variables
 
-Create a `.env` file with:
+Copy `.env.example` to `.env` and fill it in. The essentials:
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/surf_signals"
@@ -98,7 +100,7 @@ NEXTAUTH_URL="http://localhost:3000"
 npm install
 
 # Set up database
-npm run db:push      # Push schema to database
+npm run db:deploy    # Apply migrations
 npm run db:seed      # Seed with signal data
 
 # Start development server
@@ -127,25 +129,30 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 
 ## Signal Categories
 
-### Water Signals (3)
-Signals given in or from the water:
-- Assistance Required
-- All Clear
+Signals are grouped by direction. The source of truth is `prisma/seed.ts`; images live in `public/signals/`.
+
+### Beach to Water (8)
+Given from the beach to people in the water:
+- Attract Attention *(waving)*
 - Pick Up Swimmers
-
-### Land Signals (8)
-Signals given from the beach/shore:
-- Return to Shore
-- Go Further Out
-- Move Left / Move Right
+- Proceed Further Out to Sea
+- Go to the Right or Left
 - Remain Stationary
-- Message Received/Understood
-- Investigate
-- Stop
+- Message Understood, All Clear
+- Pick Up or Adjust Buoys *(circling)*
+- Return to Shore
 
-### IRB Signals (5)
-Signals for Inflatable Rescue Boat operations:
-- Increase Speed
-- Decrease Speed
-- Turn Left / Turn Right
-- Stop Engine
+### Water to Beach (6)
+Given from the water back to the beach:
+- Assistance Required *(waving)*
+- Shore Signal Received and Understood
+- Emergency Evacuation Alarm
+- Submerged Victim Missing
+- All Clear / OK
+- Powercraft Wishes to Return to Shore *(circling)*
+
+## Pose Detection
+
+Perform mode uses MediaPipe Pose Landmarker in the browser (`src/lib/pose/`). Each signal has one or more definitions in `signalDefinitions.ts` (arm positions, hands touching, extra checks, and optional `motion: "wave" | "circle"`). Motion is judged over the last ~2 seconds of frames, relative to shoulder width (`motion.ts`). A signal matches only when every criterion is met for several consecutive frames.
+
+Some signals share an arm position and can't be told apart by the camera (e.g. Return to Shore and Message Understood). After a match the app lists those lookalikes so the user can check the description.

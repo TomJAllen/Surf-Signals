@@ -5,6 +5,7 @@ import { useCamera } from "@/hooks/useCamera";
 import { usePoseDetection } from "@/hooks/usePoseDetection";
 import PoseOverlay from "./PoseOverlay";
 import DetectionFeedback from "./DetectionFeedback";
+import { getSignalsWithSameShape } from "@/lib/pose/signalDefinitions";
 
 interface CameraViewProps {
   signalName: string;
@@ -28,6 +29,7 @@ export default function CameraView({
   onSelfAssess,
 }: CameraViewProps) {
   const [isInitialized, setIsInitialized] = useState(false);
+  const lookalikes = getSignalsWithSameShape(signalName);
   const [videoSize, setVideoSize] = useState({ width: 640, height: 480 });
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -263,6 +265,16 @@ export default function CameraView({
           feedback={feedback}
           signalName={signalName}
         />
+      )}
+
+      {/* Be upfront that some signals look identical to the camera */}
+      {isDetectable && isMatch && lookalikes.length > 0 && (
+        <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+          The camera checks arm position{" "}
+          {lookalikes.length === 1 ? "and " + lookalikes[0] + " uses" : "and these use"} the
+          same one{lookalikes.length > 1 ? `: ${lookalikes.join(", ")}` : ""}. Check the
+          description below to be sure you performed this signal.
+        </p>
       )}
 
       {/* Buttons */}

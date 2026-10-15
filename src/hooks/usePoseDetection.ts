@@ -7,7 +7,8 @@ import {
   detectPose,
   isPoseLandmarkerReady,
 } from "@/lib/pose/mediapipe";
-import { matchPoseToSignal, MATCH_CONFIDENCE_THRESHOLD } from "@/lib/pose/poseMatching";
+import { matchPoseToSignal } from "@/lib/pose/poseMatching";
+import { MOTION_HISTORY_FRAMES } from "@/lib/pose/motion";
 
 // Detection runs at ~15 FPS to balance accuracy and performance
 const DETECTION_INTERVAL = 66; // ms
@@ -47,6 +48,8 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const matchCountRef = useRef(0);
   const matchCalledRef = useRef(false);
+  // Recent frames, so movement-based signals (waving, circling) can be checked
+  const historyRef = useRef<PoseLandmarks[]>([]);
 
   // Initialize the pose landmarker
   const initializeDetector = useCallback(async () => {
@@ -69,6 +72,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
       videoRef.current = video;
       matchCountRef.current = 0;
       matchCalledRef.current = false;
+      historyRef.current = [];
 
       if (!isPoseLandmarkerReady()) {
         console.warn("Pose landmarker not ready, initializing...");
@@ -97,14 +101,19 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
           setLandmarks(result.landmarks);
           setDetectionState("detecting");
 
+          historyRef.current.push(result.landmarks);
+          if (historyRef.current.length > MOTION_HISTORY_FRAMES) historyRef.current.shift();
+
           // Match against the target signal
-          const match = matchPoseToSignal(result.landmarks, signalName);
+          const match = matchPoseToSignal(result.landmarks, signalName, historyRef.current);
           setMatchResult(match);
           setConfidence(match.confidence);
           setFeedback(match.feedback);
 
           // Check for confirmed match
-          if (match.isMatch || match.confidence >= MATCH_CONFIDENCE_THRESHOLD) {
+          // Only a full match counts. (Previously a high partial-credit score could pass
+          // even with a criterion unmet, e.g. the wrong arm raised.)
+          if (match.isMatch) {
             matchCountRef.current++;
 
             if (matchCountRef.current >= MATCH_CONFIRMATION_FRAMES && !matchCalledRef.current) {
@@ -134,6 +143,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
           setConfidence(0);
           setFeedback(["No pose detected - make sure you're visible in the camera"]);
           matchCountRef.current = 0;
+          historyRef.current = [];
         }
       }, DETECTION_INTERVAL);
     },
@@ -156,6 +166,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
     setIsMatch(false);
     matchCountRef.current = 0;
     matchCalledRef.current = false;
+    historyRef.current = [];
   }, []);
 
   // Reset match state when signal changes
@@ -163,6 +174,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
     setIsMatch(false);
     matchCountRef.current = 0;
     matchCalledRef.current = false;
+    historyRef.current = [];
     setMatchResult(null);
     setConfidence(0);
     setFeedback([]);

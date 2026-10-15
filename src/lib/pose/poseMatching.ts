@@ -6,6 +6,7 @@ import {
   areHandsTouching,
 } from "./poseAnalyzer";
 import { getSignalDefinitions, SIGNAL_POSE_DESCRIPTIONS } from "./signalDefinitions";
+import { detectMotion, motionFeedback } from "./motion";
 
 // Confidence threshold for considering a match
 export const MATCH_CONFIDENCE_THRESHOLD = 0.75;
@@ -13,7 +14,8 @@ export const MATCH_CONFIDENCE_THRESHOLD = 0.75;
 // Match a pose against a specific signal definition
 function matchPoseToDefinition(
   landmarks: PoseLandmarks,
-  definition: SignalPoseDefinition
+  definition: SignalPoseDefinition,
+  history: PoseLandmarks[] = []
 ): PoseMatchResult {
   const matchedCriteria: string[] = [];
   const unmatchedCriteria: string[] = [];
@@ -84,6 +86,20 @@ function matchPoseToDefinition(
     }
   }
 
+  // Movement (wave/circle) is judged over recent frames, not this one
+  if (definition.motion) {
+    criteriaCount++;
+    if (detectMotion(history, definition.motion)) {
+      matchedCriteria.push(`Motion: ${definition.motion}`);
+      totalConfidence += 1;
+    } else {
+      unmatchedCriteria.push(`Motion: ${definition.motion} not detected`);
+      // Only prompt for the movement once the arm shape is right
+      if (feedback.length === 0) feedback.push(motionFeedback(definition.motion));
+      totalConfidence += 0.3;
+    }
+  }
+
   // Calculate average confidence
   const confidence = criteriaCount > 0 ? totalConfidence / criteriaCount : 0;
 
@@ -103,7 +119,8 @@ function matchPoseToDefinition(
 // This tries all alternative definitions for a signal and returns the best match
 export function matchPoseToSignal(
   landmarks: PoseLandmarks,
-  signalName: string
+  signalName: string,
+  history: PoseLandmarks[] = []
 ): PoseMatchResult {
   const definitions = getSignalDefinitions(signalName);
 
@@ -121,7 +138,7 @@ export function matchPoseToSignal(
   let bestMatch: PoseMatchResult | null = null;
 
   for (const definition of definitions) {
-    const result = matchPoseToDefinition(landmarks, definition);
+    const result = matchPoseToDefinition(landmarks, definition, history);
 
     if (!bestMatch || result.confidence > bestMatch.confidence) {
       bestMatch = result;

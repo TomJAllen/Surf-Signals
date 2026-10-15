@@ -57,6 +57,9 @@ export type ArmPosition =
 // Hand state (for future use with hand gestures)
 export type HandState = "open" | "closed" | "unknown";
 
+// Movement a signal requires on top of its static arm shape
+export type SignalMotion = "wave" | "circle";
+
 // Signal pose definition for matching
 export interface SignalPoseDefinition {
   signalId: string; // Matches Signal.id
@@ -65,6 +68,7 @@ export interface SignalPoseDefinition {
   rightArm?: ArmPosition;
   handsTouching?: boolean;
   additionalChecks?: (landmarks: PoseLandmarks) => boolean;
+  motion?: SignalMotion; // checked over the last ~2s of frames
 }
 
 // Result from pose matching

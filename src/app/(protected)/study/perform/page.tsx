@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import FlashCard from "@/components/FlashCard";
 import SessionSetup from "@/components/SessionSetup";
 import SessionSummary from "@/components/SessionSummary";
+import { useSession } from "next-auth/react";
+import { saveLocalAttempt } from "@/lib/localStorage";
 import type { Signal, SignalCategory, SessionConfig } from "@/types";
 
 // LocalStorage key for camera preference
@@ -17,6 +19,7 @@ interface SessionResult {
 }
 
 export default function PerformPage() {
+  const { status: authStatus } = useSession();
   const [phase, setPhase] = useState<SessionPhase>("setup");
   const [signals, setSignals] = useState<Signal[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -87,8 +90,8 @@ export default function PerformPage() {
 
       const data: Signal[] = await response.json();
 
-      // Shuffle signals
-      const shuffled = [...data].sort(() => Math.random() - 0.5);
+      // The API returns a random sample when shuffle=true
+      const shuffled = data;
 
       // Request camera permission once at session start
       if (cameraEnabled) {
@@ -120,6 +123,17 @@ export default function PerformPage() {
     if (!signal) return;
 
     setResults((prev) => [...prev, { signalName: signal.name, correct }]);
+
+    // Guests: keep progress in this browser so it can be imported on sign-up/login
+    if (authStatus !== "authenticated") {
+      saveLocalAttempt({
+        signalId: signal.id,
+        signalName: signal.name,
+        mode: "perform",
+        correct,
+      });
+      return;
+    }
 
     try {
       await fetch("/api/attempts", {
