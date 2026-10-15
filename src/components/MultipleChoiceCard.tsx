@@ -66,7 +66,7 @@ export default function MultipleChoiceCard({
 
   const getButtonClass = (option: Signal) => {
     const base =
-      "w-full py-3 px-4 rounded-xl font-bold text-left transition-all";
+      "w-full py-2.5 sm:py-3 px-4 rounded-xl font-bold text-left transition-all";
 
     if (!selectedId) {
       return `${base} bg-gray-100 hover:bg-gray-200 text-gray-900 active:scale-[0.98]`;
@@ -97,10 +97,10 @@ export default function MultipleChoiceCard({
   };
 
   return (
-    <div className="max-w-lg mx-auto px-4">
+    <div className="max-w-lg md:max-w-4xl mx-auto px-4">
       <div className="flashcard">
         {/* Header */}
-        <div className="flashcard-header text-center">
+        <div className="flashcard-header text-center py-3">
           <span className="text-sm font-medium opacity-80">Identify Mode</span>
           <h3 className="text-lg font-bold">What signal is this?</h3>
         </div>
@@ -134,8 +134,10 @@ export default function MultipleChoiceCard({
           </div>
         )}
 
-        {/* Signal Media */}
-        <div className="relative aspect-square bg-gradient-to-b from-gray-50 to-gray-100">
+        {/* Image beside the answers on wide screens, above them on phones */}
+        <div className="md:grid md:grid-cols-2">
+        {/* Signal Media: height capped to the viewport so the answers stay on screen */}
+        <div className="relative w-full aspect-square max-h-[34svh] md:max-h-[62svh] bg-gradient-to-b from-gray-50 to-gray-100">
           {signal.category && (
             <span
               className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold text-white uppercase z-10 ${categoryColors[signal.category] || "bg-gray-500"}`}
@@ -152,14 +154,15 @@ export default function MultipleChoiceCard({
               src={signal.imageUrl}
               alt="Identify this signal"
               fill
-              className="object-contain p-6"
+              sizes="(min-width: 768px) 448px, 100vw"
+              className="object-contain p-4 md:p-6"
               priority
             />
           )}
         </div>
 
         {/* Answer Options */}
-        <div className="p-4 bg-white space-y-2">
+        <div className="p-4 bg-white space-y-2 md:flex md:flex-col md:justify-center md:space-y-3">
           {options.map((option) => (
             <button
               key={option.id}
@@ -170,6 +173,7 @@ export default function MultipleChoiceCard({
               {option.name}
             </button>
           ))}
+        </div>
         </div>
       </div>
     </div>
