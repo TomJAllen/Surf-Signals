@@ -64,7 +64,9 @@ export default function SessionSetup({
             Set Up Your Session
           </h1>
           <p className="text-gray-600">
-            Select a category to begin
+            {isIdentify
+              ? "You'll see each signal and pick its name from five options."
+              : "You'll be given a signal name. Perform it, then check your form."}
           </p>
         </div>
 
@@ -105,6 +107,15 @@ export default function SessionSetup({
               Water to Beach ({signalsByCategory["water-to-beach"]})
             </button>
           </div>
+          <p className="text-xs text-gray-500 mt-3 min-h-[2.5rem]">
+            {category === "beach-to-water"
+              ? "Signals given from the beach to swimmers, lifesavers and craft in the water."
+              : category === "water-to-beach"
+                ? "Signals given by a lifesaver in the water back to the beach."
+                : "Every signal, from the beach and from the water."}{" "}
+            {availableSignals > 0 &&
+              `${availableSignals} signal${availableSignals === 1 ? "" : "s"} in this session.`}
+          </p>
         </div>
 
         {/* Camera Toggle (Perform Mode Only) */}
@@ -129,7 +140,9 @@ export default function SessionSetup({
                 </div>
                 <div>
                   <span className="font-bold text-gray-900 block">Camera Detection</span>
-                  <span className="text-xs text-gray-500">Auto-check your signal performance</span>
+                  <span className="text-xs text-gray-500">
+                    The camera checks your arm positions and gives you 15 seconds per signal
+                  </span>
                 </div>
               </div>
               <div className="relative">
@@ -143,6 +156,20 @@ export default function SessionSetup({
               </div>
             </label>
           </div>
+        )}
+
+        {isPerformMode && cameraEnabled && (
+          <ul className="-mt-4 mb-8 text-xs text-gray-600 bg-gray-50 rounded-xl p-4 space-y-1 list-disc list-inside">
+            <li>Stand back so your head, arms and upper body are in frame</li>
+            <li>Use good light and a plain background if you can</li>
+            <li>Video is processed on your device and never uploaded</li>
+          </ul>
+        )}
+        {isPerformMode && !cameraEnabled && onCameraToggle && (
+          <p className="-mt-4 mb-8 text-xs text-gray-600 bg-gray-50 rounded-xl p-4">
+            Without the camera, perform each signal, reveal the reference picture and mark
+            yourself. There&apos;s no time limit.
+          </p>
         )}
 
         {/* Start Button */}

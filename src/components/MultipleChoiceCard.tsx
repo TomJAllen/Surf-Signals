@@ -170,7 +170,17 @@ export default function MultipleChoiceCard({
               disabled={disabled}
               className={getButtonClass(option)}
             >
-              {option.name}
+              <span className="flex items-center justify-between gap-3">
+                <span>{option.name}</span>
+                {selectedId && option.id === signal.id && (
+                  <span className="text-sm font-bold whitespace-nowrap">
+                    ✓ {option.id === selectedId ? "Correct" : "Correct answer"}
+                  </span>
+                )}
+                {selectedId && option.id === selectedId && option.id !== signal.id && (
+                  <span className="text-sm font-bold whitespace-nowrap">✗ Your answer</span>
+                )}
+              </span>
             </button>
           ))}
         </div>

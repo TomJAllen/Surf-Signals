@@ -216,7 +216,8 @@ export default function FlashCard({
   const MediaDisplay = ({ showBadge = true }: { showBadge?: boolean }) => (
     <>
       <MediaToggle />
-      <div className="relative aspect-square bg-gradient-to-b from-gray-50 to-gray-100">
+      {/* Height capped to the viewport so the buttons below stay on screen */}
+      <div className="relative w-full aspect-square max-h-[34svh] md:max-h-[45svh] bg-gradient-to-b from-gray-50 to-gray-100">
         {showBadge && categoryBadge}
         {showVideo && signal.videoUrl ? (
           <div className="absolute inset-4 flex items-center justify-center">
@@ -227,7 +228,8 @@ export default function FlashCard({
             src={signal.imageUrl}
             alt={signal.name}
             fill
-            className="object-contain p-6"
+            sizes="(min-width: 768px) 512px, 100vw"
+            className="object-contain p-4 md:p-6"
             priority
           />
         )}
@@ -398,20 +400,20 @@ export default function FlashCard({
           {performPhase === "revealed" && !answered && (
             <div>
               <p className="text-center text-gray-600 mb-4 text-sm">
-                Did you perform the signal correctly?
+                Compare with the picture. Did you get it right?
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => handleAnswer(false)}
                   className="flex-1 py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
                 >
-                  Incorrect
+                  ✗ I got it wrong
                 </button>
                 <button
                   onClick={() => handleAnswer(true)}
                   className="flex-1 py-4 px-6 bg-secondary text-gray-900 rounded-xl font-bold hover:bg-secondary-light transition-all active:scale-[0.98] shadow-md"
                 >
-                  Correct
+                  ✓ I got it right
                 </button>
               </div>
             </div>
