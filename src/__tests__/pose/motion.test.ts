@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { countReversals, detectMotion } from "@/lib/pose/motion";
+import { countReversals, detectMotion, measureMotion } from "@/lib/pose/motion";
 import { matchPoseToSignal } from "@/lib/pose/poseMatching";
 import { getSignalsWithSameShape } from "@/lib/pose/signalDefinitions";
 import type { PoseLandmarks, NormalizedLandmark } from "@/types/pose";
@@ -148,5 +148,50 @@ describe("getSignalsWithSameShape", () => {
 
   it("returns nothing for unknown signals", () => {
     expect(getSignalsWithSameShape("Unknown Signal")).toEqual([]);
+  });
+});
+
+describe("measureMotion", () => {
+  it("reports full progress and the moving wrist when waving", () => {
+    const m = measureMotion(wavingFrames(), "wave");
+    expect(m.detected).toBe(true);
+    expect(m.progress).toBe(1);
+    expect(m.side).toBe("right");
+    expect(m.rangeX).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it("reports partial progress for a single small sweep", () => {
+    // One slow sweep of 0.3 shoulder widths: some range, no reversals yet
+    const frames = Array.from({ length: 30 }, (_, i) => rightArmUp(0.06 * (i / 29)));
+    const m = measureMotion(frames, "wave");
+    expect(m.detected).toBe(false);
+    expect(m.side).toBe("right");
+    expect(m.progress).toBeGreaterThan(0);
+    expect(m.progress).toBeLessThan(1);
+    expect(m.rangeX).toBeGreaterThan(0.2);
+  });
+
+  it("reports zero progress with too few frames", () => {
+    const m = measureMotion(wavingFrames().slice(0, 5), "wave");
+    expect(m.detected).toBe(false);
+    expect(m.progress).toBe(0);
+    expect(m.samples).toBe(5);
+  });
+
+  it("agrees with detectMotion for circling", () => {
+    expect(measureMotion(circlingFrames(), "circle").detected).toBe(detectMotion(circlingFrames(), "circle"));
+    expect(measureMotion(still(armsOut()), "circle").detected).toBe(false);
+  });
+
+  it("returns empty metrics when no wrist is visible", () => {
+    const hidden = still(rightArmUp()).map((f) => {
+      const p = [...f];
+      p[L.LEFT_WRIST] = lm(0.38, 0.62, 0);
+      p[L.RIGHT_WRIST] = lm(0.62, 0.08, 0);
+      return p;
+    });
+    const m = measureMotion(hidden, "wave");
+    expect(m.side).toBeNull();
+    expect(m.progress).toBe(0);
   });
 });

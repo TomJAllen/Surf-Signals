@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import type { PoseLandmarks, DetectionState, PoseMatchResult } from "@/types/pose";
+import type { PoseLandmarks, DetectionState, PoseMatchResult, SignalMotion } from "@/types/pose";
 import {
   initializePoseLandmarker,
   detectPose,
   isPoseLandmarkerReady,
 } from "@/lib/pose/mediapipe";
 import { matchPoseToSignal } from "@/lib/pose/poseMatching";
-import { MOTION_HISTORY_FRAMES } from "@/lib/pose/motion";
+import { MOTION_HISTORY_FRAMES, measureMotion, type MotionMetrics } from "@/lib/pose/motion";
+import { getSignalDefinitions } from "@/lib/pose/signalDefinitions";
 
 // Detection runs at ~15 FPS to balance accuracy and performance
 const DETECTION_INTERVAL = 66; // ms
@@ -29,6 +30,10 @@ interface UsePoseDetectionReturn {
   confidence: number;
   feedback: string[];
   isMatch: boolean;
+  /** Movement the signal needs (wave/circle), or null for a static pose */
+  motionType: SignalMotion | null;
+  /** Live movement measurement for motion signals (null when not applicable) */
+  motionMetrics: MotionMetrics | null;
   initializeDetector: () => Promise<void>;
   startDetection: (video: HTMLVideoElement) => void;
   stopDetection: () => void;
@@ -43,6 +48,9 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
   const [confidence, setConfidence] = useState(0);
   const [feedback, setFeedback] = useState<string[]>([]);
   const [isMatch, setIsMatch] = useState(false);
+  const [motionMetrics, setMotionMetrics] = useState<MotionMetrics | null>(null);
+  const motionType: SignalMotion | null =
+    getSignalDefinitions(signalName).find((d) => d.motion)?.motion ?? null;
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -109,6 +117,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
           setMatchResult(match);
           setConfidence(match.confidence);
           setFeedback(match.feedback);
+          setMotionMetrics(motionType ? measureMotion(historyRef.current, motionType) : null);
 
           // Check for confirmed match
           // Only a full match counts. (Previously a high partial-credit score could pass
@@ -142,12 +151,13 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
           setMatchResult(null);
           setConfidence(0);
           setFeedback(["No pose detected - make sure you're visible in the camera"]);
+          setMotionMetrics(null);
           matchCountRef.current = 0;
           historyRef.current = [];
         }
       }, DETECTION_INTERVAL);
     },
-    [enabled, signalName, onMatch, initializeDetector]
+    [enabled, signalName, motionType, onMatch, initializeDetector]
   );
 
   // Stop detection loop
@@ -164,6 +174,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
     setConfidence(0);
     setFeedback([]);
     setIsMatch(false);
+    setMotionMetrics(null);
     matchCountRef.current = 0;
     matchCalledRef.current = false;
     historyRef.current = [];
@@ -178,6 +189,7 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
     setMatchResult(null);
     setConfidence(0);
     setFeedback([]);
+    setMotionMetrics(null);
   }, [signalName]);
 
   // Clean up on unmount
@@ -198,6 +210,8 @@ export function usePoseDetection(options: UsePoseDetectionOptions): UsePoseDetec
     confidence,
     feedback,
     isMatch,
+    motionType,
+    motionMetrics,
     initializeDetector,
     startDetection,
     stopDetection,

@@ -80,31 +80,91 @@ export function countReversals(values: number[], hysteresis = REVERSAL_HYSTERESI
   return reversals;
 }
 
-function sideShowsMotion(history: PoseLandmarks[], side: WristSide, motion: SignalMotion): boolean {
-  const track = wristTrack(history, side);
-  if (track.length < MIN_SAMPLES) return false;
+export interface MotionMetrics {
+  side: WristSide | null; // wrist with the most progress
+  samples: number; // usable frames for that wrist
+  rangeX: number; // side-to-side range, in shoulder widths
+  rangeY: number; // up-down range, in shoulder widths
+  reversalsX: number;
+  reversalsY: number;
+  progress: number; // 0..1 towards the requirement (for the on-screen indicator)
+  detected: boolean;
+}
 
+export const MOTION_THRESHOLDS = {
+  waveMinAmplitude: WAVE_MIN_AMPLITUDE,
+  circleMinAmplitude: CIRCLE_MIN_AMPLITUDE,
+  reversalHysteresis: REVERSAL_HYSTERESIS,
+  minSamples: MIN_SAMPLES,
+  waveMinReversals: 2,
+  circleMinReversals: 1,
+} as const;
+
+const EMPTY_METRICS: MotionMetrics = {
+  side: null,
+  samples: 0,
+  rangeX: 0,
+  rangeY: 0,
+  reversalsX: 0,
+  reversalsY: 0,
+  progress: 0,
+  detected: false,
+};
+
+const fraction = (value: number, target: number) => Math.min(1, value / target);
+// Average of the partial requirements, kept below 1 until every one is met
+const partial = (parts: number[]) => Math.min(0.95, parts.reduce((a, b) => a + b, 0) / parts.length);
+
+function measureSide(history: PoseLandmarks[], side: WristSide, motion: SignalMotion): MotionMetrics {
+  const track = wristTrack(history, side);
   const xs = track.map((p) => p.x);
   const ys = track.map((p) => p.y);
+  const m = {
+    side,
+    samples: track.length,
+    rangeX: range(xs),
+    rangeY: range(ys),
+    reversalsX: countReversals(xs),
+    reversalsY: countReversals(ys),
+  };
+  const enoughSamples = m.samples >= MIN_SAMPLES;
+  const t = MOTION_THRESHOLDS;
 
   if (motion === "wave") {
     // Clear side-to-side sweep, back and forth at least once
-    return range(xs) >= WAVE_MIN_AMPLITUDE && countReversals(xs) >= 2;
+    const parts = [fraction(m.rangeX, t.waveMinAmplitude), fraction(m.reversalsX, t.waveMinReversals)];
+    const detected = enoughSamples && m.rangeX >= t.waveMinAmplitude && m.reversalsX >= t.waveMinReversals;
+    return { ...m, detected, progress: detected ? 1 : enoughSamples ? partial(parts) : 0 };
   }
 
   // circle: real movement on both axes, changing direction on both
-  return (
-    range(xs) >= CIRCLE_MIN_AMPLITUDE &&
-    range(ys) >= CIRCLE_MIN_AMPLITUDE &&
-    countReversals(xs) >= 1 &&
-    countReversals(ys) >= 1
-  );
+  const parts = [
+    fraction(m.rangeX, t.circleMinAmplitude),
+    fraction(m.rangeY, t.circleMinAmplitude),
+    fraction(m.reversalsX, t.circleMinReversals),
+    fraction(m.reversalsY, t.circleMinReversals),
+  ];
+  const detected =
+    enoughSamples &&
+    m.rangeX >= t.circleMinAmplitude &&
+    m.rangeY >= t.circleMinAmplitude &&
+    m.reversalsX >= t.circleMinReversals &&
+    m.reversalsY >= t.circleMinReversals;
+  return { ...m, detected, progress: detected ? 1 : enoughSamples ? partial(parts) : 0 };
+}
+
+// Measures the required movement for whichever wrist is closest to completing it
+export function measureMotion(history: PoseLandmarks[], motion: SignalMotion): MotionMetrics {
+  const recent = history.slice(-MOTION_HISTORY_FRAMES);
+  const sides = [measureSide(recent, "left", motion), measureSide(recent, "right", motion)];
+  const score = (m: MotionMetrics) => (m.detected ? 2 : 0) + m.progress + (m.rangeX + m.rangeY) / 100;
+  const best = sides.reduce((a, b) => (score(b) > score(a) ? b : a));
+  return best.samples > 0 ? best : { ...EMPTY_METRICS };
 }
 
 // True if either wrist performed the required movement within the history window
 export function detectMotion(history: PoseLandmarks[], motion: SignalMotion): boolean {
-  const recent = history.slice(-MOTION_HISTORY_FRAMES);
-  return sideShowsMotion(recent, "left", motion) || sideShowsMotion(recent, "right", motion);
+  return measureMotion(history, motion).detected;
 }
 
 export function motionFeedback(motion: SignalMotion): string {
