@@ -216,7 +216,8 @@ export default function FlashCard({
   const MediaDisplay = ({ showBadge = true }: { showBadge?: boolean }) => (
     <>
       <MediaToggle />
-      <div className="relative aspect-square bg-gradient-to-b from-gray-50 to-gray-100">
+      {/* Height capped to the viewport so the buttons below stay on screen */}
+      <div className="relative w-full aspect-square max-h-[34svh] md:max-h-[45svh] bg-gradient-to-b from-gray-50 to-gray-100">
         {showBadge && categoryBadge}
         {showVideo && signal.videoUrl ? (
           <div className="absolute inset-4 flex items-center justify-center">
@@ -227,7 +228,8 @@ export default function FlashCard({
             src={signal.imageUrl}
             alt={signal.name}
             fill
-            className="object-contain p-6"
+            sizes="(min-width: 768px) 512px, 100vw"
+            className="object-contain p-4 md:p-6"
             priority
           />
         )}

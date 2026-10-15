@@ -152,7 +152,7 @@ export default function CameraView({
   // Loading state while camera starts
   if (!cameraState.isActive && cameraPermissionGranted) {
     return (
-      <div className="relative aspect-[4/3] bg-gray-900 rounded-xl overflow-hidden flex items-center justify-center">
+      <div className="relative aspect-[4/3] w-full max-w-[60svh] mx-auto bg-gray-900 rounded-xl overflow-hidden flex items-center justify-center">
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2" />
           <p className="text-sm">Starting camera...</p>
@@ -166,7 +166,7 @@ export default function CameraView({
       {/* Camera container */}
       <div
         ref={containerRef}
-        className="relative aspect-[4/3] bg-gray-900 rounded-xl overflow-hidden"
+        className="relative aspect-[4/3] w-full max-w-[60svh] mx-auto bg-gray-900 rounded-xl overflow-hidden"
       >
         {/* Video element */}
         <video
