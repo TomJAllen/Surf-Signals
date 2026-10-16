@@ -33,7 +33,7 @@ function SignalCard({ signal }: { signal: Signal }) {
 
   return (
     <article className="card flex flex-col gap-3" id={signal.id}>
-      <div className="relative h-48 bg-gradient-to-b from-gray-50 to-gray-100 rounded-xl overflow-hidden">
+      <div className="relative h-48 bg-white border border-gray-100 rounded-xl overflow-hidden">
         <Image
           src={signal.imageUrl}
           alt={signal.name}

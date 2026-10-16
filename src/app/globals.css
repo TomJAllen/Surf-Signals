@@ -9,13 +9,9 @@
   --slsa-yellow: #FFE135;
   --slsa-green: #7CFC00;
   --slsa-red: #DA291C;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1A1A1A;
-    --foreground: #F5F5F5;
-  }
+  /* The app is designed for a light theme only; stop browsers in dark mode
+     darkening form controls and scrollbars. */
+  color-scheme: light;
 }
 
 body {
