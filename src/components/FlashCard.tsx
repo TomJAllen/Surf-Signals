@@ -217,7 +217,7 @@ export default function FlashCard({
     <>
       <MediaToggle />
       {/* Height capped to the viewport so the buttons below stay on screen */}
-      <div className="relative w-full aspect-square max-h-[34svh] md:max-h-[45svh] bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="relative w-full aspect-square max-h-[34svh] md:max-h-[45svh] bg-white">
         {showBadge && categoryBadge}
         {showVideo && signal.videoUrl ? (
           <div className="absolute inset-4 flex items-center justify-center">

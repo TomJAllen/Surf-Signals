@@ -142,7 +142,7 @@ export default function MultipleChoiceCard({
         {/* Image beside the answers on wide screens, above them on phones */}
         <div className="md:grid md:grid-cols-2">
         {/* Signal Media: height capped to the viewport so the answers stay on screen */}
-        <div className="relative w-full aspect-square max-h-[34svh] md:max-h-[62svh] bg-gradient-to-b from-gray-50 to-gray-100">
+        <div className="relative w-full aspect-square max-h-[34svh] md:max-h-[62svh] bg-white">
           {signal.category && (
             <span
               className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold text-white uppercase z-10 ${categoryColors[signal.category] || "bg-gray-500"}`}
