@@ -38,6 +38,24 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
 
+      {/* Learn */}
+      <Link
+        href="/learn"
+        className="block card hover:shadow-lg transition-all border-2 border-transparent hover:border-secondary"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Learn the signals</h2>
+            <p className="text-gray-600">
+              What each signal means and how to do it. Start here if you&apos;re new.
+            </p>
+          </div>
+          <span className="text-primary font-bold text-2xl" aria-hidden>
+            &rarr;
+          </span>
+        </div>
+      </Link>
+
       {/* Test Yourself */}
       <section>
         <h2 className="text-xl font-bold text-gray-900 mb-4">Test Yourself</h2>

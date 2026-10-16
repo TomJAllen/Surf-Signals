@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { StudyMode, SignalCategory, SessionConfig } from "@/types";
 
 interface SessionSetupProps {
@@ -184,6 +185,13 @@ export default function SessionSetup({
         >
           Start Session
         </button>
+
+        <p className="text-center text-sm text-gray-500 mt-4">
+          New to the signals?{" "}
+          <Link href="/learn" className="text-primary font-semibold hover:underline">
+            Learn them first
+          </Link>
+        </p>
 
         {availableSignals === 0 && (
           <p className="text-center text-primary text-sm mt-4">

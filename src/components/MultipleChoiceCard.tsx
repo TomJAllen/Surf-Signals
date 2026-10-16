@@ -58,11 +58,16 @@ export default function MultipleChoiceCard({
     const correct = option.id === signal.id;
     onResult(correct);
 
-    const delay = correct ? 1500 : 3000;
-    setTimeout(() => {
-      onNext();
-    }, delay);
+    // Correct answers move on by themselves. Wrong ones wait on a Next button,
+    // so there's time to read what the signal actually means.
+    if (correct) {
+      setTimeout(() => {
+        onNext();
+      }, 1500);
+    }
   };
+
+  const answeredWrong = selectedId !== null && selectedId !== signal.id;
 
   const getButtonClass = (option: Signal) => {
     const base =
@@ -183,6 +188,20 @@ export default function MultipleChoiceCard({
               </span>
             </button>
           ))}
+
+          {answeredWrong && (
+            <div className="mt-3 p-4 rounded-xl bg-yellow-50 border border-yellow-300 space-y-2" role="status">
+              <p className="font-bold text-gray-900">This is: {signal.name}</p>
+              <p className="text-sm text-gray-700">{signal.description}</p>
+              <button
+                onClick={onNext}
+                autoFocus
+                className="w-full mt-2 py-3 px-4 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98]"
+              >
+                Next signal
+              </button>
+            </div>
+          )}
         </div>
         </div>
       </div>

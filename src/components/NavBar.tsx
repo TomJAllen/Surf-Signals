@@ -12,6 +12,7 @@ export default function NavBar() {
   const navLinks = session
     ? [
         { href: "/dashboard", label: "Dashboard" },
+        { href: "/learn", label: "Learn" },
         { href: "/study/identify", label: "Identify" },
         { href: "/study/perform", label: "Perform" },
         { href: "/history", label: "History" },
@@ -20,6 +21,7 @@ export default function NavBar() {
           : []),
       ]
     : [
+        { href: "/learn", label: "Learn" },
         { href: "/study/identify", label: "Identify" },
         { href: "/study/perform", label: "Perform" },
       ];
