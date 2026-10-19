@@ -1,10 +1,10 @@
-# Surf Signals
+# Patrol Ready
 
 A web application for learning and practicing Surf Life Saving Australia (SLSA) signals through interactive flashcard training.
 
 ## Overview
 
-Surf Signals helps lifesavers and trainees master the hand signals used in surf lifesaving operations. Users can test their knowledge by identifying signals from images or practice performing signals themselves.
+Patrol Ready helps lifesavers and trainees master the hand signals used in surf lifesaving operations. Users can test their knowledge by identifying signals from images or practice performing signals themselves.
 
 ### Features
 

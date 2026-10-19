@@ -5,7 +5,7 @@ test.describe("Anonymous Study Flow", () => {
     await page.goto("/");
 
     // Should see the landing page
-    await expect(page.getByText("Surf Signals")).toBeVisible();
+    await expect(page.getByText("Patrol Ready")).toBeVisible();
     await expect(page.getByText("Get Started Free")).toBeVisible();
   });
 

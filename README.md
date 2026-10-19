@@ -1,4 +1,4 @@
-# Surf Signals
+# Patrol Ready
 
 Learn and practise Surf Life Saving Australia signals.
 

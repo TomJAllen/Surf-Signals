@@ -17,7 +17,7 @@ export function LegalPage({
           <Link href="/" className="font-bold text-xl flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/icon.svg" alt="" width={28} height={28} className="rounded-md" />
-            Surf Signals
+            Patrol Ready
           </Link>
         </div>
       </header>

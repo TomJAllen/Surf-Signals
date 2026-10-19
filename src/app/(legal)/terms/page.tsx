@@ -3,13 +3,13 @@ import type { Metadata } from "next";
 import { LegalPage, Section, Contact } from "@/components/LegalPage";
 import { LEGAL_EFFECTIVE_DATE, MIN_AGE_WITHOUT_GUARDIAN, OPERATOR_NAME } from "@/content/legal";
 
-export const metadata: Metadata = { title: "Terms of Use · Surf Signals" };
+export const metadata: Metadata = { title: "Terms of Use · Patrol Ready" };
 
 export default function TermsPage() {
   return (
     <LegalPage title="Terms of Use" effective={LEGAL_EFFECTIVE_DATE}>
       <p>
-        These terms apply to your use of Surf Signals (the &ldquo;app&rdquo;), a free training app run by{" "}
+        These terms apply to your use of Patrol Ready (formerly Surf Signals, the &ldquo;app&rdquo;), a free training app run by{" "}
         {OPERATOR_NAME} in Sydney, Australia (&ldquo;we&rdquo;, &ldquo;us&rdquo;). By using the app you agree to
         them. Please also read our <Link href="/privacy" className="text-primary underline">Privacy Policy</Link>.
       </p>
@@ -17,7 +17,7 @@ export default function TermsPage() {
       <Section title="1. A training aid, not official training">
         <ul className="list-disc pl-6 space-y-1">
           <li>
-            Surf Signals is an independent study aid. It is <strong>not</strong> produced, endorsed or approved by Surf
+            Patrol Ready is an independent study aid. It is <strong>not</strong> produced, endorsed or approved by Surf
             Life Saving Australia (SLSA) or any state centre or club.
           </li>
           <li>

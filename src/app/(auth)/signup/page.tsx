@@ -80,10 +80,10 @@ export default function SignupPage() {
         <div className="text-center">
           <Link href="/" className="inline-block mb-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.svg" alt="Surf Signals home" width={56} height={56} className="rounded-xl mx-auto" />
+            <img src="/icon.svg" alt="Patrol Ready home" width={56} height={56} className="rounded-xl mx-auto" />
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">
-            Surf Signals
+            Patrol Ready
           </h1>
           <h2 className="mt-4 text-xl text-gray-600">
             Create your account
