@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CALL_SCENARIOS, PHONETIC, PROWORDS, RADIO_DRILLS, type RadioDrill } from "@/content/radio";
+import { CALL_SCENARIOS, PHONETIC, PHONETIC_DECOYS, PROWORDS, RADIO_DRILLS, type RadioDrill } from "@/content/radio";
 import { shuffle } from "@/lib/shuffle";
 import ChoiceDrill, { type ChoiceQuestion } from "@/components/drills/ChoiceDrill";
 import OrderDrill from "@/components/drills/OrderDrill";
@@ -41,7 +41,8 @@ export function phoneticQuestions(): ChoiceQuestion[] {
         <span>is…</span>
       </span>
     ),
-    options: shuffle([p.word, ...shuffle(PHONETIC.filter((x) => x.letter !== p.letter)).slice(0, 3).map((x) => x.word)]),
+    // Every option starts with the same letter, so the letter gives nothing away
+    options: shuffle([p.word, ...shuffle(PHONETIC_DECOYS[p.letter] ?? []).slice(0, 3)]),
     answer: p.word,
     explain: <>Say it &ldquo;{p.say}&rdquo;.</>,
   }));

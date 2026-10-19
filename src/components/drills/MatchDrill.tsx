@@ -9,6 +9,7 @@ import type { DrillTracking } from "./ChoiceDrill";
 export interface MatchRow {
   letter: string; // shown before the slot is filled
   term: string; // revealed once the slot is filled correctly
+  label?: string; // shown in the empty slot from the start, for sets where order doesn't matter (4 Ps)
 }
 
 export interface MatchCard {
@@ -302,6 +303,7 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
                     </span>
                   ) : (
                     <span className={`${canTap || over ? "text-primary font-medium" : "text-gray-400"}`}>
+                      {r.label && wrongRow !== row && <span className="mr-2 font-bold text-ink">{r.label}</span>}
                       {wrongRow === row ? "Not this one" : canTap ? "Tap to place here" : "Drop here"}
                     </span>
                   )}

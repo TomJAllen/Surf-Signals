@@ -67,13 +67,16 @@ export function sameLetterOptions(m: Mnemonic, index: number, count = 3): string
     for (const c of shuffle(candidates)) {
       if (chosen.length >= count) return;
       if (!startsWith(c, letter) || tooSimilar(c, term) || chosen.some((x) => tooSimilar(x, c))) continue;
+      if (m.unordered && own.some((o) => tooSimilar(o, c))) continue;
       chosen.push(c);
     }
   };
 
   const termsOf = (list: Mnemonic[]) => list.flatMap((o) => o.items.map((x) => x.term));
   const others = MNEMONICS.filter((o) => o.slug !== m.slug);
-  add(m.items.filter((_, j) => j !== index).map((x) => x.term));
+  // For a set like the 4 Ps, the other parts are right answers too, so never offer them
+  const own = m.items.map((x) => x.term);
+  if (!m.unordered) add(m.items.filter((_, j) => j !== index).map((x) => x.term));
   add(termsOf(others.filter((o) => o.group === m.group)));
   if (m.group !== "patrol") add(EXTRA[letter.toUpperCase()] ?? []);
   add(termsOf(others.filter((o) => o.group !== m.group)));
