@@ -16,6 +16,15 @@ export default function TestHubPage() {
           Pick an area. Short tests you can do in a few minutes, with the answer explained when you get one wrong.
         </p>
       </header>
+      <Link
+        href="/test/daily"
+        className="block rounded-lg border-2 border-ink bg-secondary p-5 shadow-[4px_4px_0_#1C1917] transition-[transform,box-shadow] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+      >
+        <span className="font-display text-3xl font-extrabold uppercase text-ink">Today&apos;s practice →</span>
+        <span className="mt-1 block text-ink">
+          Four quick questions: a signal, a mnemonic, a radio call and one from the PSAR manual.
+        </span>
+      </Link>
       <div className="grid gap-4 md:grid-cols-3">
         {TOPICS.map((t) => {
           const ready = t.exercises.filter((e) => e.href).length;

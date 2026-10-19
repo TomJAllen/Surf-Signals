@@ -12,7 +12,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 
 type Mode = RadioDrill;
 
-function prowordQuestions(): ChoiceQuestion[] {
+export function prowordQuestions(): ChoiceQuestion[] {
   return shuffle(PROWORDS).map((p, i) => {
     const wrong = shuffle(PROWORDS.filter((x) => x.word !== p.word)).slice(0, 3);
     // Alternate between "what does it mean" and "which proword"
@@ -32,7 +32,7 @@ function prowordQuestions(): ChoiceQuestion[] {
   });
 }
 
-function phoneticQuestions(): ChoiceQuestion[] {
+export function phoneticQuestions(): ChoiceQuestion[] {
   return shuffle(PHONETIC).slice(0, 12).map((p) => ({
     id: `ph-${p.letter}`,
     prompt: (
