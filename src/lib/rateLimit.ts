@@ -16,6 +16,7 @@ export const RULES = {
   signupPerIp: { limit: 5, windowSeconds: 60 * 60 },
   writePerUser: { limit: 300, windowSeconds: 60 * 60 }, // attempts etc.
   accountActionPerUser: { limit: 10, windowSeconds: 60 * 60 }, // export / delete / password checks
+  passwordResetPerIp: { limit: 10, windowSeconds: 60 * 60 }, // using a reset link
 } satisfies Record<string, RateLimitRule>;
 
 export interface RateLimitResult {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import NavBar from "@/components/NavBar";
@@ -8,6 +9,7 @@ import Link from "next/link";
 
 // Pages that allow anonymous access
 const ANONYMOUS_ALLOWED_PATHS = ["/learn", "/practice", "/study/identify", "/study/perform"];
+const BANNER_KEY = "ss-guest-banner-dismissed";
 // Everything else under this layout (dashboard, history, account) is personal, so needs sign-in
 
 export default function ProtectedLayout({
@@ -21,6 +23,25 @@ export default function ProtectedLayout({
   const isAnonymousAllowed = ANONYMOUS_ALLOWED_PATHS.some((path) =>
     pathname.startsWith(path)
   );
+
+  // Guests can hide the "create an account" prompt; remembered in this browser only
+  const [bannerDismissed, setBannerDismissed] = useState(true);
+  useEffect(() => {
+    try {
+      setBannerDismissed(localStorage.getItem(BANNER_KEY) === "1");
+    } catch {
+      setBannerDismissed(false);
+    }
+  }, []);
+  const dismissBanner = () => {
+    setBannerDismissed(true);
+    try {
+      localStorage.setItem(BANNER_KEY, "1");
+    } catch {
+      /* storage unavailable */
+    }
+  };
+  const showBanner = !session && isAnonymousAllowed && !bannerDismissed;
 
   if (status === "loading") {
     return (
@@ -44,7 +65,7 @@ export default function ProtectedLayout({
             Sign In Required
           </h2>
           <p className="text-gray-600 mb-6">
-            You need to sign in to access your dashboard and history. You can still practice signals without an account.
+            You need to sign in to see your dashboard, history and account. Everything else works without an account.
           </p>
           <div className="space-y-3">
             <Link
@@ -68,7 +89,7 @@ export default function ProtectedLayout({
               </div>
             </div>
             <Link
-              href="/study/identify"
+              href="/practice"
               className="block w-full py-3 px-6 bg-secondary text-gray-900 rounded-xl font-bold hover:bg-secondary-light transition-all"
             >
               Practice Without Account
@@ -82,22 +103,37 @@ export default function ProtectedLayout({
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-      <main className={`max-w-6xl mx-auto px-4 py-8 ${!session && isAnonymousAllowed ? "pb-28" : ""}`}>{children}</main>
+      <main className={`max-w-6xl mx-auto px-4 py-8 ${showBanner ? "pb-32" : ""}`}>{children}</main>
       <TermsGate />
 
-      {/* Prompt to create account for anonymous users */}
-      {!session && isAnonymousAllowed && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 safe-bottom">
-          <div className="max-w-md mx-auto flex items-center justify-between gap-4">
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Want to save your progress?</span>
+      {/* Prompt to create an account, for guests */}
+      {showBanner && (
+        <div className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pointer-events-none">
+          <div
+            role="region"
+            aria-label="Create an account"
+            className="pointer-events-auto max-w-xl mx-auto flex items-center gap-3 bg-white border border-gray-200 shadow-lg rounded-2xl py-3 pl-4 pr-2"
+          >
+            <p className="flex-1 text-sm text-gray-700 leading-snug">
+              <span className="font-semibold text-gray-900">Practising as a guest.</span>{" "}
+              <span className="hidden sm:inline">Create a free account to save your progress.</span>
+              <span className="sm:hidden">Save your progress with a free account.</span>
             </p>
             <Link
               href="/signup"
-              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-dark transition-all whitespace-nowrap"
+              className="shrink-0 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-dark transition-colors whitespace-nowrap"
             >
-              Create Account
+              Sign up
             </Link>
+            <button
+              onClick={dismissBanner}
+              aria-label="Hide this message"
+              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       )}
