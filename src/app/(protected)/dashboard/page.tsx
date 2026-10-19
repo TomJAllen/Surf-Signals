@@ -47,17 +47,6 @@ function Segments({ states, label }: { states: ("done" | "started" | "none")[]; 
   );
 }
 
-function Count({ value, total, label }: { value: number; total: number; label: string }) {
-  return (
-    <div>
-      <p className="font-display text-5xl font-extrabold leading-none text-ink">
-        {value}
-        <span className="text-2xl text-stone-500"> / {total}</span>
-      </p>
-      <p className="mt-1 font-semibold text-ink">{label}</p>
-    </div>
-  );
-}
 
 interface SignalProgress extends SignalStat {
   mastery: Mastery;
@@ -145,6 +134,50 @@ export default function DashboardPage() {
   const nextRadio = radio.find((r) => r.tried && !r.passed) ?? radio.find((r) => !r.passed);
   const anyActivity = hasAttempts || latest.length > 0;
 
+  // One summary row per area, and a single "next up": the area you're furthest behind in
+  const areas = [
+    {
+      id: "signals",
+      label: "Signals",
+      done: mastered,
+      total,
+      unit: "mastered",
+      states: tiles.map((t) => (t.mastery === "mastered" ? "done" : t.mastery === "learning" ? "started" : "none")) as ("done" | "started" | "none")[],
+      next: allMastered
+        ? null
+        : hasAttempts
+          ? { text: next.map((n) => n.name).join(", "), href: "/study/identify", cta: "Keep going with signals" }
+          : { text: "Name your first signal", href: "/study/identify", cta: "Start with signals" },
+    },
+    {
+      id: "mnemonics",
+      label: "Mnemonics",
+      done: mnemMastered,
+      total: mnems.length,
+      unit: "mastered",
+      states: mnems.map((m) => (m.mastered ? "done" : m.tried ? "started" : "none")) as ("done" | "started" | "none")[],
+      next: nextMnem
+        ? {
+            text: `${nextMnem.name}: ${nextMnem.quizDone ? "a Match round with no mistakes" : "a perfect quiz"}`,
+            href: `/test/mnemonics/${nextMnem.slug}?mode=${nextMnem.quizDone ? "match" : "quiz"}`,
+            cta: `Test yourself on ${nextMnem.name}`,
+          }
+        : null,
+    },
+    {
+      id: "radio",
+      label: "Radio",
+      done: radioPassed,
+      total: radio.length,
+      unit: "passed",
+      states: radio.map((r) => (r.passed ? "done" : r.tried ? "started" : "none")) as ("done" | "started" | "none")[],
+      next: nextRadio
+        ? { text: RADIO_NAMES[nextRadio.id], href: `/test/radio/${nextRadio.id}`, cta: `Test yourself: ${RADIO_NAMES[nextRadio.id]}` }
+        : null,
+    },
+  ];
+  const focus = [...areas].filter((a) => a.next).sort((a, b) => a.done / a.total - b.done / b.total)[0];
+
   return (
     <div className="space-y-8 pb-12">
       <header className="space-y-1">
@@ -168,114 +201,56 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          {/* Signals: master all 14 */}
-          <section className="space-y-4">
-            <div className="card-highlight space-y-5">
-              <p className="text-sm font-bold uppercase tracking-widest text-primary">Signals</p>
-              {hasAttempts ? (
-                <>
-                  <Count value={mastered} total={total} label="signals mastered" />
-                  <Segments
-                    states={tiles.map((s) => (s.mastery === "mastered" ? "done" : s.mastery === "learning" ? "started" : "none"))}
-                    label={`${mastered} of ${total} signals mastered`}
-                  />
-                  {allMastered ? (
-                    <div className="space-y-3">
-                      <p className="text-ink">All {total} mastered. Keep them sharp by performing them on camera.</p>
-                      <Link href="/study/perform" className="btn-primary">
-                        Perform signals
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <p className="text-ink">
-                        <span className="font-semibold">Next up:</span> {next.map((s) => s.name).join(", ")}
-                      </p>
-                      <div className="flex flex-wrap gap-3">
-                        <Link href="/study/identify" className="btn-primary">
-                          Keep going
-                        </Link>
-                        <Link href="/study/perform" className="btn-outline">
-                          Perform on camera
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <h2 className="font-display text-3xl font-extrabold uppercase text-ink">Master all 14 signals</h2>
-                  <p className="text-ink">
-                    Name them from their pictures. Get one right {MASTERY_STREAK} times in a row and it&apos;s mastered.
-                  </p>
-                  <Link href="/study/identify" className="btn-primary">
-                    Name your first signal
-                  </Link>
-                </>
-              )}
-            </div>
-
-          </section>
-
-          <section className="grid gap-5 md:grid-cols-2">
-            {/* Mnemonics: a perfect quiz and a clean Match round each */}
-            <div className="card flex flex-col gap-4">
-              <p className="text-sm font-bold uppercase tracking-widest text-primary">Mnemonics</p>
-              <Count value={mnemMastered} total={mnems.length} label="mnemonics mastered" />
-              <Segments
-                states={mnems.map((m) => (m.mastered ? "done" : m.tried ? "started" : "none"))}
-                label={`${mnemMastered} of ${mnems.length} mnemonics mastered`}
-              />
-              {nextMnem ? (
-                <div className="mt-auto space-y-3">
-                  <p className="text-ink">
-                    <span className="font-semibold">Next up:</span> {nextMnem.name},{" "}
-                    {nextMnem.quizDone ? "a Match round with no mistakes" : "a perfect quiz"}
-                  </p>
-                  <Link
-                    href={`/test/mnemonics/${nextMnem.slug}?mode=${nextMnem.quizDone ? "match" : "quiz"}`}
-                    className="btn-secondary"
-                  >
-                    Test yourself on {nextMnem.name}
-                  </Link>
-                </div>
-              ) : (
-                <p className="mt-auto text-ink">All {mnems.length} mastered. Try the mixed quiz to keep them fresh.</p>
-              )}
-              <p className="text-xs text-stone-600">Mastered = a perfect quiz and a Match round with no mistakes.</p>
-            </div>
-
-            {/* Radio: pass each test */}
-            <div className="card flex flex-col gap-4">
-              <p className="text-sm font-bold uppercase tracking-widest text-primary">Radio</p>
-              <Count value={radioPassed} total={radio.length} label="radio tests passed" />
-              <ul className="space-y-1">
-                {radio.map((r) => (
-                  <li key={r.id} className="flex items-center justify-between gap-3 text-ink">
-                    <Link href={`/test/radio/${r.id}`} className="hover:underline">
-                      {RADIO_NAMES[r.id]}
+          {/* Everything at a glance: one row per area, one thing to do next */}
+          <section className="card-highlight space-y-5">
+            <ul className="space-y-4">
+              {areas.map((a) => (
+                <li key={a.id} className="space-y-1.5">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <Link href={`/test/${a.id}`} className="font-display text-2xl font-bold uppercase text-ink hover:underline">
+                      {a.label}
                     </Link>
-                    <span
-                      className={`text-xs font-bold uppercase tracking-wide ${
-                        r.passed ? "text-correct" : r.tried ? "text-primary" : "text-stone-500"
-                      }`}
-                    >
-                      {r.passed ? "✓ Passed" : r.tried ? "Not yet" : "Not tried"}
+                    <span className="text-sm font-semibold text-ink">
+                      <span className="font-display text-2xl font-extrabold">{a.done}</span>
+                      <span className="text-stone-500"> / {a.total}</span> {a.unit}
                     </span>
-                  </li>
-                ))}
-              </ul>
-              {nextRadio ? (
-                <Link href={`/test/radio/${nextRadio.id}`} className="btn-secondary mt-auto self-start">
-                  Next: {RADIO_NAMES[nextRadio.id]}
+                  </div>
+                  <Segments states={a.states} label={`${a.label}: ${a.done} of ${a.total} ${a.unit}`} />
+                  {a.next && a !== focus && (
+                    <p className="text-sm text-stone-700">
+                      Next:{" "}
+                      <Link href={a.next.href} className="font-semibold text-primary hover:underline">
+                        {a.next.text}
+                      </Link>
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            {focus?.next ? (
+              <div className="space-y-3 border-t-2 border-ink pt-4">
+                <p className="text-ink">
+                  <span className="font-semibold">Next up:</span> {focus.next.text}
+                </p>
+                <Link href={focus.next.href} className="btn-primary">
+                  {focus.next.cta}
                 </Link>
-              ) : (
-                <p className="mt-auto text-ink">All passed. Nice radio work.</p>
-              )}
-              <p className="text-xs text-stone-600">
-                Passed = {Math.round(RADIO_PASS_MARK * 100)}% or more, or a call built with no mistakes.
+              </div>
+            ) : (
+              <p className="border-t-2 border-ink pt-4 font-semibold text-ink">
+                Everything mastered. Keep it sharp with the mixed quiz and Perform mode.
               </p>
-            </div>
+            )}
+
+            <details className="text-xs text-stone-600">
+              <summary className="cursor-pointer font-semibold">How progress is counted</summary>
+              <p className="mt-1">
+                A signal is mastered when your last {MASTERY_STREAK} tries were right. A mnemonic is mastered after a
+                perfect quiz and a Match round with no mistakes. A radio test is passed at{" "}
+                {Math.round(RADIO_PASS_MARK * 100)}% or more, or with a call built with no mistakes.
+              </p>
+            </details>
           </section>
 
           <section>
@@ -287,12 +262,9 @@ export default function DashboardPage() {
                     <SignalTile key={s.id} s={s} />
                   ))}
                 </ul>
-                <p className="text-sm text-stone-600">
-                  A signal is mastered when your last {MASTERY_STREAK} tries at it were right.{" "}
-                  <Link href="/history" className="font-semibold text-primary hover:underline">
-                    See your history
-                  </Link>
-                </p>
+                <Link href="/history" className="inline-block text-sm font-semibold text-primary hover:underline">
+                  See your history
+                </Link>
               </div>
             )}
           </section>
