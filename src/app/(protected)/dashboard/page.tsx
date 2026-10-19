@@ -45,9 +45,9 @@ export default function DashboardPage() {
       >
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Learn the signals</h2>
+            <h2 className="text-xl font-bold text-gray-900">Learn</h2>
             <p className="text-gray-600">
-              What each signal means and how to do it. Start here if you&apos;re new.
+              Signals, handover and first aid mnemonics, and radio calls. Start here if you&apos;re new.
             </p>
           </div>
           <span className="text-primary font-bold text-2xl" aria-hidden>

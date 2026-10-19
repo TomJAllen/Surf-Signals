@@ -188,7 +188,7 @@ export default function SessionSetup({
 
         <p className="text-center text-sm text-gray-500 mt-4">
           New to the signals?{" "}
-          <Link href="/learn" className="text-primary font-semibold hover:underline">
+          <Link href="/learn/signals" className="text-primary font-semibold hover:underline">
             Learn them first
           </Link>
         </p>
