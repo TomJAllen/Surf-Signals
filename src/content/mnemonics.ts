@@ -31,6 +31,9 @@ export interface Mnemonic {
   note?: string;
   source: string; // manual module / page
   sort?: SortScenario;
+  // The parts are a set, not a sequence (4 Ps, 4 S's): tests ask "which of these
+  // is one of them?" rather than "what's letter 2?"
+  unordered?: boolean;
 }
 
 export const MNEMONIC_GROUPS: Record<MnemonicGroup, { label: string; blurb: string }> = {
@@ -133,6 +136,7 @@ export const MNEMONICS: Mnemonic[] = [
   },
   {
     slug: "four-s",
+    unordered: true,
     name: "4 S's",
     title: "Handover after CPR",
     group: "handover",
@@ -257,6 +261,7 @@ export const MNEMONICS: Mnemonic[] = [
   },
   {
     slug: "four-ps",
+    unordered: true,
     name: "4 Ps",
     title: "Reporting an incident by radio",
     group: "handover",

@@ -36,7 +36,13 @@ export function quizQuestions(m: Mnemonic): ChoiceQuestion[] {
     const distractors = sameLetterOptions(m, i);
     return {
       id: `${m.slug}-${i}`,
-      prompt: (
+      // A set like the 4 Ps has no "letter 2", so ask which option belongs to it
+      prompt: m.unordered ? (
+        <div className="space-y-3">
+          <Letters m={m} />
+          <p>Which of these is one of the {m.name}?</p>
+        </div>
+      ) : (
         <div className="space-y-3">
           <Letters m={m} highlight={i} />
           <p>
@@ -62,7 +68,8 @@ export function mixedQuestions(count = 12): ChoiceQuestion[] {
 
 const MATCH_INTRO = {
   scenario: (m: Mnemonic) => m.sort!.intro,
-  detail: (m: Mnemonic) => `Match each description to its letter in ${m.name}.`,
+  detail: (m: Mnemonic) =>
+    m.unordered ? `Put each description under the right one of the ${m.name}.` : `Match each description to its letter in ${m.name}.`,
   term: (m: Mnemonic) => `Put the words of ${m.name} in order.`,
 };
 
@@ -125,7 +132,7 @@ export default function MnemonicTrainer({
       {mode === "match" && (
         <MatchDrill
           key="match"
-          rows={m.items.map((it) => ({ letter: it.letter, term: it.term }))}
+          rows={m.items.map((it) => ({ letter: it.letter, term: it.term, label: m.unordered ? it.term : undefined }))}
           makeCards={() => matchCards(m)}
           intro={MATCH_INTRO[matchSource(m)](m)}
           trackAs={{ drill: "mnemonic_match", item: m.slug }}

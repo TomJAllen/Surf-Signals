@@ -159,3 +159,36 @@ export const CALL_SCENARIOS: CallScenario[] = [
 // The radio tests, in the order they're listed (each has its own page: /test/radio/<id>)
 export const RADIO_DRILLS = ["prowords", "phonetic", "spell", "calls"] as const;
 export type RadioDrill = (typeof RADIO_DRILLS)[number];
+
+// Wrong answers for "what's the phonetic word for this letter?", all starting
+// with the same letter: words from older and police alphabets (Able, Baker,
+// Adam, Boy…) and everyday guesses. None is the current word or its ICAO
+// spelling (Alfa, Juliett, Whisky), so there's only ever one right answer.
+export const PHONETIC_DECOYS: Record<string, string[]> = {
+  A: ["Able", "Adam", "Apple", "Alpine"],
+  B: ["Baker", "Boy", "Bob", "Beta"],
+  C: ["Charles", "Cat", "Cobra", "Coco"],
+  D: ["Dog", "David", "Danger", "Delhi"],
+  E: ["Easy", "Edward", "Eagle", "Eden"],
+  F: ["Fox", "Frank", "Freddie", "Falcon"],
+  G: ["George", "Gamma", "Golden", "Gopher"],
+  H: ["How", "Henry", "Harry", "Honey"],
+  I: ["Item", "Ida", "Igloo", "Ice"],
+  J: ["Jig", "John", "Jack", "Jupiter"],
+  K: ["King", "Kite", "Kangaroo", "Kevin"],
+  L: ["Love", "Lincoln", "Lemon", "London"],
+  M: ["Mary", "Mother", "Michael", "Metro"],
+  N: ["Nan", "Nora", "Nectar", "Nelson"],
+  O: ["Oboe", "Ocean", "Orange", "Olive"],
+  P: ["Peter", "Paul", "Pluto", "Patrol"],
+  Q: ["Queen", "Queenie", "Quick", "Quiet"],
+  R: ["Roger", "Robert", "River", "Rover"],
+  S: ["Sugar", "Sam", "Saturn", "Sydney"],
+  T: ["Tare", "Tom", "Tiger", "Tokyo"],
+  U: ["Uncle", "Union", "Unicorn", "Utah"],
+  V: ["Victory", "Violet", "Venus", "Vector"],
+  W: ["William", "Water", "Walrus", "Winter"],
+  X: ["Xylophone", "Xerox", "Xmas", "X-factor"],
+  Y: ["Yoke", "Young", "Yellow", "Yacht"],
+  Z: ["Zebra", "Zero", "Zed", "Zeus"],
+};

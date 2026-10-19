@@ -57,3 +57,34 @@ describe("matching board", () => {
     expect(parseMnemonicMode("nope")).toBeUndefined();
   });
 });
+
+import { PHONETIC, PHONETIC_DECOYS } from "@/content/radio";
+
+describe("fair questions", () => {
+  it("gives every phonetic letter at least 3 same-letter decoys, none of them right", () => {
+    const official = new Set(["alpha", "alfa", "juliet", "juliett", "whiskey", "whisky", ...PHONETIC.map((p) => p.word.toLowerCase())]);
+    for (const p of PHONETIC) {
+      const decoys = PHONETIC_DECOYS[p.letter];
+      expect(decoys?.length, p.letter).toBeGreaterThanOrEqual(3);
+      for (const d of decoys) {
+        expect(d[0].toUpperCase(), d).toBe(p.letter);
+        expect(official.has(d.toLowerCase()), d).toBe(false);
+      }
+    }
+  });
+
+  it("never offers another part of an unordered set as a wrong answer", () => {
+    for (const slug of ["four-ps", "four-s"]) {
+      const m = MNEMONICS.find((x) => x.slug === slug)!;
+      expect(m.unordered).toBe(true);
+      const own = m.items.map((i) => i.term);
+      m.items.forEach((_, i) => {
+        for (let run = 0; run < 5; run++) {
+          const opts = sameLetterOptions(m, i);
+          expect(opts).toHaveLength(3);
+          for (const o of opts) expect(own.some((t) => tooSimilar(t, o)), `${slug}: ${o}`).toBe(false);
+        }
+      });
+    }
+  });
+});
