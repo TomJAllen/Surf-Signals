@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAllSignals } from "@/lib/signalList";
 import { recentBySignal } from "@/lib/progress";
 import { latestResults } from "@/lib/drillResults";
 
@@ -48,9 +49,9 @@ export async function GET() {
         orderBy: { createdAt: "desc" },
         take: 10,
       }),
-      prisma.signal.findMany({
-        select: { id: true, name: true, description: true, imageUrl: true, category: true },
-      }),
+      getAllSignals().then((all) =>
+        all.map(({ id, name, description, imageUrl, category }) => ({ id, name, description, imageUrl, category }))
+      ),
       // Latest results for mastery (newest first; enough to cover every signal)
       prisma.attempt.findMany({
         where: { userId },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { signalsChanged } from "@/lib/signalList";
 
 export async function PATCH(
   request: NextRequest,
@@ -22,6 +23,7 @@ export async function PATCH(
       data: { poseHint: poseHint?.trim() || null },
     });
 
+    signalsChanged();
     return NextResponse.json(signal);
   } catch (err) {
     console.error("Error updating signal:", err);

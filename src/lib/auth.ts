@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
+import { checkAccount } from "./sessionCheck";
 import { clientIp, rateLimit, RULES, tooManyRequestsMessage } from "./rateLimit";
 
 // Compared against when the email doesn't exist, so a missing account takes as long
@@ -9,7 +10,8 @@ import { clientIp, rateLimit, RULES, tooManyRequestsMessage } from "./rateLimit"
 const DUMMY_HASH = "$2b$12$fyeVop1Ucvne5IOGfcZ4deJFv3R/cz5m7RigjGDhfojk6CsOs4qmS";
 
 // Every request re-checks the session against the database (a single primary-key
-// lookup), so role changes, deleted accounts and "sign out everywhere" apply at once.
+// lookup, shared for a few seconds; see sessionCheck.ts), so role changes, deleted
+// accounts and "sign out everywhere" apply within seconds.
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -65,7 +67,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         const u = user as unknown as { id: string; role: string; termsVersion: string | null; sessionVersion: number };
         token.id = u.id;
@@ -78,10 +80,16 @@ export const authOptions: NextAuthOptions = {
 
       if (!token.id) return token;
 
-      const current = await prisma.user.findUnique({
-        where: { id: token.id },
-        select: { role: true, termsVersion: true, sessionVersion: true, name: true, email: true },
-      });
+      // A session refresh (e.g. after accepting terms) always reads fresh
+      const current = await checkAccount(
+        token.id,
+        (id) =>
+          prisma.user.findUnique({
+            where: { id },
+            select: { role: true, termsVersion: true, sessionVersion: true, name: true, email: true },
+          }),
+        { fresh: trigger === "update" }
+      );
 
       // Deleted account, or signed out everywhere: drop the identity from the token
       if (!current || current.sessionVersion !== (token.sv ?? 0)) {

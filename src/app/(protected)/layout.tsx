@@ -41,9 +41,11 @@ export default function ProtectedLayout({
       /* storage unavailable */
     }
   };
-  const showBanner = !session && isAnonymousAllowed && !bannerDismissed;
+  const showBanner = status === "unauthenticated" && isAnonymousAllowed && !bannerDismissed;
 
-  if (status === "loading") {
+  // Learn and Test work for everyone, so show them straight away rather than
+  // waiting to find out who's signed in. Only personal pages wait.
+  if (status === "loading" && !isAnonymousAllowed) {
     return (
       <div className="min-h-screen flex items-center justify-center gradient-slsa-subtle">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
