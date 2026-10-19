@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { CONTACT_EMAIL } from "@/content/legal";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -112,7 +113,26 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
+            <details className="text-sm text-gray-600">
+              <summary className="cursor-pointer font-semibold text-primary hover:text-primary-dark">
+                Forgot your password?
+              </summary>
+              <p className="mt-2">
+                {CONTACT_EMAIL ? (
+                  <>
+                    Email{" "}
+                    <a href={`mailto:${CONTACT_EMAIL}?subject=Surf%20Signals%20password%20reset`} className="font-semibold text-primary underline">
+                      {CONTACT_EMAIL}
+                    </a>{" "}
+                    from the address you signed up with
+                  </>
+                ) : (
+                  "Contact the app's operator from the address you signed up with"
+                )}{" "}
+                and we&apos;ll send you a link to reset it.
+              </p>
+            </details>
             <p className="text-sm text-gray-600">
               Don&apos;t have an account?{" "}
               <Link

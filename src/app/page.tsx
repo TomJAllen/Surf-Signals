@@ -47,7 +47,7 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/study/identify"
+              href="/practice"
               className="px-8 py-4 bg-secondary text-gray-900 rounded-xl font-bold text-lg hover:bg-secondary-light transition-all active:scale-95 shadow-lg"
             >
               Try it now
@@ -61,8 +61,8 @@ export default function Home() {
           </div>
           <p className="mt-4 text-sm text-white/60">
             No account needed to practise. Sign up to save your progress across devices.{" "}
-            <Link href="/learn/signals" className="underline hover:text-white">
-              Browse all the signals
+            <Link href="/learn" className="underline hover:text-white">
+              Browse what you can learn
             </Link>
             {" · "}
             <Link href="/login" className="underline hover:text-white">
