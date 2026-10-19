@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { track } from "@/lib/analytics";
 import type { StudyMode } from "@/types";
 
 interface SessionResult {
@@ -24,6 +26,11 @@ export default function SessionSummary({
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
   const isIdentify = mode === "identify";
+
+  useEffect(() => {
+    track("signal_session_completed", { mode, total, correct, accuracy });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Determine performance level
   const getPerformanceLevel = () => {

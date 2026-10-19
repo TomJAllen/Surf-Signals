@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, RULES, tooManyRequestsMessage } from "@/lib/rateLimit";
 
 const MAX_IMPORT = 100; // matches the cap kept in localStorage
 
@@ -20,6 +21,11 @@ export async function POST(request: Request) {
   }
 
   try {
+    const limited = await rateLimit(`account:user:${session.user.id}`, RULES.accountActionPerUser);
+    if (!limited.allowed) {
+      return NextResponse.json({ error: tooManyRequestsMessage(limited) }, { status: 429 });
+    }
+
     const body = await request.json();
     const incoming: IncomingAttempt[] = Array.isArray(body?.attempts)
       ? body.attempts.slice(-MAX_IMPORT)

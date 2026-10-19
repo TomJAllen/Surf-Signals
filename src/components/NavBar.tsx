@@ -24,6 +24,7 @@ export default function NavBar() {
         { href: "/learn", label: "Learn" },
         { href: "/practice", label: "Practice" },
         { href: "/history", label: "History" },
+        { href: "/account", label: "Account" },
         ...(session.user.role === "admin"
           ? [{ href: "/admin", label: "Admin" }]
           : []),
@@ -38,7 +39,8 @@ export default function NavBar() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link href={session ? "/dashboard" : "/"} className="font-bold text-xl flex items-center gap-2">
-            <span className="bg-secondary text-gray-900 px-2 py-1 rounded text-sm font-black">SLSA</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="" width={28} height={28} className="rounded-md" />
             Surf Signals
           </Link>
 

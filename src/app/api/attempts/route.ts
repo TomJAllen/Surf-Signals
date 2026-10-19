@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, RULES, tooManyRequestsMessage } from "@/lib/rateLimit";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -13,7 +14,7 @@ export async function POST(request: Request) {
   try {
     const { signalId, mode, correct } = await request.json();
 
-    if (!signalId || !mode || typeof correct !== "boolean") {
+    if (typeof signalId !== "string" || signalId.length > 50 || !mode || typeof correct !== "boolean") {
       return NextResponse.json(
         { error: "signalId, mode, and correct are required" },
         { status: 400 }
@@ -30,6 +31,10 @@ export async function POST(request: Request) {
     // Only save to database if user is authenticated
     // Anonymous attempts are handled client-side via localStorage
     if (userId) {
+      const limited = await rateLimit(`write:user:${userId}`, RULES.writePerUser);
+      if (!limited.allowed) {
+        return NextResponse.json({ error: tooManyRequestsMessage(limited) }, { status: 429 });
+      }
       const attempt = await prisma.attempt.create({
         data: {
           userId,

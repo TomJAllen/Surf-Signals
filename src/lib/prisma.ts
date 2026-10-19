@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool, types } from "pg";
-import { pgSslConfig } from "./dbSsl";
+import { pgSslConfig, stripSslParams } from "./dbSsl";
 
 // Fix for BigInt serialization
 types.setTypeParser(20, (val) => parseInt(val, 10));
@@ -14,7 +14,8 @@ const globalForPrisma = globalThis as unknown as {
 const connectionString = process.env.DATABASE_URL || "";
 
 const pool = globalForPrisma.pool ?? new Pool({
-  connectionString,
+  // TLS comes from pgSslConfig; sslmode etc. are removed from the URL so they can't override it
+  connectionString: stripSslParams(connectionString),
   ssl: pgSslConfig(connectionString),
 });
 

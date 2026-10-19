@@ -6,6 +6,7 @@ import SessionSetup from "@/components/SessionSetup";
 import SessionSummary from "@/components/SessionSummary";
 import { useSession } from "next-auth/react";
 import { saveLocalAttempt } from "@/lib/localStorage";
+import { track } from "@/lib/analytics";
 import type { Signal, SignalCategory, SessionConfig } from "@/types";
 
 // LocalStorage key for camera preference
@@ -123,6 +124,7 @@ export default function PerformPage() {
     if (!signal) return;
 
     setResults((prev) => [...prev, { signalName: signal.name, correct }]);
+    track("signal_attempt", { mode: "perform", signal: signal.name, category: signal.category, correct });
 
     // Guests: keep progress in this browser so it can be imported on sign-up/login
     if (authStatus !== "authenticated") {

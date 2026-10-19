@@ -9,10 +9,9 @@ let poseLandmarker: PoseLandmarker | null = null;
 let isInitializing = false;
 let initPromise: Promise<PoseLandmarker> | null = null;
 
-// Keep the WASM runtime in lockstep with the npm package. Loading "@latest" meant a
-// MediaPipe release could break the camera without any change to this repo.
-// Update this when bumping @mediapipe/tasks-vision in package.json.
-const MEDIAPIPE_VERSION = "0.10.32";
+// The WASM runtime is copied from the installed @mediapipe/tasks-vision package into
+// public/mediapipe/wasm at build time (scripts/copy-mediapipe.mjs), so it always
+// matches the JS API version and loads from our own origin.
 
 // MediaPipe model URL
 const MODEL_URL =
@@ -53,7 +52,8 @@ export async function initializePoseLandmarker(): Promise<PoseLandmarker> {
     try {
       // Load the vision WASM files
       const vision = await FilesetResolver.forVisionTasks(
-        `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/wasm`
+        // Served by the app itself (copied from node_modules at build time)
+        "/mediapipe/wasm"
       );
 
       // Create the pose landmarker

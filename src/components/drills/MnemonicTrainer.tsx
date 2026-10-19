@@ -139,12 +139,13 @@ export default function MnemonicTrainer({
         </div>
       )}
 
-      {mode === "quiz" && <ChoiceDrill key="quiz" makeQuestions={() => quizQuestions(m)} doneLabel={`${m.name} quiz`} />}
+      {mode === "quiz" && <ChoiceDrill key="quiz" makeQuestions={() => quizQuestions(m)} doneLabel={`${m.name} quiz`} trackAs={{ drill: "mnemonic_quiz", item: m.slug }} />}
 
       {mode === "order" && (
         <OrderDrill
           key="order"
           instructions={`Tap the parts of ${m.name} in order.`}
+          trackAs={{ drill: "mnemonic_order", item: m.slug }}
           items={m.items.map((it) => ({ label: it.term, tag: it.letter }))}
         />
       )}
@@ -152,7 +153,7 @@ export default function MnemonicTrainer({
       {mode === "sort" && m.sort && (
         <div className="space-y-3">
           <p className="text-gray-700">{m.sort.intro}</p>
-          <ChoiceDrill key="sort" makeQuestions={() => sortQuestions(m)} doneLabel="Scenario sorted" />
+          <ChoiceDrill key="sort" makeQuestions={() => sortQuestions(m)} doneLabel="Scenario sorted" trackAs={{ drill: "mnemonic_sort", item: m.slug }} />
         </div>
       )}
     </div>

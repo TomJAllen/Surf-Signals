@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { track } from "@/lib/analytics";
+
+// Identifies a drill in analytics, e.g. { drill: "mnemonic_quiz", item: "sample" }
+export interface DrillTracking {
+  drill: string;
+  item?: string;
+}
 
 export interface ChoiceQuestion {
   id: string;
@@ -14,10 +21,11 @@ interface ChoiceDrillProps {
   // Called on start and on "Try again", so questions and options are reshuffled each round
   makeQuestions: () => ChoiceQuestion[];
   doneLabel?: string;
+  trackAs?: DrillTracking;
 }
 
 // Multiple-choice drill: pick an answer, see why, then move on when ready.
-export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete" }: ChoiceDrillProps) {
+export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete", trackAs }: ChoiceDrillProps) {
   const [questions, setQuestions] = useState<ChoiceQuestion[]>(() => makeQuestions());
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
@@ -25,12 +33,26 @@ export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete
 
   const done = index >= questions.length;
   const q = questions[index];
+  const [round, setRound] = useState(0);
+
+  useEffect(() => {
+    if (trackAs) track("drill_started", { ...trackAs, item: trackAs.item ?? null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [round]);
+
+  useEffect(() => {
+    if (done && trackAs) {
+      track("drill_completed", { ...trackAs, item: trackAs.item ?? null, score: score, total: questions.length });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done]);
 
   const restart = () => {
     setQuestions(makeQuestions());
     setIndex(0);
     setPicked(null);
     setScore(0);
+    setRound((r) => r + 1);
   };
 
   if (done) {

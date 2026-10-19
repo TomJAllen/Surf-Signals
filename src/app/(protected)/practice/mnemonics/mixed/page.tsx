@@ -15,7 +15,7 @@ export default function MixedMnemonicsPage() {
         <h1 className="text-3xl font-bold text-gray-900">Mixed mnemonics quiz</h1>
         <p className="text-gray-600">12 letters drawn from every mnemonic. A new mix each round.</p>
       </header>
-      <ChoiceDrill makeQuestions={() => mixedQuestions(12)} doneLabel="Mixed quiz" />
+      <ChoiceDrill makeQuestions={() => mixedQuestions(12)} doneLabel="Mixed quiz" trackAs={{ drill: "mnemonic_mixed" }} />
     </div>
   );
 }

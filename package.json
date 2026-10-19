@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/copy-mediapipe.mjs && next dev",
+    "build": "node scripts/copy-mediapipe.mjs && next build",
     "start": "next start",
     "lint": "next lint",
     "db:migrate": "prisma migrate dev",
@@ -29,6 +29,7 @@
     "next": "15.5.28",
     "next-auth": "^4.24.13",
     "pg": "^8.17.2",
+    "posthog-js": "1.435.8",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

@@ -79,8 +79,8 @@ export default function RadioPractice({ initialTab }: { initialTab?: string }) {
         onChange={setMode}
       />
 
-      {mode === "prowords" && <ChoiceDrill key="pw" makeQuestions={prowordQuestions} doneLabel="Prowords" />}
-      {mode === "phonetic" && <ChoiceDrill key="ph" makeQuestions={phoneticQuestions} doneLabel="Phonetic alphabet" />}
+      {mode === "prowords" && <ChoiceDrill key="pw" makeQuestions={prowordQuestions} doneLabel="Prowords" trackAs={{ drill: "radio_prowords" }} />}
+      {mode === "phonetic" && <ChoiceDrill key="ph" makeQuestions={phoneticQuestions} doneLabel="Phonetic alphabet" trackAs={{ drill: "radio_phonetic" }} />}
       {mode === "spell" && <SpellDrill />}
       {mode === "calls" && (
         <div className="space-y-4">
@@ -101,6 +101,7 @@ export default function RadioPractice({ initialTab }: { initialTab?: string }) {
           <OrderDrill
             key={s.slug}
             instructions="Put the radio exchange in the right order."
+            trackAs={{ drill: "radio_build_call", item: s.slug }}
             items={s.lines.map((l) => ({ label: l.text, tag: l.from === "you" ? "You" : "Them" }))}
           />
         </div>

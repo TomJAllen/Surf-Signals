@@ -12,6 +12,12 @@ model User {
   name         String?
   passwordHash String
   role         String    @default("user")
+  // Consent: when the user accepted the Terms and Privacy Policy, and which versions
+  termsAcceptedAt DateTime?
+  termsVersion    String?
+  privacyVersion  String?
+  // Bumped to sign the user out everywhere (e.g. after a password change)
+  sessionVersion  Int       @default(0)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   attempts     Attempt[]
@@ -63,4 +69,14 @@ model StudySession {
   attempts Attempt[]
 
   @@index([userId])
+}
+
+// Fixed-window rate limiting (login, signup, writes). Rows are short-lived and
+// cleaned up by the daily cron.
+model RateLimit {
+  key         String   @id
+  count       Int      @default(0)
+  windowStart DateTime @default(now())
+
+  @@index([windowStart])
 }

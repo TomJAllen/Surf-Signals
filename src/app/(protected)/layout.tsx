@@ -3,10 +3,12 @@
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import NavBar from "@/components/NavBar";
+import TermsGate from "@/components/TermsGate";
 import Link from "next/link";
 
 // Pages that allow anonymous access
 const ANONYMOUS_ALLOWED_PATHS = ["/learn", "/practice", "/study/identify", "/study/perform"];
+// Everything else under this layout (dashboard, history, account) is personal, so needs sign-in
 
 export default function ProtectedLayout({
   children,
@@ -80,7 +82,8 @@ export default function ProtectedLayout({
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-      <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
+      <main className={`max-w-6xl mx-auto px-4 py-8 ${!session && isAnonymousAllowed ? "pb-28" : ""}`}>{children}</main>
+      <TermsGate />
 
       {/* Prompt to create account for anonymous users */}
       {!session && isAnonymousAllowed && (

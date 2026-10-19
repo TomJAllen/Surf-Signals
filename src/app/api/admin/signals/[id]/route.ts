@@ -13,10 +13,13 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
     const { poseHint } = body;
+    if (poseHint != null && (typeof poseHint !== "string" || poseHint.length > 300)) {
+      return NextResponse.json({ error: "Pose hint must be text of 300 characters or fewer" }, { status: 400 });
+    }
 
     const signal = await prisma.signal.update({
       where: { id },
-      data: { poseHint: poseHint || null },
+      data: { poseHint: poseHint?.trim() || null },
     });
 
     return NextResponse.json(signal);
