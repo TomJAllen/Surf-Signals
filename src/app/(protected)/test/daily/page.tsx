@@ -99,7 +99,7 @@ export default function DailyPracticePage() {
     const progress = mnemonicProgress(drillResults);
     const focus = progress.find((m) => m.tried && !m.mastered) ?? progress.find((m) => !m.mastered);
     const mnemonic = MNEMONICS.find((m) => m.slug === focus?.slug) ?? shuffle(MNEMONICS)[0];
-    const mnemonicQ = { ...quizQuestions(mnemonic)[0], tag: `Mnemonics · ${mnemonic.name}` };
+    const mnemonicQ = { ...quizQuestions(mnemonic)[0], tag: `Acronyms · ${mnemonic.name}` };
     const radioQ = { ...shuffle([...prowordQuestions(), ...phoneticQuestions()])[0], tag: "Radio" };
     return [signalQuestion(signal, signals), mnemonicQ, radioQ, nextPsarQuestion()];
   }, [signals, recent, drillResults]);
@@ -126,7 +126,7 @@ export default function DailyPracticePage() {
       <Breadcrumbs trail={[{ href: status === "authenticated" ? "/dashboard" : "/test", label: status === "authenticated" ? "Dashboard" : "Test" }]} />
       <header className="space-y-1">
         <h1 className="font-display text-4xl font-extrabold uppercase text-ink">Today&apos;s practice</h1>
-        <p className="text-stone-700">Four quick questions: a signal, a mnemonic, a radio call and one from the PSAR manual.</p>
+        <p className="text-stone-700">Four quick questions: a signal, an acronym, a radio call and one from the PSAR manual.</p>
       </header>
 
       {error ? (

@@ -23,14 +23,14 @@ export default async function TestMnemonicPage({
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-12">
-      <Breadcrumbs trail={[{ href: "/test", label: "Test" }, { href: "/test/mnemonics", label: "Mnemonics" }]} />
+      <Breadcrumbs trail={[{ href: "/test", label: "Test" }, { href: "/test/acronyms", label: "Acronyms" }]} />
       <header className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">
           {m.name} <span className="text-gray-500 font-medium">· {m.title}</span>
         </h1>
         <p className="text-gray-600">
           Need a refresher?{" "}
-          <Link href={`/learn/mnemonics/${m.slug}`} className="text-primary font-semibold hover:underline">
+          <Link href={`/learn/acronyms/${m.slug}`} className="text-primary font-semibold hover:underline">
             Learn {m.name}
           </Link>
         </p>

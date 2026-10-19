@@ -34,7 +34,7 @@ export default function PrivacyPage() {
           <li><strong>Name</strong> (optional): shown in the app, e.g. on your dashboard.</li>
           <li><strong>Password</strong>: stored only as a one-way bcrypt hash; we can&apos;t see it.</li>
           <li><strong>Practice results</strong>: for each signal you practise, the signal, the mode (Identify or Perform), whether you got it right, and when.</li>
-          <li><strong>Test scores</strong>: for each mnemonic or radio test you finish, which test (and which mnemonic or call), your score, mistakes, and when.</li>
+          <li><strong>Test scores</strong>: for each acronym or radio test you finish, which test (and which acronym or call), your score, mistakes, and when.</li>
           <li><strong>Consent record</strong>: when you agreed to these terms and which version.</li>
         </ul>
         <h3 className="font-bold">If you don&apos;t have an account</h3>

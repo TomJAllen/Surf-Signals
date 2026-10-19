@@ -52,10 +52,17 @@ const nextConfig = {
       { source: "/api/:path*", headers: [{ key: "Cache-Control", value: "no-store" }] },
     ];
   },
-  // "Practice" was renamed "Test"; keep old links and bookmarks working
+  // Renamed pages: keep old links and bookmarks working
   async redirects() {
     return [
       { source: "/practice", destination: "/test", permanent: true },
+      // "Mnemonics" was renamed "Acronyms"
+      { source: "/practice/mnemonics", destination: "/test/acronyms", permanent: true },
+      { source: "/practice/mnemonics/:path*", destination: "/test/acronyms/:path*", permanent: true },
+      { source: "/test/mnemonics", destination: "/test/acronyms", permanent: true },
+      { source: "/test/mnemonics/:path*", destination: "/test/acronyms/:path*", permanent: true },
+      { source: "/learn/mnemonics", destination: "/learn/acronyms", permanent: true },
+      { source: "/learn/mnemonics/:path*", destination: "/learn/acronyms/:path*", permanent: true },
       {
         source: "/practice/radio",
         has: [{ type: "query", key: "tab", value: "(?<tab>prowords|phonetic|spell|calls)" }],
