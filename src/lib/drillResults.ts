@@ -12,6 +12,7 @@ export const SAVED_DRILLS = [
   "radio_phonetic",
   "radio_spell",
   "radio_build_call",
+  "daily_mix",
 ] as const;
 export type SavedDrill = (typeof SAVED_DRILLS)[number];
 

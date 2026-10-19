@@ -220,14 +220,23 @@ export default function DashboardPage() {
                   {anyActivity ? focus.label : "Start with the signals"}
                 </p>
                 <p className="text-ink">{focus.next.text}</p>
-                <Link href={focus.next.href} className="btn-primary w-full sm:w-auto">
+                <Link href="/test/daily" className="btn-primary w-full sm:w-auto">
                   Start today&apos;s practice
                 </Link>
+                <p className="text-sm text-stone-600">
+                  Four quick questions: a signal, a mnemonic, a radio call and one from the PSAR manual.{" "}
+                  <Link href={focus.next.href} className="font-semibold text-primary hover:underline">
+                    Or go straight to {focus.label.toLowerCase()}
+                  </Link>
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
                 <p className="font-display text-3xl font-extrabold uppercase text-ink">You&apos;re patrol-ready</p>
-                <p className="text-ink">Everything mastered. Keep it sharp with the mixed quiz and Perform mode.</p>
+                <p className="text-ink">Everything mastered. Keep it sharp with a few questions a day.</p>
+                <Link href="/test/daily" className="btn-primary w-full sm:w-auto">
+                  Start today&apos;s practice
+                </Link>
               </div>
             )}
 

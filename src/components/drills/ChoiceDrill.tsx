@@ -16,6 +16,7 @@ export interface ChoiceQuestion {
   options: string[];
   answer: string;
   explain?: ReactNode;
+  tag?: string; // small label above the question, e.g. "Signals" in a mixed set
 }
 
 interface ChoiceDrillProps {
@@ -23,10 +24,12 @@ interface ChoiceDrillProps {
   makeQuestions: () => ChoiceQuestion[];
   doneLabel?: string;
   trackAs?: DrillTracking;
+  onAnswer?: (question: ChoiceQuestion, correct: boolean) => void;
+  doneExtra?: ReactNode; // shown under the score, e.g. a link back to the dashboard
 }
 
 // Multiple-choice drill: pick an answer, see why, then move on when ready.
-export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete", trackAs }: ChoiceDrillProps) {
+export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete", trackAs, onAnswer, doneExtra }: ChoiceDrillProps) {
   const [questions, setQuestions] = useState<ChoiceQuestion[]>(() => makeQuestions());
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
@@ -70,6 +73,7 @@ export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete
         <button onClick={restart} className="btn-primary w-full">
           Try again
         </button>
+        {doneExtra}
       </div>
     );
   }
@@ -91,6 +95,7 @@ export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete
         <span>Score {score}</span>
       </div>
 
+      {q.tag && <p className="text-xs font-bold uppercase tracking-widest text-primary">{q.tag}</p>}
       <div className="text-lg font-semibold text-gray-900">{q.prompt}</div>
 
       <div className="space-y-2">
@@ -101,6 +106,7 @@ export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete
             onClick={() => {
               setPicked(option);
               if (option === q.answer) setScore((s) => s + 1);
+              onAnswer?.(q, option === q.answer);
             }}
             className={optionClass(option)}
           >

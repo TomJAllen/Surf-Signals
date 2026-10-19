@@ -30,7 +30,7 @@ function Letters({ m, highlight }: { m: Mnemonic; highlight?: number }) {
   );
 }
 
-function quizQuestions(m: Mnemonic): ChoiceQuestion[] {
+export function quizQuestions(m: Mnemonic): ChoiceQuestion[] {
   return shuffle(m.items.map((item, i) => ({ item, i }))).map(({ item, i }) => {
     // Every option starts with the same letter, so the letter alone gives nothing away
     const distractors = sameLetterOptions(m, i);
