@@ -8,6 +8,7 @@ import ChoiceDrill, { type ChoiceQuestion } from "@/components/drills/ChoiceDril
 import OrderDrill from "@/components/drills/OrderDrill";
 import SpellDrill from "@/components/drills/SpellDrill";
 import Tabs from "@/components/drills/Tabs";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 type Mode = "prowords" | "phonetic" | "spell" | "calls";
 
@@ -55,9 +56,7 @@ export default function RadioPractice({ initialTab }: { initialTab?: string }) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
-      <nav className="text-sm text-gray-500">
-        <Link href="/practice" className="hover:underline">Practice</Link>
-      </nav>
+      <Breadcrumbs trail={[{ href: "/practice", label: "Practice" }]} />
       <header className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Practise radio</h1>
         <p className="text-gray-600">

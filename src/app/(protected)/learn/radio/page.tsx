@@ -9,6 +9,7 @@ import {
   READABILITY,
 } from "@/content/radio";
 import { getMnemonic } from "@/content/mnemonics";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
@@ -35,9 +36,7 @@ export default function RadioPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-12">
-      <nav className="text-sm text-gray-500">
-        <Link href="/learn" className="hover:underline">Learn</Link>
-      </nav>
+      <Breadcrumbs trail={[{ href: "/learn", label: "Learn" }]} />
       <header className="space-y-3">
         <h1 className="text-3xl font-bold text-gray-900">Radio</h1>
         <p className="text-gray-600">
