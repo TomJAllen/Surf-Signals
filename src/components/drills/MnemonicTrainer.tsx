@@ -7,7 +7,8 @@ import ChoiceDrill, { type ChoiceQuestion } from "./ChoiceDrill";
 import OrderDrill from "./OrderDrill";
 import Tabs from "./Tabs";
 
-type Mode = "learn" | "quiz" | "order" | "sort";
+export type MnemonicMode = "learn" | "quiz" | "order" | "sort";
+type Mode = MnemonicMode;
 
 // The mnemonic's letters with one highlighted, e.g. IM[I]ST AMBO
 function Letters({ m, highlight }: { m: Mnemonic; highlight?: number }) {
@@ -56,6 +57,11 @@ function quizQuestions(m: Mnemonic): ChoiceQuestion[] {
   });
 }
 
+// A round of letter questions drawn from every mnemonic
+export function mixedQuestions(count = 12): ChoiceQuestion[] {
+  return shuffle(MNEMONICS.flatMap((m) => quizQuestions(m))).slice(0, count);
+}
+
 const itemLabel = (m: Mnemonic, i: number) => `${m.items[i].letter} – ${m.items[i].term}`;
 
 function sortQuestions(m: Mnemonic): ChoiceQuestion[] {
@@ -79,20 +85,29 @@ function sortQuestions(m: Mnemonic): ChoiceQuestion[] {
   }));
 }
 
-export default function MnemonicTrainer({ slug }: { slug: string }) {
-  const m = MNEMONICS.find((x) => x.slug === slug)!;
-  const [mode, setMode] = useState<Mode>("learn");
+interface MnemonicTrainerProps {
+  slug: string;
+  modes?: Mode[]; // which tabs to offer (default: all)
+  initialMode?: Mode;
+  practiceHref?: string; // shown under Learn as the next step
+}
 
-  const tabs: { id: Mode; label: string }[] = [
-    { id: "learn", label: "Learn" },
-    { id: "quiz", label: "Quiz" },
-    { id: "order", label: "Order" },
-    ...(m.sort ? [{ id: "sort" as Mode, label: "Sort a scenario" }] : []),
-  ];
+export default function MnemonicTrainer({
+  slug,
+  modes = ["learn", "quiz", "order", "sort"],
+  initialMode,
+  practiceHref,
+}: MnemonicTrainerProps) {
+  const m = MNEMONICS.find((x) => x.slug === slug)!;
+  const labels: Record<Mode, string> = { learn: "Learn", quiz: "Quiz", order: "Order", sort: "Sort a scenario" };
+  const tabs = modes.filter((id) => id !== "sort" || m.sort).map((id) => ({ id, label: labels[id] }));
+  const [mode, setMode] = useState<Mode>(
+    initialMode && tabs.some((t) => t.id === initialMode) ? initialMode : tabs[0].id
+  );
 
   return (
     <div className="space-y-6">
-      <Tabs tabs={tabs} active={mode} onChange={setMode} />
+      {tabs.length > 1 && <Tabs tabs={tabs} active={mode} onChange={setMode} />}
 
       {mode === "learn" && (
         <div className="space-y-3">
@@ -110,9 +125,17 @@ export default function MnemonicTrainer({ slug }: { slug: string }) {
             ))}
           </ol>
           {m.note && <p className="text-sm text-gray-700 bg-yellow-50 border border-yellow-200 rounded-xl p-3">{m.note}</p>}
-          <button onClick={() => setMode("quiz")} className="btn-primary w-full">
-            Test yourself
-          </button>
+          {practiceHref ? (
+            <a href={practiceHref} className="btn-primary w-full block text-center">
+              Practise {m.name}
+            </a>
+          ) : (
+            modes.includes("quiz") && (
+              <button onClick={() => setMode("quiz")} className="btn-primary w-full">
+                Test yourself
+              </button>
+            )
+          )}
         </div>
       )}
 

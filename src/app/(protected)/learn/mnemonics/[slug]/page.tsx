@@ -24,7 +24,7 @@ export default function MnemonicPage({ params }: { params: { slug: string } }) {
         </h1>
         <p className="text-gray-600">{m.when}</p>
       </header>
-      <MnemonicTrainer slug={m.slug} />
+      <MnemonicTrainer slug={m.slug} modes={["learn"]} practiceHref={`/practice/mnemonics/${m.slug}`} />
       <p className="text-xs text-gray-500">
         Source: SLSA Public Safety and Aquatic Rescue Training Manual, 35th ed., {m.source}. Summarised in our own words.
       </p>

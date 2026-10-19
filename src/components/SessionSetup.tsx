@@ -40,7 +40,11 @@ export default function SessionSetup({
   const isIdentify = mode === "identify";
 
   return (
-    <div className="max-w-md mx-auto px-4">
+    <div className="max-w-md mx-auto px-4 space-y-3">
+      <nav className="text-sm text-gray-500">
+        <Link href="/practice" className="hover:underline">Practice</Link> /{" "}
+        <Link href="/practice#signals" className="hover:underline">Signals</Link>
+      </nav>
       <div className="card">
         {/* Header */}
         <div className="text-center mb-8">
