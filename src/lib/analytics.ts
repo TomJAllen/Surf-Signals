@@ -90,10 +90,20 @@ export type AnalyticsEvent =
   | "camera_error"
   | "signup_completed"
   | "terms_accepted"
-  | "account_deleted";
+  | "account_deleted"
+  | "learn_viewed"
+  | "video_opened"
+  | "dashboard_cta"
+  | "drill_abandoned"
+  | "level_reached";
 
-export function track(event: AnalyticsEvent, props?: Record<string, string | number | boolean | null>): void {
+// `leaving: true` sends it in a way that survives the page being closed
+export function track(
+  event: AnalyticsEvent,
+  props?: Record<string, string | number | boolean | null>,
+  opts?: { leaving?: boolean }
+): void {
   if (!started) return;
-  if (posthog) posthog.capture(event, props ?? undefined);
+  if (posthog) posthog.capture(event, props ?? undefined, opts?.leaving ? { transport: "sendBeacon" } : undefined);
   else if (queue.length < 50) queue.push([event, props ?? undefined]);
 }

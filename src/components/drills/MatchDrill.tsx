@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { track } from "@/lib/analytics";
 import { recordDrillResult } from "@/lib/recordDrill";
+import { useAbandonTracking } from "@/lib/useAbandonTracking";
 import type { DrillTracking } from "./ChoiceDrill";
 
 export interface MatchRow {
@@ -52,6 +53,7 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
   const placedCards = new Set(Object.values(placed));
   const pool = cards.map((c, i) => ({ ...c, i })).filter((c) => !placedCards.has(c.i));
   const done = Object.keys(placed).length === rows.length;
+  useAbandonTracking(trackAs?.drill, trackAs?.item, Object.keys(placed).length + mistakes, rows.length, done);
 
   useEffect(() => {
     if (trackAs) track("drill_started", { ...trackAs, item: trackAs.item ?? null });

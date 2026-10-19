@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
 import { recordDrillResult } from "@/lib/recordDrill";
+import { useAbandonTracking } from "@/lib/useAbandonTracking";
 import { shuffle } from "@/lib/shuffle";
 import { PHONETIC, SPELLING_WORDS } from "@/content/radio";
 
@@ -44,6 +45,7 @@ export default function SpellDrill() {
   const [score, setScore] = useState(0);
 
   const finished = index >= words.length;
+  useAbandonTracking("radio_spell", null, index + (result !== null ? 1 : 0), words.length, finished);
   useEffect(() => {
     if (finished) recordDrillResult({ drill: "radio_spell", score, total: words.length });
     else if (index === 0) track("drill_started", { drill: "radio_spell", item: null });

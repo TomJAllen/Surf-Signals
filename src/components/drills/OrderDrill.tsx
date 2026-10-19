@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
 import { recordDrillResult } from "@/lib/recordDrill";
+import { useAbandonTracking } from "@/lib/useAbandonTracking";
 import type { DrillTracking } from "./ChoiceDrill";
 import { shuffle } from "@/lib/shuffle";
 
@@ -26,6 +27,7 @@ export default function OrderDrill({ instructions, items, trackAs }: OrderDrillP
 
   const done = placed.length === items.length;
   const [round, setRound] = useState(0);
+  useAbandonTracking(trackAs?.drill, trackAs?.item, placed.length + mistakes, items.length, done);
 
   useEffect(() => {
     if (trackAs) track("drill_started", { ...trackAs, item: trackAs.item ?? null });
