@@ -1,8 +1,9 @@
 import type { SignalPoseDefinition, PoseLandmarks } from "@/types/pose";
 import { areHandsTouching, areBothArmsRaised, isHandNearHead } from "./poseAnalyzer";
 
-// MVP Signal Definitions
-// These are the static signals that can be detected with pose estimation
+// Signal definitions for camera detection.
+// Checked against the SLSA Public Safety and Aquatic Rescue Training Manual, 35th edition
+// (Beach to Water / Water to Beach signals). Keep these in step with the manual.
 
 export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
   // BEACH TO WATER SIGNALS
@@ -80,16 +81,17 @@ export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
   {
     signalId: "pick-up-swimmers",
     signalName: "Pick Up Swimmers",
-    // One arm horizontal, one raised - right horizontal variant
+    // One arm circles around the head, the other points along the water's edge
     rightArm: "extended_horizontal",
     leftArm: "raised_above_head",
+    motion: "circle",
   },
   {
     signalId: "pick-up-swimmers-alt",
     signalName: "Pick Up Swimmers",
-    // One arm horizontal, one raised - left horizontal variant
     leftArm: "extended_horizontal",
     rightArm: "raised_above_head",
+    motion: "circle",
   },
 
   {
@@ -103,25 +105,26 @@ export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
   {
     signalId: "message-understood",
     signalName: "Message Understood, All Clear",
-    // One arm raised above head - right variant
+    // One arm held above the head, then cut away quickly to the side
     rightArm: "raised_above_head",
     leftArm: "at_side",
+    motion: "cutaway",
   },
   {
     signalId: "message-understood-alt",
     signalName: "Message Understood, All Clear",
-    // One arm raised above head - left variant
     leftArm: "raised_above_head",
     rightArm: "at_side",
+    motion: "cutaway",
   },
 
   {
     signalId: "pick-up-buoys",
     signalName: "Pick Up or Adjust Buoys",
-    // Both arms extended horizontally
+    // Both arms raised and lowered between 45° below and 45° above horizontal
     rightArm: "extended_horizontal",
     leftArm: "extended_horizontal",
-    motion: "circle",
+    motion: "flap",
   },
 
   {
@@ -144,16 +147,17 @@ export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
   {
     signalId: "shore-signal-received",
     signalName: "Shore Signal Received and Understood",
-    // One arm raised above head - right variant
+    // One arm held above the head, then cut away sharply to the side
     rightArm: "raised_above_head",
     leftArm: "at_side",
+    motion: "cutaway",
   },
   {
     signalId: "shore-signal-received-alt",
     signalName: "Shore Signal Received and Understood",
-    // One arm raised above head - left variant
     leftArm: "raised_above_head",
     rightArm: "at_side",
+    motion: "cutaway",
   },
 
   {
@@ -179,18 +183,17 @@ export const DETECTABLE_SIGNALS: SignalPoseDefinition[] = [
   {
     signalId: "powercraft-return",
     signalName: "Powercraft Wishes to Return to Shore",
-    // One arm raised above head - right variant
-    rightArm: "raised_above_head",
+    // One arm raised and lowered between horizontal and 45° above
+    rightArm: "extended_horizontal",
     leftArm: "at_side",
-    motion: "circle",
+    motion: "flap",
   },
   {
     signalId: "powercraft-return-alt",
     signalName: "Powercraft Wishes to Return to Shore",
-    // One arm raised above head - left variant
-    leftArm: "raised_above_head",
+    leftArm: "extended_horizontal",
     rightArm: "at_side",
-    motion: "circle",
+    motion: "flap",
   },
 ];
 
@@ -236,20 +239,20 @@ export const DETECTABLE_SIGNAL_NAMES = [
 
 // Friendly description of what each signal looks like
 export const SIGNAL_POSE_DESCRIPTIONS: Record<string, string> = {
-  "Remain Stationary": "Extend both arms out to your sides horizontally",
-  "Return to Shore": "Raise one arm straight up above your head",
-  "Go to the Right or Left": "Extend one arm horizontally to the side, pointing in the direction",
-  "Emergency Evacuation Alarm": "Raise both arms straight above your head",
-  "Submerged Victim Missing": "Cross both arms above your head with hands touching",
-  "Attract Attention": "Cross both arms above your head and wave them side to side",
-  "Pick Up Swimmers": "One arm extended horizontally, the other raised above your head",
-  "Proceed Further Out to Sea": "Raise both arms straight above your head",
-  "Message Understood, All Clear": "Raise one arm straight up above your head",
-  "Pick Up or Adjust Buoys": "Extend both arms out to your sides and move them in circles",
-  "Assistance Required": "Raise one arm above your head and wave it side to side",
-  "Shore Signal Received and Understood": "Raise one arm straight up above your head",
-  "All Clear / OK": "Place one hand on top of your head",
-  "Powercraft Wishes to Return to Shore": "Raise one arm and move it in a circle",
+  "Remain Stationary": "Hold both arms straight out to your sides, level with the ground",
+  "Return to Shore": "Hold one arm straight up above your head and keep it there",
+  "Go to the Right or Left": "Hold one arm straight out to the side, level with the ground, pointing the way to go",
+  "Emergency Evacuation Alarm": "Hold both arms straight up above your head",
+  "Submerged Victim Missing": "Cross both arms above your head",
+  "Attract Attention": "Wave both arms to and fro, crossing them above your head",
+  "Pick Up Swimmers": "Circle one arm around your head while the other points out level, along the water's edge",
+  "Proceed Further Out to Sea": "Hold both arms straight up above your head",
+  "Message Understood, All Clear": "Hold one arm straight up above your head, then cut it away quickly to the side",
+  "Pick Up or Adjust Buoys": "Raise and lower both arms together, from 45° below level to 45° above",
+  "Assistance Required": "Wave one arm to and fro above your head",
+  "Shore Signal Received and Understood": "Hold one arm straight up above your head, then cut it away sharply to the side",
+  "All Clear / OK": "Touch the top of your head with the fingertips of one hand",
+  "Powercraft Wishes to Return to Shore": "Raise and lower one arm, from level up to 45° above, in a waving motion",
 };
 
 // What the camera actually checks for a definition, ignoring which arm is which

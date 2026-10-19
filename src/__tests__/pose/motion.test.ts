@@ -54,6 +54,59 @@ const circlingFrames = (): PoseLandmarks[] =>
 
 const still = (pose: PoseLandmarks): PoseLandmarks[] => Array.from({ length: 30 }, () => pose);
 
+const ARM = 0.26;
+const rad = (deg: number) => (deg * Math.PI) / 180;
+
+// Right arm straight out at `deg` above horizontal (negative = below), left arm at side
+function rightArmAt(deg: number): PoseLandmarks {
+  const p = basePose();
+  const dx = ARM * Math.cos(rad(deg));
+  const dy = ARM * Math.sin(rad(deg));
+  p[L.RIGHT_ELBOW] = lm(0.6 + dx / 2, 0.35 - dy / 2);
+  p[L.RIGHT_WRIST] = lm(0.6 + dx, 0.35 - dy);
+  return p;
+}
+
+// Both arms straight out at `deg` above horizontal
+function bothArmsAt(deg: number): PoseLandmarks {
+  const p = rightArmAt(deg);
+  const dx = ARM * Math.cos(rad(deg));
+  const dy = ARM * Math.sin(rad(deg));
+  p[L.LEFT_ELBOW] = lm(0.4 - dx / 2, 0.35 - dy / 2);
+  p[L.LEFT_WRIST] = lm(0.4 - dx, 0.35 - dy);
+  return p;
+}
+
+// Both arms raised and lowered between 45° below and 45° above horizontal (buoys)
+const flappingArms = (): PoseLandmarks[] =>
+  Array.from({ length: 30 }, (_, i) => bothArmsAt(45 * Math.sin((i / 30) * 4 * Math.PI)));
+
+// One arm raised and lowered between level and 45° above (powercraft)
+const powercraftFrames = (): PoseLandmarks[] =>
+  Array.from({ length: 30 }, (_, i) => rightArmAt(22.5 + 22.5 * Math.sin((i / 30) * 4 * Math.PI)));
+
+// Left arm out level, right wrist circling above the head
+function pickUpSwimmersPose(t: number): PoseLandmarks {
+  const p = basePose();
+  p[L.LEFT_ELBOW] = lm(0.27, 0.35);
+  p[L.LEFT_WRIST] = lm(0.14, 0.35);
+  p[L.RIGHT_ELBOW] = lm(0.61, 0.2);
+  p[L.RIGHT_WRIST] = lm(0.6 + 0.06 * Math.cos(t), 0.08 + 0.06 * Math.sin(t));
+  return p;
+}
+const pickUpSwimmersFrames = (): PoseLandmarks[] =>
+  Array.from({ length: 30 }, (_, i) => pickUpSwimmersPose((i / 30) * 4 * Math.PI));
+
+// Arm held up for 1s, cut away to the side in 4 frames, then left down
+const cutAwayFrames = (): PoseLandmarks[] => [
+  ...Array.from({ length: 15 }, () => rightArmUp()),
+  rightArmAt(60),
+  rightArmAt(20),
+  rightArmAt(-20),
+  rightArmAt(-60),
+  ...Array.from({ length: 10 }, () => basePose()),
+];
+
 describe("countReversals", () => {
   it("counts clear direction changes", () => {
     expect(countReversals([0, 1, 0, 1, 0], 0.5)).toBe(3);
@@ -120,24 +173,65 @@ describe("matching signals that need movement", () => {
     expect(matchPoseToSignal(pose, "Return to Shore", still(pose)).isMatch).toBe(true);
   });
 
-  it("Pick Up or Adjust Buoys needs circling; Remain Stationary doesn't", () => {
+  it("Pick Up or Adjust Buoys needs both arms flapping; Remain Stationary doesn't", () => {
     const pose = armsOut();
     expect(matchPoseToSignal(pose, "Pick Up or Adjust Buoys", still(pose)).isMatch).toBe(false);
     expect(matchPoseToSignal(pose, "Remain Stationary", still(pose)).isMatch).toBe(true);
 
-    const frames = circlingFrames();
+    const frames = flappingArms();
+    expect(matchPoseToSignal(frames[frames.length - 1], "Pick Up or Adjust Buoys", frames).isMatch).toBe(true);
+    // Flapping is not circling
+    expect(detectMotion(frames, "circle")).toBe(false);
+  });
+
+  it("Powercraft Wishes to Return is one arm flapping up from level; Go Right/Left is held still", () => {
+    const pose = rightArmAt(0);
+    expect(matchPoseToSignal(pose, "Go to the Right or Left", still(pose)).isMatch).toBe(true);
+    expect(matchPoseToSignal(pose, "Powercraft Wishes to Return to Shore", still(pose)).isMatch).toBe(false);
+
+    const frames = powercraftFrames();
     expect(
-      matchPoseToSignal(frames[frames.length - 1], "Pick Up or Adjust Buoys", frames).isMatch
+      matchPoseToSignal(frames[frames.length - 1], "Powercraft Wishes to Return to Shore", frames).isMatch
     ).toBe(true);
+  });
+
+  it("Pick Up Swimmers needs the raised arm circling", () => {
+    const pose = pickUpSwimmersPose(0);
+    expect(matchPoseToSignal(pose, "Pick Up Swimmers", still(pose)).isMatch).toBe(false);
+
+    const frames = pickUpSwimmersFrames();
+    expect(matchPoseToSignal(frames[frames.length - 1], "Pick Up Swimmers", frames).isMatch).toBe(true);
+  });
+
+  it("Message Understood and Shore Signal Received need the cut-away; Return to Shore is held", () => {
+    const held = still(rightArmUp());
+    expect(matchPoseToSignal(held[29], "Message Understood, All Clear", held).isMatch).toBe(false);
+    expect(matchPoseToSignal(held[29], "Return to Shore", held).isMatch).toBe(true);
+
+    const frames = cutAwayFrames();
+    const last = frames[frames.length - 1];
+    expect(matchPoseToSignal(last, "Message Understood, All Clear", frames).isMatch).toBe(true);
+    expect(matchPoseToSignal(last, "Shore Signal Received and Understood", frames).isMatch).toBe(true);
+  });
+
+  it("a slow lowering of the arm is not a cut-away", () => {
+    // Arm lowered steadily over the whole two seconds
+    const frames = Array.from({ length: 30 }, (_, i) => rightArmAt(90 - (i / 29) * 90));
+    expect(detectMotion(frames, "cutaway")).toBe(false);
   });
 });
 
 describe("getSignalsWithSameShape", () => {
-  it("lists static signals the camera can't tell apart", () => {
-    const twins = getSignalsWithSameShape("Return to Shore");
-    expect(twins).toContain("Message Understood, All Clear");
-    expect(twins).toContain("Shore Signal Received and Understood");
-    expect(twins).not.toContain("Return to Shore");
+  it("lists signals the camera can't tell apart", () => {
+    // Identical in the manual; they differ only in who gives them (beach vs water)
+    expect(getSignalsWithSameShape("Proceed Further Out to Sea")).toContain("Emergency Evacuation Alarm");
+    expect(getSignalsWithSameShape("Message Understood, All Clear")).toEqual([
+      "Shore Signal Received and Understood",
+    ]);
+  });
+
+  it("separates Return to Shore from the cut-away signals", () => {
+    expect(getSignalsWithSameShape("Return to Shore")).toEqual([]);
   });
 
   it("no longer groups movement signals with static lookalikes", () => {

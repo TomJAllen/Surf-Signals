@@ -6,10 +6,80 @@ import {
   areHandsTouching,
 } from "./poseAnalyzer";
 import { getSignalDefinitions, SIGNAL_POSE_DESCRIPTIONS } from "./signalDefinitions";
-import { detectMotion, motionFeedback } from "./motion";
+import { detectMotion, motionFeedback, MOTION_HISTORY_FRAMES } from "./motion";
 
 // Confidence threshold for considering a match
 export const MATCH_CONFIDENCE_THRESHOLD = 0.75;
+
+// Share of recent frames that must show the arm shape for a moving signal. While
+// flapping, circling or cutting away, the arm only passes through the reference
+// position, so the current frame alone isn't a fair test.
+export const RECENT_SHAPE_FRACTION = 0.3;
+
+interface StaticResult {
+  matched: string[];
+  unmatched: string[];
+  feedback: string[];
+  total: number;
+  count: number;
+}
+
+// Arm shape, hands and extra checks for a single frame
+function evaluateStatic(landmarks: PoseLandmarks, definition: SignalPoseDefinition): StaticResult {
+  const r: StaticResult = { matched: [], unmatched: [], feedback: [], total: 0, count: 0 };
+
+  for (const side of ["left", "right"] as const) {
+    const expected = side === "left" ? definition.leftArm : definition.rightArm;
+    if (!expected) continue;
+    r.count++;
+    const label = side === "left" ? "Left" : "Right";
+    const position = classifyArmPosition(landmarks, side);
+    const confidence = getArmPositionConfidence(landmarks, side, expected);
+
+    if (position === expected) {
+      r.matched.push(`${label} arm: ${expected}`);
+      r.total += confidence;
+    } else {
+      r.unmatched.push(`${label} arm: expected ${expected}, got ${position}`);
+      const hint = getArmPositionFeedback(landmarks, side, expected);
+      if (hint) r.feedback.push(hint);
+      r.total += confidence * 0.5; // Partial credit
+    }
+  }
+
+  if (definition.handsTouching) {
+    r.count++;
+    if (areHandsTouching(landmarks)) {
+      r.matched.push("Hands touching");
+      r.total += 1;
+    } else {
+      r.unmatched.push("Hands not touching");
+      r.feedback.push("Bring your hands together above your head");
+      r.total += 0.3; // Small partial credit if close
+    }
+  }
+
+  if (definition.additionalChecks) {
+    r.count++;
+    if (definition.additionalChecks(landmarks)) {
+      r.matched.push("Additional criteria met");
+      r.total += 1;
+    } else {
+      r.unmatched.push("Additional criteria not met");
+      r.total += 0.2;
+    }
+  }
+
+  return r;
+}
+
+// True if enough recent frames showed the definition's arm shape
+export function shapeHeldRecently(history: PoseLandmarks[], definition: SignalPoseDefinition): boolean {
+  const recent = history.slice(-MOTION_HISTORY_FRAMES);
+  if (recent.length === 0) return false;
+  const hits = recent.filter((frame) => evaluateStatic(frame, definition).unmatched.length === 0).length;
+  return hits / recent.length >= RECENT_SHAPE_FRACTION;
+}
 
 // Match a pose against a specific signal definition
 function matchPoseToDefinition(
@@ -17,76 +87,26 @@ function matchPoseToDefinition(
   definition: SignalPoseDefinition,
   history: PoseLandmarks[] = []
 ): PoseMatchResult {
-  const matchedCriteria: string[] = [];
-  const unmatchedCriteria: string[] = [];
-  const feedback: string[] = [];
-  let totalConfidence = 0;
-  let criteriaCount = 0;
+  let shape = evaluateStatic(landmarks, definition);
 
-  // Check left arm position
-  if (definition.leftArm) {
-    criteriaCount++;
-    const leftPosition = classifyArmPosition(landmarks, "left");
-    const leftConfidence = getArmPositionConfidence(landmarks, "left", definition.leftArm);
-
-    if (leftPosition === definition.leftArm) {
-      matchedCriteria.push(`Left arm: ${definition.leftArm}`);
-      totalConfidence += leftConfidence;
-    } else {
-      unmatchedCriteria.push(`Left arm: expected ${definition.leftArm}, got ${leftPosition}`);
-      const hint = getArmPositionFeedback(landmarks, "left", definition.leftArm);
-      if (hint) feedback.push(hint);
-      totalConfidence += leftConfidence * 0.5; // Partial credit
-    }
+  // Moving signals: accept the shape if it was held in enough recent frames
+  if (definition.motion && shape.unmatched.length > 0 && shapeHeldRecently(history, definition)) {
+    shape = {
+      matched: ["Arm shape held recently"],
+      unmatched: [],
+      feedback: [],
+      total: shape.count,
+      count: shape.count,
+    };
   }
 
-  // Check right arm position
-  if (definition.rightArm) {
-    criteriaCount++;
-    const rightPosition = classifyArmPosition(landmarks, "right");
-    const rightConfidence = getArmPositionConfidence(landmarks, "right", definition.rightArm);
+  const matchedCriteria = [...shape.matched];
+  const unmatchedCriteria = [...shape.unmatched];
+  const feedback = [...shape.feedback];
+  let totalConfidence = shape.total;
+  let criteriaCount = shape.count;
 
-    if (rightPosition === definition.rightArm) {
-      matchedCriteria.push(`Right arm: ${definition.rightArm}`);
-      totalConfidence += rightConfidence;
-    } else {
-      unmatchedCriteria.push(`Right arm: expected ${definition.rightArm}, got ${rightPosition}`);
-      const hint = getArmPositionFeedback(landmarks, "right", definition.rightArm);
-      if (hint) feedback.push(hint);
-      totalConfidence += rightConfidence * 0.5; // Partial credit
-    }
-  }
-
-  // Check hands touching
-  if (definition.handsTouching) {
-    criteriaCount++;
-    const touching = areHandsTouching(landmarks);
-
-    if (touching) {
-      matchedCriteria.push("Hands touching");
-      totalConfidence += 1;
-    } else {
-      unmatchedCriteria.push("Hands not touching");
-      feedback.push("Bring your hands together above your head");
-      totalConfidence += 0.3; // Small partial credit if close
-    }
-  }
-
-  // Run additional checks if defined
-  if (definition.additionalChecks) {
-    criteriaCount++;
-    const passed = definition.additionalChecks(landmarks);
-
-    if (passed) {
-      matchedCriteria.push("Additional criteria met");
-      totalConfidence += 1;
-    } else {
-      unmatchedCriteria.push("Additional criteria not met");
-      totalConfidence += 0.2;
-    }
-  }
-
-  // Movement (wave/circle) is judged over recent frames, not this one
+  // Movement is judged over recent frames, not this one
   if (definition.motion) {
     criteriaCount++;
     if (detectMotion(history, definition.motion)) {

@@ -9,6 +9,23 @@ interface MotionIndicatorProps {
   metrics: MotionMetrics | null;
 }
 
+function debugLines(motion: SignalMotion, m: MotionMetrics, f: (n: number) => string): string[] {
+  const t = MOTION_THRESHOLDS;
+  switch (motion) {
+    case "wave":
+      return [`rangeX: ${f(m.rangeX)} / ${t.waveMinAmplitude}`, `reversalsX: ${m.reversalsX} / ${t.waveMinReversals}`];
+    case "circle":
+      return [
+        `rangeX: ${f(m.rangeX)} / ${t.circleMinAmplitude}   rangeY: ${f(m.rangeY)} / ${t.circleMinAmplitude}`,
+        `reversalsX: ${m.reversalsX} / ${t.circleMinReversals}   reversalsY: ${m.reversalsY} / ${t.circleMinReversals}`,
+      ];
+    case "flap":
+      return [`rangeY: ${f(m.rangeY)} / ${t.flapMinAmplitude}`, `reversalsY: ${m.reversalsY} / ${t.flapMinReversals}`];
+    case "cutaway":
+      return [`drop: ${f(m.drop)} / ${t.cutawayMinDrop}`];
+  }
+}
+
 // Shows how close the user's movement is to counting as a wave / circle.
 // Add ?debug=motion to the URL to see the raw numbers used for tuning.
 export default function MotionIndicator({ motion, metrics }: MotionIndicatorProps) {
@@ -20,10 +37,13 @@ export default function MotionIndicator({ motion, metrics }: MotionIndicatorProp
 
   const progress = metrics?.progress ?? 0;
   const detected = metrics?.detected ?? false;
-  const label = motion === "wave" ? "Wave side to side" : "Move your arm in a circle";
   const t = MOTION_THRESHOLDS;
-  const amp = motion === "wave" ? t.waveMinAmplitude : t.circleMinAmplitude;
-  const revs = motion === "wave" ? t.waveMinReversals : t.circleMinReversals;
+  const label = {
+    wave: "Wave side to side",
+    circle: "Move your arm in a circle",
+    flap: "Move your arm up and down",
+    cutaway: "Hold it up, then cut away to the side",
+  }[motion];
   const f = (n: number) => n.toFixed(2);
 
   return (
@@ -53,11 +73,7 @@ export default function MotionIndicator({ motion, metrics }: MotionIndicatorProp
           {metrics
             ? [
                 `wrist: ${metrics.side}  samples: ${metrics.samples}/${t.minSamples}`,
-                `rangeX: ${f(metrics.rangeX)} / ${amp}` +
-                  (motion === "circle" ? `   rangeY: ${f(metrics.rangeY)} / ${amp}` : ""),
-                `reversalsX: ${metrics.reversalsX} / ${revs}` +
-                  (motion === "circle" ? `   reversalsY: ${metrics.reversalsY} / ${revs}` : ""),
-                `hysteresis: ${t.reversalHysteresis}`,
+                ...debugLines(motion, metrics, f),
               ].join("\n")
             : "no pose"}
         </pre>
