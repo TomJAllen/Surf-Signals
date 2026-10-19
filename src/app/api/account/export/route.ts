@@ -36,6 +36,10 @@ export async function GET() {
         select: { createdAt: true, completedAt: true, mode: true, category: true, totalCount: true, correctCount: true },
         orderBy: { createdAt: "asc" },
       },
+      drillResults: {
+        select: { createdAt: true, drill: true, item: true, score: true, total: true, mistakes: true },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -61,6 +65,7 @@ export async function GET() {
       correct: a.correct,
     })),
     studySessions: user.sessions,
+    testResults: user.drillResults.map(({ createdAt, ...r }) => ({ at: createdAt, ...r })),
   };
 
   return new NextResponse(JSON.stringify(data, null, 2), {

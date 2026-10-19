@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
+import { recordDrillResult } from "@/lib/recordDrill";
 import { shuffle } from "@/lib/shuffle";
 import { PHONETIC, SPELLING_WORDS } from "@/content/radio";
 
@@ -44,7 +45,7 @@ export default function SpellDrill() {
 
   const finished = index >= words.length;
   useEffect(() => {
-    if (finished) track("drill_completed", { drill: "radio_spell", item: null, score, total: words.length });
+    if (finished) recordDrillResult({ drill: "radio_spell", score, total: words.length });
     else if (index === 0) track("drill_started", { drill: "radio_spell", item: null });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, words]);

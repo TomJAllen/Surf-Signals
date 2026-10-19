@@ -22,6 +22,7 @@ model User {
   updatedAt    DateTime  @updatedAt
   attempts     Attempt[]
   sessions     StudySession[]
+  drillResults DrillResult[]
 }
 
 model Signal {
@@ -79,4 +80,20 @@ model RateLimit {
   windowStart DateTime @default(now())
 
   @@index([windowStart])
+}
+
+// One finished mnemonic or radio test (signals use Attempt instead)
+model DrillResult {
+  id        String   @id @default(cuid())
+  userId    String
+  drill     String   // e.g. "mnemonic_quiz", "radio_spell" (see src/lib/drillResults.ts)
+  item      String?  // which mnemonic or call scenario, if any
+  score     Int      // right answers
+  total     Int
+  mistakes  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

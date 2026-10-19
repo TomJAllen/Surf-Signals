@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
+import { recordDrillResult } from "@/lib/recordDrill";
 import type { DrillTracking } from "./ChoiceDrill";
 import { shuffle } from "@/lib/shuffle";
 
@@ -33,7 +34,7 @@ export default function OrderDrill({ instructions, items, trackAs }: OrderDrillP
 
   useEffect(() => {
     if (done && trackAs) {
-      track("drill_completed", { ...trackAs, item: trackAs.item ?? null, mistakes, total: items.length });
+      recordDrillResult({ drill: trackAs.drill, item: trackAs.item, score: items.length, total: items.length, mistakes });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);

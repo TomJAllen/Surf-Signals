@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { track } from "@/lib/analytics";
+import { recordDrillResult } from "@/lib/recordDrill";
 
 // Identifies a drill in analytics, e.g. { drill: "mnemonic_quiz", item: "sample" }
 export interface DrillTracking {
@@ -42,7 +43,7 @@ export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete
 
   useEffect(() => {
     if (done && trackAs) {
-      track("drill_completed", { ...trackAs, item: trackAs.item ?? null, score: score, total: questions.length });
+      recordDrillResult({ drill: trackAs.drill, item: trackAs.item, score, total: questions.length });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);

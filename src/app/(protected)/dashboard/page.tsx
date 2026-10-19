@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { TOPICS } from "@/content/topics";
 import { correctInARow, masteryOf, practiceStreak, MASTERY_STREAK, type Mastery } from "@/lib/progress";
+import { mnemonicProgress, radioProgress, RADIO_PASS_MARK, type LatestResult } from "@/lib/drillResults";
+import { getTopic } from "@/content/topics";
 
 interface SignalStat {
   id: string;
@@ -20,7 +21,32 @@ interface StatsResponse {
   signalStats?: SignalStat[];
   recentResults?: Record<string, boolean[]>;
   practiceTimes?: string[];
+  drillResults?: LatestResult[];
 }
+
+const RADIO_NAMES: Record<string, string> = {
+  prowords: "Prowords",
+  phonetic: "Phonetic letters",
+  spell: "Spell it",
+  calls: "Build the call",
+};
+
+// A row of segments, one per item: green done, yellow started, white not yet
+function Segments({ states, label }: { states: ("done" | "started" | "none")[]; label: string }) {
+  return (
+    <div className="flex gap-1" role="img" aria-label={label}>
+      {states.map((st, i) => (
+        <span
+          key={i}
+          className={`h-3 flex-1 rounded-sm border border-ink ${
+            st === "done" ? "bg-correct" : st === "started" ? "bg-secondary" : "bg-white"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
 
 interface SignalProgress extends SignalStat {
   mastery: Mastery;
@@ -98,123 +124,164 @@ export default function DashboardPage() {
   const allMastered = signals.length > 0 && mastered === signals.length;
   const tiles = [...signals].sort((a, b) => ORDER[a.mastery] - ORDER[b.mastery] || a.name.localeCompare(b.name));
 
+  const latest = stats?.drillResults ?? [];
+  const mnems = mnemonicProgress(latest);
+  const mnemMastered = mnems.filter((m) => m.mastered).length;
+  // Carry on with one you've started, otherwise the next new one
+  const nextMnem = mnems.find((m) => m.tried && !m.mastered) ?? mnems.find((m) => !m.mastered);
+  const radio = radioProgress(latest);
+  const radioPassed = radio.filter((r) => r.passed).length;
+  const nextRadio = radio.find((r) => r.tried && !r.passed) ?? radio.find((r) => !r.passed);
+  const anyActivity = hasAttempts || latest.length > 0;
+
+  // One summary row per area, and a single "next up": the area you're furthest behind in
+  const areas = [
+    {
+      id: "signals",
+      label: "Signals",
+      done: mastered,
+      total,
+      unit: "mastered",
+      states: tiles.map((t) => (t.mastery === "mastered" ? "done" : t.mastery === "learning" ? "started" : "none")) as ("done" | "started" | "none")[],
+      next: allMastered
+        ? null
+        : hasAttempts
+          ? { text: next.map((n) => n.name).join(", "), href: "/study/identify", cta: "Keep going with signals" }
+          : { text: "Name your first signal", href: "/study/identify", cta: "Start with signals" },
+    },
+    {
+      id: "mnemonics",
+      label: "Mnemonics",
+      done: mnemMastered,
+      total: mnems.length,
+      unit: "mastered",
+      states: mnems.map((m) => (m.mastered ? "done" : m.tried ? "started" : "none")) as ("done" | "started" | "none")[],
+      next: nextMnem
+        ? {
+            text: `${nextMnem.name}: ${nextMnem.quizDone ? "a Match round with no mistakes" : "a perfect quiz"}`,
+            href: `/test/mnemonics/${nextMnem.slug}?mode=${nextMnem.quizDone ? "match" : "quiz"}`,
+            cta: `Test yourself on ${nextMnem.name}`,
+          }
+        : null,
+    },
+    {
+      id: "radio",
+      label: "Radio",
+      done: radioPassed,
+      total: radio.length,
+      unit: "passed",
+      states: radio.map((r) => (r.passed ? "done" : r.tried ? "started" : "none")) as ("done" | "started" | "none")[],
+      next: nextRadio
+        ? { text: RADIO_NAMES[nextRadio.id], href: `/test/radio/${nextRadio.id}`, cta: `Test yourself: ${RADIO_NAMES[nextRadio.id]}` }
+        : null,
+    },
+  ];
+  const focus = [...areas].filter((a) => a.next).sort((a, b) => a.done / a.total - b.done / b.total)[0];
+
   return (
     <div className="space-y-8 pb-12">
-      <header>
+      <header className="space-y-1">
         <h1 className="font-display text-4xl font-extrabold uppercase text-ink">
           {firstName ? `G'day, ${firstName}` : "G'day"}
         </h1>
+        {!loading && anyActivity && (
+          <p className="font-semibold text-ink">
+            {streak.days === 0
+              ? "Do a test today to start a streak."
+              : streak.doneToday
+                ? `${streak.days}-day streak. Nice work today.`
+                : `${streak.days}-day streak. Do a test today to keep it going.`}
+          </p>
+        )}
       </header>
 
       {loading ? (
         <div className="card flex justify-center py-10">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
-      ) : hasAttempts ? (
-        <section className="space-y-5">
-          {/* The goal: master all 14 signals */}
-          <div className="card-highlight space-y-5">
-            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-              <div>
-                <p className="font-display text-6xl font-extrabold leading-none text-ink">
-                  {mastered}
-                  <span className="text-3xl text-stone-500"> / {total}</span>
-                </p>
-                <p className="mt-1 font-semibold text-ink">signals mastered</p>
-              </div>
-              <p className="text-sm font-semibold text-ink">
-                {streak.days === 0
-                  ? "Practise today to start a streak"
-                  : streak.doneToday
-                    ? `${streak.days}-day streak. Nice work today.`
-                    : `${streak.days}-day streak. Practise today to keep it going.`}
-              </p>
-            </div>
-
-            <div className="flex gap-1" role="img" aria-label={`${mastered} of ${total} signals mastered`}>
-              {tiles.map((s) => (
-                <span
-                  key={s.id}
-                  className={`h-3 flex-1 rounded-sm border border-ink ${
-                    s.mastery === "mastered" ? "bg-correct" : s.mastery === "learning" ? "bg-secondary" : "bg-white"
-                  }`}
-                />
+      ) : (
+        <>
+          {/* Everything at a glance: one row per area, one thing to do next */}
+          <section className="card-highlight space-y-5">
+            <ul className="space-y-4">
+              {areas.map((a) => (
+                <li key={a.id} className="space-y-1.5">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <Link href={`/test/${a.id}`} className="font-display text-2xl font-bold uppercase text-ink hover:underline">
+                      {a.label}
+                    </Link>
+                    <span className="text-sm font-semibold text-ink">
+                      <span className="font-display text-2xl font-extrabold">{a.done}</span>
+                      <span className="text-stone-500"> / {a.total}</span> {a.unit}
+                    </span>
+                  </div>
+                  <Segments states={a.states} label={`${a.label}: ${a.done} of ${a.total} ${a.unit}`} />
+                  {a.next && a !== focus && (
+                    <p className="text-sm text-stone-700">
+                      Next:{" "}
+                      <Link href={a.next.href} className="font-semibold text-primary hover:underline">
+                        {a.next.text}
+                      </Link>
+                    </p>
+                  )}
+                </li>
               ))}
-            </div>
+            </ul>
 
-            {allMastered ? (
-              <div className="space-y-3">
-                <p className="text-ink">All {total} mastered. Keep them sharp by performing them on camera.</p>
-                <Link href="/study/perform" className="btn-primary">
-                  Perform signals
+            {focus?.next ? (
+              <div className="space-y-3 border-t-2 border-ink pt-4">
+                <p className="text-ink">
+                  <span className="font-semibold">Next up:</span> {focus.next.text}
+                </p>
+                <Link href={focus.next.href} className="btn-primary">
+                  {focus.next.cta}
                 </Link>
               </div>
             ) : (
-              <div className="space-y-3">
-                <p className="text-ink">
-                  <span className="font-semibold">Next up:</span> {next.map((s) => s.name).join(", ")}
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <Link href="/study/identify" className="btn-primary">
-                    Keep going
-                  </Link>
-                  <Link href="/study/perform" className="btn-outline">
-                    Perform on camera
-                  </Link>
-                </div>
+              <p className="border-t-2 border-ink pt-4 font-semibold text-ink">
+                Everything mastered. Keep it sharp with the mixed quiz and Perform mode.
+              </p>
+            )}
+
+            <details className="text-xs text-stone-600">
+              <summary className="cursor-pointer font-semibold">How progress is counted</summary>
+              <p className="mt-1">
+                A signal is mastered when your last {MASTERY_STREAK} tries were right. A mnemonic is mastered after a
+                perfect quiz and a Match round with no mistakes. A radio test is passed at{" "}
+                {Math.round(RADIO_PASS_MARK * 100)}% or more, or with a call built with no mistakes.
+              </p>
+            </details>
+          </section>
+
+          <section>
+            {hasAttempts && (
+              <div className="space-y-2">
+                <h2 className="font-display text-2xl font-bold uppercase text-ink">Your signals</h2>
+                <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
+                  {tiles.map((s) => (
+                    <SignalTile key={s.id} s={s} />
+                  ))}
+                </ul>
+                <Link href="/history" className="inline-block text-sm font-semibold text-primary hover:underline">
+                  See your history
+                </Link>
               </div>
             )}
-          </div>
-
-          {/* Every signal and where you are with it */}
-          <div className="space-y-2">
-            <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
-              {tiles.map((s) => (
-                <SignalTile key={s.id} s={s} />
-              ))}
-            </ul>
-            <p className="text-sm text-stone-600">
-              A signal is mastered when your last {MASTERY_STREAK} tries at it were right.{" "}
-              <Link href="/history" className="font-semibold text-primary hover:underline">
-                See your history
-              </Link>
-            </p>
-          </div>
-        </section>
-      ) : (
-        <section className="card-highlight space-y-3">
-          <h2 className="font-display text-3xl font-extrabold uppercase text-ink">Master all 14 signals</h2>
-          <p className="text-ink">
-            Start by naming a few from their pictures. Get one right {MASTERY_STREAK} times in a row and it&apos;s mastered.
-          </p>
-          <Link href="/study/identify" className="btn-primary">
-            Name your first signal
-          </Link>
-        </section>
+          </section>
+        </>
       )}
 
-      {/* Everything else */}
-      <section className="space-y-3">
-        <h2 className="font-display text-2xl font-bold uppercase text-ink">Learn and test</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          {TOPICS.map((t) => (
-            <div key={t.id} className="card flex flex-col gap-3">
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-ink">{t.title}</h3>
-                <p className="text-sm text-stone-700">{t.blurb}</p>
-              </div>
-              <div className="flex gap-2">
-                <Link href={t.learnHref} className="btn-outline flex-1 !px-3 !text-lg">
-                  Learn
-                </Link>
-                <Link href={t.testHref} className="btn-secondary flex-1 !px-3 !text-lg">
-                  Test
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <p className="text-sm text-stone-600">
+        Want to read up first?{" "}
+        {(["signals", "mnemonics", "radio"] as const).map((id, i) => (
+          <span key={id}>
+            {i > 0 && " · "}
+            <Link href={getTopic(id).learnHref} className="font-semibold text-primary hover:underline">
+              Learn {id}
+            </Link>
+          </span>
+        ))}
+      </p>
     </div>
   );
 }
