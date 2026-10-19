@@ -35,7 +35,12 @@ If `ADMIN_PASSWORD` isn't set when you seed, a random password is generated and 
    DATABASE_URL="<production url>" npm run db:deploy
    DATABASE_URL="<production url>" ADMIN_EMAIL=you@example.com ADMIN_PASSWORD=... npm run db:seed
    ```
-6. **Analytics (optional):** enable Web Analytics in the Vercel project. The `<Analytics />` component is already in the layout.
+6. **Admin access:** set `ADMIN_EMAILS` to your email. In production the admin area is locked to these emails *and* `role = "admin"` in the database.
+7. **Analytics:** enable Web Analytics in the Vercel project (page views). For anonymous event analytics, create a free PostHog project, turn on *Discard client IP data*, and set `NEXT_PUBLIC_POSTHOG_KEY` (and `NEXT_PUBLIC_POSTHOG_REGION` if it's in the EU).
+8. **Legal pages:** set `NEXT_PUBLIC_CONTACT_EMAIL` (shown on /privacy and /terms).
+9. **Supabase only:** lock down Supabase's auto-generated public API (Row Level Security on, `anon`/`authenticated` privileges revoked), and set `DATABASE_CA_CERT` so the database certificate is verified. See `docs/supabase-hardening.sql`.
+
+See also `SECURITY.md`.
 
 ### Moving an existing database
 

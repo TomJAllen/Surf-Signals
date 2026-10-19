@@ -4,6 +4,8 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ConsentFields from "@/components/ConsentFields";
+import { track } from "@/lib/analytics";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -13,6 +15,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [consent, setConsent] = useState({ acceptTerms: false, confirmAge: false });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,13 +31,18 @@ export default function SignupPage() {
       return;
     }
 
+    if (!consent.acceptTerms || !consent.confirmAge) {
+      setError("Please agree to the Terms of Use and Privacy Policy and confirm your age");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, ...consent }),
       });
 
       const data = await response.json();
@@ -43,6 +51,8 @@ export default function SignupPage() {
         setError(data.error || "Something went wrong");
         return;
       }
+
+      track("signup_completed");
 
       // Sign in after successful signup
       const result = await signIn("credentials", {
@@ -69,9 +79,8 @@ export default function SignupPage() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <Link href="/" className="inline-block mb-4">
-            <span className="bg-primary text-white px-4 py-2 rounded-lg text-lg font-black tracking-wide">
-              SLSA
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="Surf Signals home" width={56} height={56} className="rounded-xl mx-auto" />
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">
             Surf Signals
@@ -79,6 +88,9 @@ export default function SignupPage() {
           <h2 className="mt-4 text-xl text-gray-600">
             Create your account
           </h2>
+          <p className="mt-2 text-sm text-gray-500">
+            Optional: everything is free without one. An account saves your progress.
+          </p>
         </div>
 
         <form className="mt-8 space-y-6 card" onSubmit={handleSubmit}>
@@ -168,6 +180,8 @@ export default function SignupPage() {
               />
             </div>
           </div>
+
+          <ConsentFields {...consent} onChange={setConsent} />
 
           <div>
             <button

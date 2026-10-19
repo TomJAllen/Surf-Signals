@@ -1,13 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
-import { pgSslConfig } from "../src/lib/dbSsl";
+import { pgSslConfig, stripSslParams } from "../src/lib/dbSsl";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 import "dotenv/config";
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: stripSslParams(process.env.DATABASE_URL ?? ""),
   ssl: pgSslConfig(process.env.DATABASE_URL),
 });
 

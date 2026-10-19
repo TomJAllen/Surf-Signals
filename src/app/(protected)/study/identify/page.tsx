@@ -6,6 +6,7 @@ import SessionSetup from "@/components/SessionSetup";
 import SessionSummary from "@/components/SessionSummary";
 import { useSession } from "next-auth/react";
 import { saveLocalAttempt } from "@/lib/localStorage";
+import { track } from "@/lib/analytics";
 import type { Signal, SignalCategory, SessionConfig } from "@/types";
 
 type SessionPhase = "setup" | "study" | "summary";
@@ -88,6 +89,7 @@ export default function IdentifyPage() {
     if (!signal) return;
 
     setResults((prev) => [...prev, { signalName: signal.name, correct }]);
+    track("signal_attempt", { mode: "identify", signal: signal.name, category: signal.category, correct });
 
     // Guests: keep progress in this browser so it can be imported on sign-up/login
     if (authStatus !== "authenticated") {

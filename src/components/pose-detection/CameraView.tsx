@@ -7,6 +7,7 @@ import PoseOverlay from "./PoseOverlay";
 import DetectionFeedback from "./DetectionFeedback";
 import { getSignalsWithSameShape } from "@/lib/pose/signalDefinitions";
 import MotionIndicator from "./MotionIndicator";
+import { track } from "@/lib/analytics";
 
 interface CameraViewProps {
   signalName: string;
@@ -56,6 +57,15 @@ export default function CameraView({
     onMatch,
     enabled: enabled && cameraState.isActive && isDetectable,
   });
+
+  // Anonymous: did the camera start, or fail (e.g. permission denied)?
+  useEffect(() => {
+    if (cameraState.isActive) track("camera_started", { signal: signalName });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cameraState.isActive]);
+  useEffect(() => {
+    if (error) track("camera_error", { reason: String(error).slice(0, 80) });
+  }, [error]);
 
   // Auto-start camera when permission is already granted
   useEffect(() => {

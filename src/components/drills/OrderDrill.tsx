@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { track } from "@/lib/analytics";
+import type { DrillTracking } from "./ChoiceDrill";
 import { shuffle } from "@/lib/shuffle";
 
 export interface OrderItem {
@@ -11,16 +13,30 @@ export interface OrderItem {
 interface OrderDrillProps {
   instructions: string;
   items: OrderItem[]; // in the correct order
+  trackAs?: DrillTracking;
 }
 
 // Tap the pieces in the right order. A wrong tap is counted and flagged, not placed.
-export default function OrderDrill({ instructions, items }: OrderDrillProps) {
+export default function OrderDrill({ instructions, items, trackAs }: OrderDrillProps) {
   const [pool, setPool] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
   const [placed, setPlaced] = useState<number[]>([]);
   const [mistakes, setMistakes] = useState(0);
   const [wrong, setWrong] = useState<number | null>(null);
 
   const done = placed.length === items.length;
+  const [round, setRound] = useState(0);
+
+  useEffect(() => {
+    if (trackAs) track("drill_started", { ...trackAs, item: trackAs.item ?? null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [round]);
+
+  useEffect(() => {
+    if (done && trackAs) {
+      track("drill_completed", { ...trackAs, item: trackAs.item ?? null, mistakes, total: items.length });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done]);
 
   const tap = (i: number) => {
     if (i === placed.length) {
@@ -38,6 +54,7 @@ export default function OrderDrill({ instructions, items }: OrderDrillProps) {
     setPlaced([]);
     setMistakes(0);
     setWrong(null);
+    setRound((r) => r + 1);
   };
 
   const Chip = ({ i, state }: { i: number; state: "placed" | "pool" | "wrong" }) => (
