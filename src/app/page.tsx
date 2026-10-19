@@ -61,7 +61,7 @@ export default function Home() {
           </div>
           <p className="mt-4 text-sm text-white/60">
             No account needed to practise. Sign up to save your progress across devices.{" "}
-            <Link href="/learn" className="underline hover:text-white">
+            <Link href="/learn/signals" className="underline hover:text-white">
               Browse all the signals
             </Link>
             {" · "}

@@ -41,7 +41,7 @@ export default function NavBar() {
                 key={link.href}
                 href={link.href}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  pathname === link.href || (link.href === "/admin" && pathname.startsWith("/admin"))
+                  pathname === link.href || ((link.href === "/admin" || link.href === "/learn") && pathname.startsWith(link.href))
                     ? "bg-secondary text-gray-900"
                     : "hover:bg-primary-dark"
                 }`}
@@ -111,7 +111,7 @@ function MobileMenu({
               key={link.href}
               href={link.href}
               className={`block px-4 py-3 text-sm font-medium ${
-                pathname === link.href || (link.href === "/admin" && pathname.startsWith("/admin"))
+                pathname === link.href || ((link.href === "/admin" || link.href === "/learn") && pathname.startsWith(link.href))
                   ? "bg-secondary text-gray-900"
                   : "text-gray-700 hover:bg-gray-50"
               }`}
