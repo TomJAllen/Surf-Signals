@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/admin";
+import { forgetAccount } from "@/lib/sessionCheck";
 import { rateLimit, RULES, tooManyRequestsMessage } from "@/lib/rateLimit";
 
 // Permanently deletes the signed-in user's account and all their data.
@@ -28,5 +29,6 @@ export async function POST(request: Request) {
 
   // Attempts and study sessions are removed by ON DELETE CASCADE
   await prisma.user.delete({ where: { id: userId } });
+  forgetAccount(userId);
   return NextResponse.json({ deleted: true });
 }

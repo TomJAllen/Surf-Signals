@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { signalsChanged } from "@/lib/signalList";
 
 const ALLOWED_TYPES: Record<string, string> = {
   "image/png": "png",
@@ -65,6 +66,7 @@ export async function POST(
       data: { imageUrl: blob.url },
     });
 
+    signalsChanged();
     return NextResponse.json({ success: true, imageUrl: blob.url });
   } catch (err) {
     console.error("Error uploading image:", err);

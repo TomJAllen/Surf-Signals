@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/admin";
+import { forgetAccount } from "@/lib/sessionCheck";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/content/legal";
 
 // Records that the signed-in user accepted the current Terms and Privacy Policy
@@ -17,5 +18,6 @@ export async function POST(request: Request) {
     where: { id: session.user.id },
     data: { termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION, privacyVersion: PRIVACY_VERSION },
   });
+  forgetAccount(session.user.id);
   return NextResponse.json({ termsVersion: TERMS_VERSION });
 }

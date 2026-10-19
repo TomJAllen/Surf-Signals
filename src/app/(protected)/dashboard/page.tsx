@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { correctInARow, masteryOf, practiceStreak, levelFor, LEVEL_LABEL, MASTERY_STREAK, type Level, type Mastery } from "@/lib/progress";
 import { mnemonicProgress, radioProgress, RADIO_PASS_MARK, type LatestResult } from "@/lib/drillResults";
-import { getTopic } from "@/content/topics";
+import { TOPICS } from "@/content/topics";
 import { track } from "@/lib/analytics";
 
 interface SignalStat {
@@ -269,78 +269,94 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Where you're at, one word per area */}
-            <ul className="grid grid-cols-3 gap-2 border-t-2 border-ink pt-4">
-              {areas.map((a) => {
-                const level = levelFor(a.done, a.total, a.tried);
-                return (
-                  <li key={a.id}>
-                    <Link href={`/test/${a.id}`} className="block text-center">
-                      <span className="block font-display text-lg font-bold uppercase text-ink">{a.label}</span>
-                      <span className={`mt-1 inline-block rounded border-2 px-2 py-0.5 text-xs font-bold leading-tight ${LEVEL_STYLE[level]}`}>
-                        {level === "patrol-ready" && "✓ "}
-                        {LEVEL_LABEL[level]}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
           </section>
-
-          {/* The detail, for anyone who wants it */}
-          {anyActivity && (
-            <details className="group">
-              <summary className="cursor-pointer font-display text-xl font-bold uppercase text-ink">
-                Show details
-              </summary>
-              <div className="mt-4 space-y-6">
-                <ul className="space-y-4">
-                  {areas.map((a) => (
-                    <li key={a.id} className="space-y-1.5">
-                      <div className="flex items-baseline justify-between gap-3">
-                        <span className="font-bold text-ink">{a.label}</span>
-                        <span className="text-sm text-stone-700">
-                          {a.done} of {a.total} {a.unit}
-                        </span>
-                      </div>
-                      <Segments states={a.states} label={`${a.label}: ${a.done} of ${a.total} ${a.unit}`} />
-                    </li>
-                  ))}
-                </ul>
-                {hasAttempts && (
-                  <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
-                    {tiles.map((t) => (
-                      <SignalTile key={t.id} s={t} />
-                    ))}
-                  </ul>
-                )}
-                <p className="text-xs text-stone-600">
-                  Levels: In training once you&apos;ve started, Shadow patrolling at three quarters, Patrol-ready when
-                  everything is done. A signal is mastered when your last {MASTERY_STREAK} tries were right; an acronym after a
-                  perfect quiz and a Match round with no mistakes; a radio test is passed at{" "}
-                  {Math.round(RADIO_PASS_MARK * 100)}% or more, or a call built with no mistakes.{" "}
-                  <Link href="/history" className="font-semibold text-primary hover:underline">
-                    Signal history
-                  </Link>
-                </p>
-              </div>
-            </details>
-          )}
         </>
       )}
 
-      <p className="text-sm text-stone-600">
-        Want to read up first?{" "}
-        {(["signals", "acronyms", "radio"] as const).map((id, i) => (
-          <span key={id}>
-            {i > 0 && " · "}
-            <Link href={getTopic(id).learnHref} className="font-semibold text-primary hover:underline">
-              Learn {id}
-            </Link>
-          </span>
-        ))}
-      </p>
+      {/* Straight into any area. Shown while stats load, since it doesn't need them */}
+      <section aria-labelledby="jump-in" className="space-y-3">
+        <h2 id="jump-in" className="font-display text-2xl font-extrabold uppercase text-ink">
+          Jump in
+        </h2>
+        <ul className="grid gap-3 md:grid-cols-3">
+          {TOPICS.map((t) => {
+            const a = areas.find((x) => x.id === t.id);
+            const level = a && !loading ? levelFor(a.done, a.total, a.tried) : null;
+            return (
+              <li key={t.id} className="card space-y-3 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-display text-2xl font-extrabold uppercase leading-none text-ink">{t.title}</p>
+                    <p className="mt-1 text-sm text-stone-700">{t.blurb}</p>
+                  </div>
+                  {level && level !== "not-started" && (
+                    <span className={`shrink-0 rounded border-2 px-2 py-0.5 text-xs font-bold leading-tight ${LEVEL_STYLE[level]}`}>
+                      {level === "patrol-ready" && "✓ "}
+                      {LEVEL_LABEL[level]}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href={t.learnHref}
+                    onClick={() => track("dashboard_cta", { target: "learn", focus: t.id })}
+                    className="btn-outline w-full py-2.5"
+                  >
+                    Learn
+                  </Link>
+                  <Link
+                    href={t.testHref}
+                    onClick={() => track("dashboard_cta", { target: "test", focus: t.id })}
+                    className="btn-primary w-full py-2.5"
+                  >
+                    Test
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      {/* The detail, for anyone who wants it */}
+      {!loading && anyActivity && (
+        <details className="group">
+          <summary className="cursor-pointer font-display text-xl font-bold uppercase text-ink">
+            Show details
+          </summary>
+          <div className="mt-4 space-y-6">
+            <ul className="space-y-4">
+              {areas.map((a) => (
+                <li key={a.id} className="space-y-1.5">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-bold text-ink">{a.label}</span>
+                    <span className="text-sm text-stone-700">
+                      {a.done} of {a.total} {a.unit}
+                    </span>
+                  </div>
+                  <Segments states={a.states} label={`${a.label}: ${a.done} of ${a.total} ${a.unit}`} />
+                </li>
+              ))}
+            </ul>
+            {hasAttempts && (
+              <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
+                {tiles.map((t) => (
+                  <SignalTile key={t.id} s={t} />
+                ))}
+              </ul>
+            )}
+            <p className="text-xs text-stone-600">
+              Levels: In training once you&apos;ve started, Shadow patrolling at three quarters, Patrol-ready when
+              everything is done. A signal is mastered when your last {MASTERY_STREAK} tries were right; an acronym after a
+              perfect quiz and a Match round with no mistakes; a radio test is passed at{" "}
+              {Math.round(RADIO_PASS_MARK * 100)}% or more, or a call built with no mistakes.{" "}
+              <Link href="/history" className="font-semibold text-primary hover:underline">
+                Signal history
+              </Link>
+            </p>
+          </div>
+        </details>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { forgetAccount } from "@/lib/sessionCheck";
 import { MIN_PASSWORD_LENGTH } from "@/lib/validation";
 import { isResetTokenValid, parseResetToken } from "@/lib/passwordReset";
 import { clientIp, rateLimit, RULES, tooManyRequestsMessage } from "@/lib/rateLimit";
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
     data: { passwordHash, sessionVersion: { increment: 1 } },
   });
   if (updated.count !== 1) return NextResponse.json({ error: INVALID }, { status: 400 });
+  forgetAccount(user.id);
 
   return NextResponse.json({ ok: true });
 }

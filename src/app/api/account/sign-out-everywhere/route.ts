@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/admin";
+import { forgetAccount } from "@/lib/sessionCheck";
 
 // Invalidates every existing session for this user, on all devices
 export async function POST() {
@@ -10,5 +11,6 @@ export async function POST() {
     where: { id: session.user.id },
     data: { sessionVersion: { increment: 1 } },
   });
+  forgetAccount(session.user.id);
   return NextResponse.json({ ok: true });
 }

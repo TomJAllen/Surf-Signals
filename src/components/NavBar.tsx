@@ -16,7 +16,7 @@ function isActiveLink(pathname: string, href: string): boolean {
 
 export default function NavBar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   // Different nav links for authenticated vs anonymous users
   const navLinks = session
@@ -60,7 +60,7 @@ export default function NavBar() {
               </Link>
             ))}
 
-            {session ? (
+            {status === "loading" ? null : session ? (
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="ml-2 px-3 py-1.5 rounded-md font-display text-lg font-bold hover:bg-primary-dark border-2 border-white/40"
