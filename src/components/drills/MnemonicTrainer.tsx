@@ -108,7 +108,7 @@ export default function MnemonicTrainer({
           {m.note && <p className="text-sm text-gray-700 bg-yellow-50 border border-yellow-200 rounded-xl p-3">{m.note}</p>}
           {practiceHref ? (
             <a href={practiceHref} className="btn-primary w-full block text-center">
-              Practise {m.name}
+              Test yourself on {m.name}
             </a>
           ) : (
             modes.includes("quiz") && (

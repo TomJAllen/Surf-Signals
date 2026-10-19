@@ -195,7 +195,7 @@ export default function DashboardPage() {
 
       {/* Everything else */}
       <section className="space-y-3">
-        <h2 className="font-display text-2xl font-bold uppercase text-ink">Learn and practise</h2>
+        <h2 className="font-display text-2xl font-bold uppercase text-ink">Learn and test</h2>
         <div className="grid gap-4 md:grid-cols-3">
           {TOPICS.map((t) => (
             <div key={t.id} className="card flex flex-col gap-3">
@@ -207,8 +207,8 @@ export default function DashboardPage() {
                 <Link href={t.learnHref} className="btn-outline flex-1 !px-3 !text-lg">
                   Learn
                 </Link>
-                <Link href={`/practice#${t.id}`} className="btn-secondary flex-1 !px-3 !text-lg">
-                  Practise
+                <Link href={t.testHref} className="btn-secondary flex-1 !px-3 !text-lg">
+                  Test
                 </Link>
               </div>
             </div>

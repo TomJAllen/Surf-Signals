@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CALL_SCENARIOS, PHONETIC, PROWORDS } from "@/content/radio";
+import { CALL_SCENARIOS, PHONETIC, PROWORDS, RADIO_DRILLS, type RadioDrill } from "@/content/radio";
 import { shuffle } from "@/lib/shuffle";
 import ChoiceDrill, { type ChoiceQuestion } from "@/components/drills/ChoiceDrill";
 import OrderDrill from "@/components/drills/OrderDrill";
@@ -10,7 +10,7 @@ import SpellDrill from "@/components/drills/SpellDrill";
 import Tabs from "@/components/drills/Tabs";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
-type Mode = "prowords" | "phonetic" | "spell" | "calls";
+type Mode = RadioDrill;
 
 function prowordQuestions(): ChoiceQuestion[] {
   return shuffle(PROWORDS).map((p, i) => {
@@ -49,16 +49,16 @@ function phoneticQuestions(): ChoiceQuestion[] {
 
 export default function RadioPractice({ initialTab }: { initialTab?: string }) {
   const [mode, setMode] = useState<Mode>(
-    (["prowords", "phonetic", "spell", "calls"] as Mode[]).find((m) => m === initialTab) ?? "prowords"
+    RADIO_DRILLS.find((m) => m === initialTab) ?? "prowords"
   );
   const [scenario, setScenario] = useState(CALL_SCENARIOS[0].slug);
   const s = CALL_SCENARIOS.find((c) => c.slug === scenario)!;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
-      <Breadcrumbs trail={[{ href: "/practice", label: "Practice" }]} />
+      <Breadcrumbs trail={[{ href: "/test", label: "Test" }, { href: "/test/radio", label: "Radio" }]} />
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900">Practise radio</h1>
+        <h1 className="font-display text-4xl font-extrabold uppercase text-ink">Test your radio</h1>
         <p className="text-gray-600">
           Need a refresher?{" "}
           <Link href="/learn/radio" className="text-primary font-semibold hover:underline">
@@ -75,7 +75,10 @@ export default function RadioPractice({ initialTab }: { initialTab?: string }) {
           { id: "calls", label: "Build the call" },
         ]}
         active={mode}
-        onChange={setMode}
+        onChange={(m) => {
+          setMode(m);
+          window.history.replaceState(null, "", `/test/radio/${m}`);
+        }}
       />
 
       {mode === "prowords" && <ChoiceDrill key="pw" makeQuestions={prowordQuestions} doneLabel="Prowords" trackAs={{ drill: "radio_prowords" }} />}

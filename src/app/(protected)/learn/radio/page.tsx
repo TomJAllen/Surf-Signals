@@ -43,8 +43,8 @@ export default function RadioPage() {
           How to use the patrol radio: making a call, prowords, the phonetic alphabet and reporting an
           incident. Call signs and some procedures vary by state, so check your state centre&apos;s SOPs too.
         </p>
-        <Link href="/practice/radio" className="btn-primary inline-block">
-          Practise radio calls
+        <Link href="/test/radio/calls" className="btn-primary inline-block">
+          Test yourself on radio calls
         </Link>
         <div className="flex flex-wrap gap-2 pt-2">
           {SECTIONS.map(([id, label]) => (
@@ -139,8 +139,8 @@ export default function RadioPage() {
             </li>
           ))}
         </ol>
-        <Link href="/practice/mnemonics/four-ps?mode=match" className="text-primary font-semibold hover:underline text-sm">
-          Practise the 4 Ps →
+        <Link href="/test/mnemonics/four-ps?mode=match" className="text-primary font-semibold hover:underline text-sm">
+          Test yourself on the 4 Ps →
         </Link>
       </Section>
 

@@ -52,6 +52,19 @@ const nextConfig = {
       { source: "/api/:path*", headers: [{ key: "Cache-Control", value: "no-store" }] },
     ];
   },
+  // "Practice" was renamed "Test"; keep old links and bookmarks working
+  async redirects() {
+    return [
+      { source: "/practice", destination: "/test", permanent: true },
+      {
+        source: "/practice/radio",
+        has: [{ type: "query", key: "tab", value: "(?<tab>prowords|phonetic|spell|calls)" }],
+        destination: "/test/radio/:tab",
+        permanent: true,
+      },
+      { source: "/practice/:path*", destination: "/test/:path*", permanent: true },
+    ];
+  },
   // Anonymous analytics are sent via our own domain (see src/lib/analytics.ts)
   async rewrites() {
     return [

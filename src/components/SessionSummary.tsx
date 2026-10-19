@@ -120,7 +120,7 @@ export default function SessionSummary({
                 : "bg-primary text-white hover:bg-primary-dark"
             }`}
           >
-            Practice Again
+            Go again
           </button>
           <Link
             href="/dashboard"

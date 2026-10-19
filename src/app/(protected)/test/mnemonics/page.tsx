@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MNEMONICS, MNEMONIC_GROUPS, type MnemonicGroup } from "@/content/mnemonics";
-import Breadcrumbs from "@/components/Breadcrumbs";
+import TopicTests from "@/components/TopicTests";
 
 const ORDER: MnemonicGroup[] = ["handover", "first-aid", "patrol"];
 
@@ -16,23 +16,16 @@ function Chip({ href, label }: { href?: string; label: string }) {
   );
 }
 
-export default function PracticeMnemonicsPage() {
+export default function TestMnemonicsPage() {
   return (
-    <div className="space-y-8 pb-12">
-      <Breadcrumbs trail={[{ href: "/practice", label: "Practice" }]} />
-      <header className="space-y-3">
-        <h1 className="text-3xl font-bold text-gray-900">Practise mnemonics</h1>
-        <Link href="/practice/mnemonics/mixed" className="btn-primary inline-block">
-          Mixed quiz: all mnemonics
-        </Link>
-      </header>
-
+    <TopicTests topic="mnemonics">
+      <h2 id="all" className="scroll-mt-24 font-display text-3xl font-extrabold uppercase text-ink">One at a time</h2>
       {ORDER.map((g) => (
         <section key={g} className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">{MNEMONIC_GROUPS[g].label}</h2>
+          <h3 className="text-xl font-bold text-ink">{MNEMONIC_GROUPS[g].label}</h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {MNEMONICS.filter((m) => m.group === g).map((m) => {
-              const base = `/practice/mnemonics/${m.slug}`;
+              const base = `/test/mnemonics/${m.slug}`;
               return (
                 <div key={m.slug} className="card !p-4 space-y-3">
                   <div>
@@ -49,6 +42,6 @@ export default function PracticeMnemonicsPage() {
           </div>
         </section>
       ))}
-    </div>
+    </TopicTests>
   );
 }

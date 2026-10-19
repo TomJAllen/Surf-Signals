@@ -6,7 +6,7 @@ export interface Crumb {
 }
 
 // "← Mnemonics" back button for the page one level up, plus the full trail
-// (Practice › Mnemonics) on wider screens. `trail` runs from the top level down.
+// (Test › Mnemonics) on wider screens. `trail` runs from the top level down.
 export default function Breadcrumbs({ trail }: { trail: Crumb[] }) {
   if (!trail.length) return null;
   const parent = trail[trail.length - 1];

@@ -63,8 +63,8 @@ export default function Home() {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
-              <Link href="/practice" className="btn-accent">
-                Start practising
+              <Link href="/test" className="btn-accent">
+                Test yourself
               </Link>
               <Link href="/signup" className="font-semibold underline decoration-2 underline-offset-4 hover:decoration-secondary">
                 Create a free account
@@ -133,22 +133,22 @@ export default function Home() {
               topic: "Signals",
               title: "Do them on camera",
               body: "Name all 14 from a picture, then perform each one in front of your camera. It checks your arm positions and movement, and the video never leaves your device.",
-              href: "/practice#signals",
-              cta: "Practise signals",
+              href: "/test/signals",
+              cta: "Test your signals",
             },
             {
               topic: "Mnemonics",
               title: "Know what to ask and say",
               body: "DRSABCD, SAMPLE, IMIST AMBO and nine more. Quiz yourself letter by letter, then drag real patient details onto the right letter.",
-              href: "/practice#mnemonics",
-              cta: "Practise mnemonics",
+              href: "/test/mnemonics",
+              cta: "Test your mnemonics",
             },
             {
               topic: "Radio",
               title: "Sound sure on the radio",
               body: "Prowords, the phonetic alphabet and the 4 Ps. Spell call signs and put real calls to SurfCom in the right order.",
-              href: "/practice#radio",
-              cta: "Practise radio",
+              href: "/test/radio",
+              cta: "Test your radio",
             },
           ].map((f) => (
             <div key={f.topic} className="flex flex-col">
@@ -173,8 +173,8 @@ export default function Home() {
             <img src="/icon.svg" alt="" width={28} height={28} className="rounded-md" />
             Surf Signals
           </div>
-          <Link href="/practice" className="btn-secondary">
-            Start practising
+          <Link href="/test" className="btn-secondary">
+            Test yourself
           </Link>
         </div>
       </section>

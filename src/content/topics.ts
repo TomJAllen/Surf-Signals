@@ -1,5 +1,5 @@
-// The three topics the app covers, and the practice exercises for each.
-// Learn, Practice and the dashboard all read from here so they stay in step.
+// The three topics the app covers, and the tests for each.
+// Learn, Test and the dashboard all read from here so they stay in step.
 // An exercise without an href is shown as "Coming soon".
 
 export type TopicId = "signals" | "mnemonics" | "radio";
@@ -15,6 +15,7 @@ export interface Topic {
   title: string;
   blurb: string;
   learnHref: string;
+  testHref: string;
   exercises: Exercise[];
 }
 
@@ -24,6 +25,7 @@ export const TOPICS: Topic[] = [
     title: "Signals",
     blurb: "The 14 beach and water hand signals.",
     learnHref: "/learn/signals",
+    testHref: "/test/signals",
     exercises: [
       {
         title: "Identify",
@@ -46,16 +48,17 @@ export const TOPICS: Topic[] = [
     title: "Mnemonics",
     blurb: "DRSABCD, SAMPLE, IMIST AMBO and the other memory aids.",
     learnHref: "/learn/mnemonics",
+    testHref: "/test/mnemonics",
     exercises: [
       {
         title: "Mixed quiz",
         description: "Letters from every mnemonic, shuffled together.",
-        href: "/practice/mnemonics/mixed",
+        href: "/test/mnemonics/mixed",
       },
       {
         title: "One mnemonic at a time",
         description: "Quiz each letter, then drag real statements onto the right letter.",
-        href: "/practice/mnemonics",
+        href: "/test/mnemonics#all",
       },
       {
         title: "Timed recall",
@@ -72,26 +75,27 @@ export const TOPICS: Topic[] = [
     title: "Radio",
     blurb: "Prowords, the phonetic alphabet and making calls.",
     learnHref: "/learn/radio",
+    testHref: "/test/radio",
     exercises: [
       {
         title: "Prowords",
         description: "Match prowords to what they mean, both ways round.",
-        href: "/practice/radio?tab=prowords",
+        href: "/test/radio/prowords",
       },
       {
         title: "Phonetic letters",
         description: "Match each letter to its phonetic word: Alpha, Bravo, Charlie…",
-        href: "/practice/radio?tab=phonetic",
+        href: "/test/radio/phonetic",
       },
       {
         title: "Spell it",
         description: "Type out call signs and words in the phonetic alphabet.",
-        href: "/practice/radio?tab=spell",
+        href: "/test/radio/spell",
       },
       {
         title: "Build the call",
         description: "Put a radio exchange in the right order.",
-        href: "/practice/radio?tab=calls",
+        href: "/test/radio/calls",
       },
       {
         title: "Listen and respond",

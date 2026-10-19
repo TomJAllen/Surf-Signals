@@ -42,7 +42,7 @@ export default function SessionSetup({
 
   return (
     <div className="max-w-md mx-auto px-4 space-y-3">
-      <Breadcrumbs trail={[{ href: "/practice", label: "Practice" }, { href: "/practice#signals", label: "Signals" }]} />
+      <Breadcrumbs trail={[{ href: "/test", label: "Test" }, { href: "/test/signals", label: "Signals" }]} />
       <div className="card">
         {/* Header */}
         <div className="text-center mb-8">

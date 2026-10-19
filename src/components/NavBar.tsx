@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
-// Identify and Perform live under /study but belong to Practice
+// Identify and Perform live under /study but belong to Test
 function isActiveLink(pathname: string, href: string): boolean {
   return (
     pathname === href ||
-    (["/admin", "/learn", "/practice"].includes(href) && pathname.startsWith(href)) ||
-    (href === "/practice" && pathname.startsWith("/study"))
+    (["/admin", "/learn", "/test"].includes(href) && pathname.startsWith(href)) ||
+    (href === "/test" && pathname.startsWith("/study"))
   );
 }
 
@@ -23,7 +23,7 @@ export default function NavBar() {
     ? [
         { href: "/dashboard", label: "Dashboard" },
         { href: "/learn", label: "Learn" },
-        { href: "/practice", label: "Practice" },
+        { href: "/test", label: "Test" },
         { href: "/history", label: "History" },
         { href: "/account", label: "Account" },
         ...(session.user.role === "admin"
@@ -32,7 +32,7 @@ export default function NavBar() {
       ]
     : [
         { href: "/learn", label: "Learn" },
-        { href: "/practice", label: "Practice" },
+        { href: "/test", label: "Test" },
       ];
 
   return (
