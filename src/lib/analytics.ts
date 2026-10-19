@@ -1,11 +1,13 @@
 "use client";
 
 import type { PostHog } from "posthog-js";
+import { scrubEvent } from "./analyticsPrivacy";
 
 // Anonymous product analytics (PostHog). Privacy settings:
 // - no cookies: an anonymous random ID kept in localStorage
 // - never identified: no names, emails or account IDs are sent
 // - no session recording, no surveys; typed input is never captured
+// - nothing is sent from admin, account or password-reset pages (see analyticsPrivacy.ts)
 // - honours Do Not Track / Global Privacy Control, and an in-app opt-out
 // - events go via our own domain (/ingest, see next.config.mjs)
 // Also turn on "Discard client IP data" in the PostHog project settings.
@@ -49,6 +51,7 @@ export function initAnalytics(): void {
     disable_surveys: true,
     respect_dnt: true,
     mask_all_element_attributes: true,
+    before_send: (event) => scrubEvent(event, window.location.pathname),
     });
     ph.register(context);
     for (const [event, props] of queue.splice(0)) ph.capture(event, props);

@@ -51,8 +51,9 @@ export default function PrivacyPage() {
         <h3 className="font-bold">Usage analytics</h3>
         <p>
           To understand how the app is used and improve it, we collect anonymous usage data: pages viewed, which
-          exercises are started and finished, scores, the type of device and browser, and an approximate country. We
-          use:
+          buttons and links are tapped, how far pages are scrolled, how quickly pages load, which exercises are
+          started and finished, scores, the type of device and browser, and an approximate country. Nothing is
+          collected on your Account page or on admin pages. We use:
         </p>
         <ul className="list-disc pl-6 space-y-1">
           <li><strong>Vercel Web Analytics</strong>: aggregated page views, without cookies.</li>

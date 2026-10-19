@@ -178,8 +178,8 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
         {/* Statements still to place */}
         {!done && (
           <div className="order-first lg:order-last sticky top-[4.5rem] z-10 lg:top-24">
-            <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-200 shadow-sm p-3 space-y-2 max-h-[32vh] lg:max-h-[calc(100vh-8rem)] overflow-y-auto">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <div className="bg-sand/95 backdrop-blur rounded-lg border-2 border-ink p-3 space-y-2 max-h-[32vh] lg:max-h-[calc(100vh-8rem)] overflow-y-auto">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink/70">
                 {pool.length} to place · {mistakes} {mistakes === 1 ? "mistake" : "mistakes"}
               </p>
               {pool.map((c) => (
@@ -195,12 +195,12 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
                   onPointerMove={onPointerMove}
                   onPointerUp={(e) => endDrag(e)}
                   onPointerCancel={(e) => endDrag(e, true)}
-                  className={`w-full flex items-start gap-2 text-left text-sm rounded-xl border-2 px-3 py-2.5 transition-colors select-none lg:cursor-grab ${
+                  className={`w-full flex items-start gap-2 text-left text-sm rounded-md border-2 px-3 py-2.5 transition-colors select-none lg:cursor-grab ${
                     drag?.card === c.i
                       ? "opacity-30 border-dashed border-gray-300"
                       : selected === c.i
-                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                        : "border-gray-200 bg-white hover:border-gray-300"
+                        ? "border-ink bg-secondary shadow-[3px_3px_0_#1C1917]"
+                        : "border-ink bg-white shadow-[2px_2px_0_#1C1917] hover:bg-secondary/40"
                   }`}
                 >
                   <Grip />
@@ -221,8 +221,8 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
             return (
               <li key={row} className="flex items-stretch gap-3">
                 <span
-                  className={`shrink-0 w-11 rounded-xl flex items-center justify-center text-xl font-black ${
-                    filled ? "bg-green-600 text-white" : "bg-primary text-white"
+                  className={`shrink-0 w-11 rounded-md border-2 border-ink flex items-center justify-center font-display text-2xl font-extrabold ${
+                    filled ? "bg-correct text-white" : "bg-primary text-white"
                   }`}
                   aria-label={`Letter ${row + 1}: ${r.letter}`}
                 >
@@ -234,22 +234,22 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
                   disabled={filled || selected === null}
                   onClick={() => selected !== null && place(selected, row)}
                   aria-label={filled ? `${r.letter}: ${r.term}. ${cards[card].text}` : `Place on letter ${row + 1}, ${r.letter}`}
-                  className={`flex-1 min-h-[3.5rem] rounded-xl border-2 px-3 py-2 text-left text-sm transition-all ${
+                  className={`flex-1 min-h-[3.5rem] rounded-md border-2 px-3 py-2 text-left text-sm transition-all ${
                     filled
-                      ? "border-green-300 bg-green-50"
+                      ? "border-correct bg-green-50"
                       : wrongRow === row
                         ? "border-red-400 bg-red-50 motion-safe:animate-shake"
                         : over
-                          ? "border-primary bg-primary/10 scale-[1.01]"
+                          ? "border-ink bg-secondary scale-[1.01]"
                           : canTap
-                            ? "border-dashed border-primary/60 bg-white hover:bg-primary/5 cursor-pointer"
-                            : "border-dashed border-gray-300 bg-white/60"
+                            ? "border-dashed border-ink bg-white hover:bg-secondary/40 cursor-pointer"
+                            : "border-dashed border-stone-400 bg-white"
                   }`}
                 >
                   {filled ? (
                     <span className="block">
                       {cards[card].text !== r.term && (
-                        <span className="block text-xs font-bold uppercase tracking-wide text-green-800">{r.term}</span>
+                        <span className="block text-xs font-bold uppercase tracking-wide text-correct">{r.term}</span>
                       )}
                       <span className="block text-gray-900">{cards[card].text}</span>
                     </span>
@@ -267,7 +267,7 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
 
       {done && (
         <div className="card text-center space-y-3" role="status">
-          <p className="text-2xl font-bold text-gray-900">All matched</p>
+          <p className="font-display text-3xl font-bold text-ink">All matched</p>
           <p className="text-gray-600">
             {mistakes === 0 ? "No mistakes. Nice work." : `${mistakes} ${mistakes === 1 ? "mistake" : "mistakes"} along the way.`}
           </p>
@@ -281,7 +281,7 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
       {drag && (
         <div
           aria-hidden="true"
-          className="fixed z-50 pointer-events-none flex items-start gap-2 text-sm rounded-xl border-2 border-primary bg-white px-3 py-2.5 shadow-xl rotate-1"
+          className="fixed z-50 pointer-events-none flex items-start gap-2 text-sm rounded-md border-2 border-ink bg-secondary px-3 py-2.5 shadow-[4px_4px_0_#1C1917] rotate-1"
           style={{ left: drag.x - drag.offsetX, top: drag.y - drag.offsetY, width: drag.width }}
         >
           <Grip />
