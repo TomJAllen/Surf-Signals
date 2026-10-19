@@ -4,6 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
+// Identify and Perform live under /study but belong to Practice
+function isActiveLink(pathname: string, href: string): boolean {
+  return (
+    pathname === href ||
+    (["/admin", "/learn", "/practice"].includes(href) && pathname.startsWith(href)) ||
+    (href === "/practice" && pathname.startsWith("/study"))
+  );
+}
+
 export default function NavBar() {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -13,8 +22,7 @@ export default function NavBar() {
     ? [
         { href: "/dashboard", label: "Dashboard" },
         { href: "/learn", label: "Learn" },
-        { href: "/study/identify", label: "Identify" },
-        { href: "/study/perform", label: "Perform" },
+        { href: "/practice", label: "Practice" },
         { href: "/history", label: "History" },
         ...(session.user.role === "admin"
           ? [{ href: "/admin", label: "Admin" }]
@@ -22,8 +30,7 @@ export default function NavBar() {
       ]
     : [
         { href: "/learn", label: "Learn" },
-        { href: "/study/identify", label: "Identify" },
-        { href: "/study/perform", label: "Perform" },
+        { href: "/practice", label: "Practice" },
       ];
 
   return (
@@ -41,7 +48,7 @@ export default function NavBar() {
                 key={link.href}
                 href={link.href}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  pathname === link.href || ((link.href === "/admin" || link.href === "/learn") && pathname.startsWith(link.href))
+                  isActiveLink(pathname, link.href)
                     ? "bg-secondary text-gray-900"
                     : "hover:bg-primary-dark"
                 }`}
@@ -111,7 +118,7 @@ function MobileMenu({
               key={link.href}
               href={link.href}
               className={`block px-4 py-3 text-sm font-medium ${
-                pathname === link.href || ((link.href === "/admin" || link.href === "/learn") && pathname.startsWith(link.href))
+                isActiveLink(pathname, link.href)
                   ? "bg-secondary text-gray-900"
                   : "text-gray-700 hover:bg-gray-50"
               }`}

@@ -2,144 +2,143 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import type { DashboardStats } from "@/types";
+import { TOPICS } from "@/content/topics";
+
+interface SignalStat {
+  id: string;
+  name: string;
+  stats: { totalAttempts: number; correctAttempts: number; accuracy: number };
+}
+
+type StatsResponse = DashboardStats & { signalStats?: SignalStat[] };
+
+// Signals to practise next: weakest first, then ones never tried
+function practiseNext(signals: SignalStat[] = [], count = 3): SignalStat[] {
+  const tried = signals
+    .filter((s) => s.stats.totalAttempts > 0 && s.stats.accuracy < 100)
+    .sort((a, b) => a.stats.accuracy - b.stats.accuracy || b.stats.totalAttempts - a.stats.totalAttempts);
+  const untried = signals.filter((s) => s.stats.totalAttempts === 0);
+  return [...tried, ...untried].slice(0, count);
+}
+
+function Stat({ value, label }: { value: string | number; label: string }) {
+  return (
+    <div>
+      <div className="text-3xl font-bold text-gray-900">{value}</div>
+      <div className="text-gray-600 text-sm font-medium">{label}</div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const { data: session } = useSession();
+  const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchStats() {
-      try {
-        const response = await fetch("/api/stats");
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchStats();
+    fetch("/api/stats")
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setStats)
+      .catch((error) => console.error("Failed to fetch stats:", error))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const firstName = session?.user?.name?.split(" ")[0];
+  const hasAttempts = !!stats && stats.overall.totalAttempts > 0;
+  const next = practiseNext(stats?.signalStats);
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+    <div className="space-y-8 pb-12">
+      <header className="space-y-1">
+        <h1 className="text-3xl font-bold text-gray-900">{firstName ? `G'day, ${firstName}` : "Dashboard"}</h1>
+        <p className="text-gray-600">Learn it, then practise it. Pick a topic to get going.</p>
+      </header>
 
-      {/* Learn */}
-      <Link
-        href="/learn"
-        className="block card hover:shadow-lg transition-all border-2 border-transparent hover:border-secondary"
-      >
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Learn</h2>
-            <p className="text-gray-600">
-              Signals, handover and first aid mnemonics, and radio calls. Start here if you&apos;re new.
-            </p>
-          </div>
-          <span className="text-primary font-bold text-2xl" aria-hidden>
-            &rarr;
-          </span>
-        </div>
-      </Link>
-
-      {/* Test Yourself */}
-      <section>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Test Yourself</h2>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Link
-            href="/study/identify"
-            className="group card-highlight hover:shadow-lg transition-all hover:border-secondary"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-secondary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <svg className="w-7 h-7 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">
-                  Identify Mode
-                </h3>
-                <p className="text-gray-600">
-                  Practice identifying signals from images
+      {/* Topics: Learn + Practice for each */}
+      <section className="grid md:grid-cols-3 gap-4">
+        {TOPICS.map((t) => {
+          const ready = t.exercises.filter((e) => e.href).length;
+          const soon = t.exercises.length - ready;
+          return (
+            <div key={t.id} className="card flex flex-col gap-3">
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-gray-900">{t.title}</h2>
+                <p className="text-gray-600 text-sm">{t.blurb}</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  {ready} exercise{ready === 1 ? "" : "s"}
+                  {soon > 0 && ` · ${soon} coming soon`}
                 </p>
               </div>
-            </div>
-          </Link>
-
-          <Link
-            href="/study/perform"
-            className="group card-highlight hover:shadow-lg transition-all hover:border-primary"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">
-                  Perform Mode
-                </h3>
-                <p className="text-gray-600">
-                  Practice performing signals and check your form
-                </p>
+              <div className="flex gap-2">
+                <Link href={t.learnHref} className="flex-1 text-center py-2.5 rounded-xl font-bold bg-gray-100 text-gray-800 hover:bg-gray-200">
+                  Learn
+                </Link>
+                <Link href={`/practice#${t.id}`} className="flex-1 text-center py-2.5 rounded-xl font-bold bg-secondary text-gray-900 hover:bg-secondary-light">
+                  Practise
+                </Link>
               </div>
             </div>
-          </Link>
-        </div>
+          );
+        })}
       </section>
 
-      {/* Your Performance */}
-      <section>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Your Performance</h2>
-        {stats && stats.overall.totalAttempts > 0 ? (
-          <div className="card">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-6">
-                <div>
-                  <div className="text-3xl font-bold text-gray-900">
-                    {stats.overall.totalAttempts}
-                  </div>
-                  <div className="text-gray-600 text-sm font-medium">Total Attempts</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-secondary-dark">
-                    {stats.overall.accuracy}%
-                  </div>
-                  <div className="text-gray-600 text-sm font-medium">Accuracy</div>
-                </div>
+      {/* Progress */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold text-gray-900">Your signals progress</h2>
+        {loading ? (
+          <div className="card flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </div>
+        ) : hasAttempts ? (
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="card space-y-4">
+              <div className="flex flex-wrap gap-8">
+                <Stat value={stats!.overall.totalAttempts} label="Attempts" />
+                <Stat value={`${stats!.overall.accuracy}%`} label="Accuracy" />
               </div>
-              <Link
-                href="/history"
-                className="text-primary hover:text-primary-dark font-semibold text-sm"
-              >
-                View detailed stats &rarr;
+              <div className="flex flex-wrap gap-8 pt-4 border-t border-gray-100">
+                <Stat value={`${stats!.byMode.identify.accuracy}%`} label={`Identify (${stats!.byMode.identify.totalAttempts})`} />
+                <Stat value={`${stats!.byMode.perform.accuracy}%`} label={`Perform (${stats!.byMode.perform.totalAttempts})`} />
+              </div>
+              <Link href="/history" className="inline-block text-primary hover:text-primary-dark font-semibold text-sm">
+                View detailed stats →
               </Link>
             </div>
+
+            {next.length > 0 && (
+              <div className="card space-y-3">
+                <h3 className="font-bold text-gray-900">Practise these next</h3>
+                <ul className="divide-y divide-gray-100">
+                  {next.map((s) => (
+                    <li key={s.id} className="py-2 flex items-center justify-between gap-3">
+                      <span className="font-medium text-gray-900">{s.name}</span>
+                      <span className="text-sm text-gray-500 whitespace-nowrap">
+                        {s.stats.totalAttempts === 0 ? "Not tried yet" : `${s.stats.accuracy}% of ${s.stats.totalAttempts}`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex gap-2">
+                  <Link href="/learn/signals" className="text-sm font-bold text-primary hover:underline">
+                    Revise signals →
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="card text-center py-8">
-            <p className="text-gray-500 font-medium">
-              No attempts yet. Start practicing above!
-            </p>
+          <div className="card text-center py-8 space-y-3">
+            <p className="text-gray-600 font-medium">No signal attempts yet.</p>
+            <Link href="/study/identify" className="btn-secondary inline-block">
+              Try Identify
+            </Link>
           </div>
         )}
+        <p className="text-xs text-gray-500">
+          Scores from mnemonic and radio exercises aren&apos;t saved yet. That&apos;s coming with progress tracking.
+        </p>
       </section>
     </div>
   );

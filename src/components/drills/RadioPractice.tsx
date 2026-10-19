@@ -46,18 +46,27 @@ function phoneticQuestions(): ChoiceQuestion[] {
   }));
 }
 
-export default function RadioPracticePage() {
-  const [mode, setMode] = useState<Mode>("prowords");
+export default function RadioPractice({ initialTab }: { initialTab?: string }) {
+  const [mode, setMode] = useState<Mode>(
+    (["prowords", "phonetic", "spell", "calls"] as Mode[]).find((m) => m === initialTab) ?? "prowords"
+  );
   const [scenario, setScenario] = useState(CALL_SCENARIOS[0].slug);
   const s = CALL_SCENARIOS.find((c) => c.slug === scenario)!;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
       <nav className="text-sm text-gray-500">
-        <Link href="/learn" className="hover:underline">Learn</Link> /{" "}
-        <Link href="/learn/radio" className="hover:underline">Radio</Link>
+        <Link href="/practice" className="hover:underline">Practice</Link>
       </nav>
-      <h1 className="text-3xl font-bold text-gray-900">Practise radio</h1>
+      <header className="space-y-2">
+        <h1 className="text-3xl font-bold text-gray-900">Practise radio</h1>
+        <p className="text-gray-600">
+          Need a refresher?{" "}
+          <Link href="/learn/radio" className="text-primary font-semibold hover:underline">
+            Learn radio
+          </Link>
+        </p>
+      </header>
 
       <Tabs
         tabs={[

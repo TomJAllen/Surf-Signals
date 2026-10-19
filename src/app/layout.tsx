@@ -16,11 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Surf Signals - Learn Lifesaving Signals",
-  description: "Practice and learn surf lifesaving signals with flashcard-style training",
-  icons: {
-    icon: "/favicon.svg",
-  },
+  title: "Surf Signals - Learn and practise patrol skills",
+  description: "Learn and practise surf lifesaving signals, mnemonics and radio calls",
 };
 
 export default function RootLayout({

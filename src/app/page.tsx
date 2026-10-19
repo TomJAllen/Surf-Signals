@@ -37,12 +37,12 @@ export default function Home() {
             Surf Signals
           </h1>
           <p className="text-xl md:text-2xl text-white/80 mb-4 max-w-2xl mx-auto">
-            Learn the 14 surf lifesaving hand signals for your Bronze Medallion,
-            SRC or patrol, in a few minutes a day.
+            Learn the signals, mnemonics and radio calls for your Bronze
+            Medallion, SRC or patrol, in a few minutes a day.
           </p>
           <p className="text-base md:text-lg text-white/60 mb-10 max-w-2xl mx-auto">
-            Name each signal from a picture, then perform it in front of your
-            camera and get instant feedback.
+            Perform signals in front of your camera for instant feedback, sort a
+            patient handover into IMIST AMBO, and build radio calls.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -95,10 +95,11 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-bold mb-3">Identify Mode</h3>
+            <h3 className="text-xl font-bold mb-3">Signals</h3>
             <p className="text-white/70">
-              See a signal and pick its name from five options. Builds the
-              recognition you need on patrol.
+              All 14 beach and water signals. Name them from a picture, then
+              perform them in front of your webcam. The camera checks your arm
+              positions and movement, and video never leaves your device.
             </p>
           </div>
 
@@ -118,11 +119,10 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-bold mb-3">Perform Mode</h3>
+            <h3 className="text-xl font-bold mb-3">Mnemonics</h3>
             <p className="text-white/70">
-              Perform each signal in front of your webcam. The camera checks your
-              arm positions, including waves and circles. Video never leaves your
-              device.
+              DRSABCD, SAMPLE, IMIST AMBO, the 4 Ps and more. Quiz yourself
+              letter by letter and sort real patient scenarios into them.
             </p>
           </div>
 
@@ -142,10 +142,10 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-bold mb-3">Track Progress</h3>
+            <h3 className="text-xl font-bold mb-3">Radio</h3>
             <p className="text-white/70">
-              See your accuracy for every signal, so you know which ones to
-              practise before your assessment.
+              Prowords, the phonetic alphabet and the 4 Ps. Spell call signs
+              and put real radio exchanges in the right order.
             </p>
           </div>
         </div>
