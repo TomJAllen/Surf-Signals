@@ -58,3 +58,44 @@ export function practiceStreak(times: (string | Date)[], now = new Date()): { da
   }
   return { days: count, doneToday };
 }
+
+// --- Sessions and levels ---
+
+// Signals in a quick session (the alternative is all of them)
+export const QUICK_SESSION = 10;
+
+// A session that leans on what you need: signals you're still learning first
+// (fewest right in a row first), then ones you haven't tried, then mastered
+// ones to keep them fresh. Returned in random order.
+export function pickSessionSignals<T extends { id: string }>(
+  signals: T[],
+  recent: Record<string, boolean[]>,
+  count: number,
+  shuffleFn: <U>(a: U[]) => U[]
+): T[] {
+  if (count >= signals.length) return shuffleFn(signals);
+  const learning = shuffleFn(signals.filter((s) => (recent[s.id]?.length ?? 0) > 0 && masteryOf(recent[s.id]) !== "mastered")).sort(
+    (a, b) => correctInARow(recent[a.id]) - correctInARow(recent[b.id])
+  );
+  const fresh = shuffleFn(signals.filter((s) => !recent[s.id]?.length));
+  const mastered = shuffleFn(signals.filter((s) => masteryOf(recent[s.id] ?? []) === "mastered"));
+  return shuffleFn([...learning, ...fresh, ...mastered].slice(0, count));
+}
+
+export type Level = "not-started" | "learning" | "ready" | "patrol-ready";
+
+export const LEVEL_LABEL: Record<Level, string> = {
+  "not-started": "Not started",
+  learning: "In training",
+  ready: "Shadow patrolling",
+  "patrol-ready": "Patrol-ready",
+};
+
+// How you're going in an area, in surf club terms: In training once you've
+// started, Shadow patrolling from three quarters, Patrol-ready when everything is
+// mastered or passed.
+export function levelFor(done: number, total: number, tried: boolean): Level {
+  if (total > 0 && done >= total) return "patrol-ready";
+  if (total > 0 && done / total >= 0.75) return "ready";
+  return tried || done > 0 ? "learning" : "not-started";
+}

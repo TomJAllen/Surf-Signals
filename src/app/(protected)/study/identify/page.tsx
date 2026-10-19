@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import MultipleChoiceCard from "@/components/MultipleChoiceCard";
 import SessionSetup from "@/components/SessionSetup";
+import { pickSessionSignals, QUICK_SESSION } from "@/lib/progress";
+import { useRecentSignalResults } from "@/lib/useRecentSignalResults";
+import { shuffle } from "@/lib/shuffle";
 import SessionSummary from "@/components/SessionSummary";
 import { useSession } from "next-auth/react";
 import { saveLocalAttempt } from "@/lib/localStorage";
 import { track } from "@/lib/analytics";
-import type { Signal, SignalCategory, SessionConfig } from "@/types";
+import type { Signal, SessionConfig } from "@/types";
 
 type SessionPhase = "setup" | "study" | "summary";
 
@@ -18,6 +21,10 @@ interface SessionResult {
 
 export default function IdentifyPage() {
   const { status: authStatus } = useSession();
+  // Latest results per signal, so a quick session can focus on weak ones
+  const { recent, ready: recentReady } = useRecentSignalResults(authStatus);
+  const recentRef = useRef(recent);
+  recentRef.current = recent;
   const [phase, setPhase] = useState<SessionPhase>("setup");
   const [signals, setSignals] = useState<Signal[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,10 +33,6 @@ export default function IdentifyPage() {
   const [error, setError] = useState("");
   const [allSignals, setAllSignals] = useState<Signal[]>([]);
   const [totalSignals, setTotalSignals] = useState(0);
-  const [signalsByCategory, setSignalsByCategory] = useState<Record<SignalCategory, number>>({
-    "beach-to-water": 0,
-    "water-to-beach": 0,
-  });
 
   // Fetch all signals to get counts
   useEffect(() => {
@@ -41,10 +44,6 @@ export default function IdentifyPage() {
 
         setAllSignals(data);
         setTotalSignals(data.length);
-        setSignalsByCategory({
-          "beach-to-water": data.filter((s) => s.category === "beach-to-water").length,
-          "water-to-beach": data.filter((s) => s.category === "water-to-beach").length,
-        });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
@@ -60,18 +59,12 @@ export default function IdentifyPage() {
 
     try {
       // Build query params
-      const params = new URLSearchParams();
-      if (config.category) params.set("category", config.category);
-      params.set("limit", String(config.count));
-      params.set("shuffle", "true");
-
-      const response = await fetch(`/api/signals?${params}`);
+      const response = await fetch("/api/signals");
       if (!response.ok) throw new Error("Failed to fetch signals");
-
       const data: Signal[] = await response.json();
 
-      // The API returns a random sample when shuffle=true
-      const shuffled = data;
+      // Weak signals first for a quick set; everything, shuffled, for a full one
+      const shuffled = pickSessionSignals(data, recentRef.current, config.count, shuffle);
 
       setSignals(shuffled.slice(0, config.count));
       setCurrentIndex(0);
@@ -83,6 +76,16 @@ export default function IdentifyPage() {
       setLoading(false);
     }
   }, []);
+
+  // From the dashboard's "Start" button (?start=quick): skip the setup screen.
+  // Waits for your results, so the set can focus on your weak signals.
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (autoStarted.current || phase !== "setup" || totalSignals === 0 || !recentReady) return;
+    if (new URLSearchParams(window.location.search).get("start") !== "quick") return;
+    autoStarted.current = true;
+    startSession({ mode: "identify", category: null, count: Math.min(QUICK_SESSION, totalSignals) });
+  }, [phase, totalSignals, recentReady, startSession]);
 
   const handleResult = async (correct: boolean) => {
     const signal = signals[currentIndex];
@@ -165,7 +168,6 @@ export default function IdentifyPage() {
         <SessionSetup
           mode="identify"
           totalSignals={totalSignals}
-          signalsByCategory={signalsByCategory}
           onStart={startSession}
         />
       </div>

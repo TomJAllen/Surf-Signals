@@ -45,3 +45,30 @@ describe("practice streak", () => {
     expect(practiceStreak([], now)).toEqual({ days: 0, doneToday: false });
   });
 });
+
+import { pickSessionSignals, levelFor } from "@/lib/progress";
+
+describe("quick sessions and levels", () => {
+  const ids = Array.from({ length: 14 }, (_, i) => ({ id: `s${i}` }));
+  const same = <U,>(a: U[]) => [...a];
+
+  it("puts weak signals first, then new, then mastered", () => {
+    const recent: Record<string, boolean[]> = {
+      s0: [true, true, true], // mastered
+      s1: [false, true], // learning, 0 in a row
+      s2: [true, false], // learning, 1 in a row
+    };
+    const picked = pickSessionSignals(ids, recent, 3, same).map((s) => s.id);
+    expect(picked).toEqual(["s1", "s2", "s3"]);
+    expect(pickSessionSignals(ids, recent, 14, same)).toHaveLength(14);
+    expect(pickSessionSignals(ids, {}, 10, same)).toHaveLength(10);
+  });
+
+  it("gives one level per area", () => {
+    expect(levelFor(0, 14, false)).toBe("not-started");
+    expect(levelFor(0, 14, true)).toBe("learning");
+    expect(levelFor(10, 14, true)).toBe("learning");
+    expect(levelFor(11, 14, true)).toBe("ready");
+    expect(levelFor(14, 14, true)).toBe("patrol-ready");
+  });
+});

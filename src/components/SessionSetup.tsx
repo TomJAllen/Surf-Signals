@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import type { StudyMode, SignalCategory, SessionConfig } from "@/types";
+import type { StudyMode, SessionConfig } from "@/types";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { QUICK_SESSION } from "@/lib/progress";
 
 interface SessionSetupProps {
   mode: StudyMode;
   totalSignals: number;
-  signalsByCategory: Record<SignalCategory, number>;
   onStart: (config: SessionConfig) => void;
   cameraEnabled?: boolean;
   onCameraToggle?: (enabled: boolean) => void;
@@ -17,26 +16,13 @@ interface SessionSetupProps {
 export default function SessionSetup({
   mode,
   totalSignals,
-  signalsByCategory,
   onStart,
   cameraEnabled = false,
   onCameraToggle,
 }: SessionSetupProps) {
-  const [category, setCategory] = useState<SignalCategory | null>(null);
-
   const isPerformMode = mode === "perform";
-
-  const availableSignals = category
-    ? signalsByCategory[category]
-    : totalSignals;
-
-  const handleStart = () => {
-    onStart({
-      mode,
-      category,
-      count: availableSignals,
-    });
-  };
+  const quick = Math.min(QUICK_SESSION, totalSignals);
+  const start = (count: number) => onStart({ mode, category: null, count });
 
   const isIdentify = mode === "identify";
 
@@ -63,61 +49,13 @@ export default function SessionSetup({
               {isIdentify ? "Identify Mode" : "Perform Mode"}
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Set Up Your Session
+          <h1 className="font-display text-3xl font-extrabold uppercase text-ink mb-2">
+            {isIdentify ? "Name the signal" : "Do the signal"}
           </h1>
           <p className="text-gray-600">
             {isIdentify
               ? "You'll see each signal and pick its name from five options."
               : "You'll be given a signal name. Perform it, then check your form."}
-          </p>
-        </div>
-
-        {/* Category Filter */}
-        <div className="mb-6">
-          <label className="block text-sm font-bold text-gray-700 mb-3">
-            Signal Category
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => setCategory(null)}
-              className={`p-3 rounded-xl text-sm font-bold transition-all ${
-                category === null
-                  ? "bg-primary text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              All ({totalSignals})
-            </button>
-            <button
-              onClick={() => setCategory("beach-to-water")}
-              className={`p-3 rounded-xl text-sm font-bold transition-all ${
-                category === "beach-to-water"
-                  ? "bg-amber-500 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Beach to Water ({signalsByCategory["beach-to-water"]})
-            </button>
-            <button
-              onClick={() => setCategory("water-to-beach")}
-              className={`p-3 rounded-xl text-sm font-bold transition-all ${
-                category === "water-to-beach"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Water to Beach ({signalsByCategory["water-to-beach"]})
-            </button>
-          </div>
-          <p className="text-xs text-gray-500 mt-3 min-h-[2.5rem]">
-            {category === "beach-to-water"
-              ? "Signals given from the beach to swimmers, lifesavers and craft in the water."
-              : category === "water-to-beach"
-                ? "Signals given by a lifesaver in the water back to the beach."
-                : "Every signal, from the beach and from the water."}{" "}
-            {availableSignals > 0 &&
-              `${availableSignals} signal${availableSignals === 1 ? "" : "s"} in this session.`}
           </p>
         </div>
 
@@ -175,18 +113,24 @@ export default function SessionSetup({
           </p>
         )}
 
-        {/* Start Button */}
-        <button
-          onClick={handleStart}
-          disabled={availableSignals === 0}
-          className={`w-full py-4 px-6 rounded-xl font-bold transition-all active:scale-[0.98] shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
-            isIdentify
-              ? "bg-secondary text-gray-900 hover:bg-secondary-light"
-              : "bg-primary text-white hover:bg-primary-dark"
-          }`}
-        >
-          Start Session
-        </button>
+        {/* Start: a quick set that focuses on what you need, or all of them */}
+        <div className="space-y-3">
+          <button
+            onClick={() => start(quick)}
+            disabled={totalSignals === 0}
+            className="btn-primary w-full disabled:opacity-50"
+          >
+            Start: {quick} signals
+          </button>
+          {totalSignals > quick && (
+            <button onClick={() => start(totalSignals)} className="btn-outline w-full">
+              All {totalSignals}
+            </button>
+          )}
+          <p className="text-center text-xs text-stone-600">
+            The {quick}-signal set focuses on the ones you&apos;re still getting wrong.
+          </p>
+        </div>
 
         <p className="text-center text-sm text-gray-500 mt-4">
           New to the signals?{" "}
@@ -195,11 +139,6 @@ export default function SessionSetup({
           </Link>
         </p>
 
-        {availableSignals === 0 && (
-          <p className="text-center text-primary text-sm mt-4">
-            No signals available in this category
-          </p>
-        )}
       </div>
     </div>
   );

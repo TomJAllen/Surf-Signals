@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { correctInARow, masteryOf, practiceStreak, MASTERY_STREAK, type Mastery } from "@/lib/progress";
+import { correctInARow, masteryOf, practiceStreak, levelFor, LEVEL_LABEL, MASTERY_STREAK, type Level, type Mastery } from "@/lib/progress";
 import { mnemonicProgress, radioProgress, RADIO_PASS_MARK, type LatestResult } from "@/lib/drillResults";
 import { getTopic } from "@/content/topics";
 
@@ -23,6 +23,13 @@ interface StatsResponse {
   practiceTimes?: string[];
   drillResults?: LatestResult[];
 }
+
+const LEVEL_STYLE: Record<Level, string> = {
+  "not-started": "border-dashed border-stone-400 text-stone-600 bg-white",
+  learning: "border-ink bg-secondary text-ink",
+  ready: "border-correct bg-green-50 text-correct",
+  "patrol-ready": "border-ink bg-correct text-white",
+};
 
 const RADIO_NAMES: Record<string, string> = {
   prowords: "Prowords",
@@ -142,12 +149,13 @@ export default function DashboardPage() {
       done: mastered,
       total,
       unit: "mastered",
+      tried: hasAttempts,
       states: tiles.map((t) => (t.mastery === "mastered" ? "done" : t.mastery === "learning" ? "started" : "none")) as ("done" | "started" | "none")[],
       next: allMastered
         ? null
         : hasAttempts
-          ? { text: next.map((n) => n.name).join(", "), href: "/study/identify", cta: "Keep going with signals" }
-          : { text: "Name your first signal", href: "/study/identify", cta: "Start with signals" },
+          ? { text: next.map((n) => n.name).join(", "), href: "/study/identify?start=quick", cta: "Keep going with signals" }
+          : { text: "Name your first signal", href: "/study/identify?start=quick", cta: "Start with signals" },
     },
     {
       id: "mnemonics",
@@ -155,6 +163,7 @@ export default function DashboardPage() {
       done: mnemMastered,
       total: mnems.length,
       unit: "mastered",
+      tried: mnems.some((m) => m.tried),
       states: mnems.map((m) => (m.mastered ? "done" : m.tried ? "started" : "none")) as ("done" | "started" | "none")[],
       next: nextMnem
         ? {
@@ -170,6 +179,7 @@ export default function DashboardPage() {
       done: radioPassed,
       total: radio.length,
       unit: "passed",
+      tried: radio.some((r) => r.tried),
       states: radio.map((r) => (r.passed ? "done" : r.tried ? "started" : "none")) as ("done" | "started" | "none")[],
       next: nextRadio
         ? { text: RADIO_NAMES[nextRadio.id], href: `/test/radio/${nextRadio.id}`, cta: `Test yourself: ${RADIO_NAMES[nextRadio.id]}` }
@@ -187,10 +197,10 @@ export default function DashboardPage() {
         {!loading && anyActivity && (
           <p className="font-semibold text-ink">
             {streak.days === 0
-              ? "Do a test today to start a streak."
+              ? "Practise today to start a streak."
               : streak.doneToday
                 ? `${streak.days}-day streak. Nice work today.`
-                : `${streak.days}-day streak. Do a test today to keep it going.`}
+                : `${streak.days}-day streak. Practise today to keep it going.`}
           </p>
         )}
       </header>
@@ -201,73 +211,84 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          {/* Everything at a glance: one row per area, one thing to do next */}
+          {/* Today: one thing to do */}
           <section className="card-highlight space-y-5">
-            <ul className="space-y-4">
-              {areas.map((a) => (
-                <li key={a.id} className="space-y-1.5">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <Link href={`/test/${a.id}`} className="font-display text-2xl font-bold uppercase text-ink hover:underline">
-                      {a.label}
-                    </Link>
-                    <span className="text-sm font-semibold text-ink">
-                      <span className="font-display text-2xl font-extrabold">{a.done}</span>
-                      <span className="text-stone-500"> / {a.total}</span> {a.unit}
-                    </span>
-                  </div>
-                  <Segments states={a.states} label={`${a.label}: ${a.done} of ${a.total} ${a.unit}`} />
-                  {a.next && a !== focus && (
-                    <p className="text-sm text-stone-700">
-                      Next:{" "}
-                      <Link href={a.next.href} className="font-semibold text-primary hover:underline">
-                        {a.next.text}
-                      </Link>
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ul>
-
             {focus?.next ? (
-              <div className="space-y-3 border-t-2 border-ink pt-4">
-                <p className="text-ink">
-                  <span className="font-semibold">Next up:</span> {focus.next.text}
+              <div className="space-y-3">
+                <p className="text-sm font-bold uppercase tracking-widest text-primary">Today</p>
+                <p className="font-display text-3xl font-extrabold uppercase leading-tight text-ink">
+                  {anyActivity ? focus.label : "Start with the signals"}
                 </p>
-                <Link href={focus.next.href} className="btn-primary">
-                  {focus.next.cta}
+                <p className="text-ink">{focus.next.text}</p>
+                <Link href={focus.next.href} className="btn-primary w-full sm:w-auto">
+                  Start today&apos;s practice
                 </Link>
               </div>
             ) : (
-              <p className="border-t-2 border-ink pt-4 font-semibold text-ink">
-                Everything mastered. Keep it sharp with the mixed quiz and Perform mode.
-              </p>
-            )}
-
-            <details className="text-xs text-stone-600">
-              <summary className="cursor-pointer font-semibold">How progress is counted</summary>
-              <p className="mt-1">
-                A signal is mastered when your last {MASTERY_STREAK} tries were right. A mnemonic is mastered after a
-                perfect quiz and a Match round with no mistakes. A radio test is passed at{" "}
-                {Math.round(RADIO_PASS_MARK * 100)}% or more, or with a call built with no mistakes.
-              </p>
-            </details>
-          </section>
-
-          <section>
-            {hasAttempts && (
               <div className="space-y-2">
-                <h2 className="font-display text-2xl font-bold uppercase text-ink">Your signals</h2>
-                <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
-                  {tiles.map((s) => (
-                    <SignalTile key={s.id} s={s} />
-                  ))}
-                </ul>
-                <Link href="/history" className="inline-block text-sm font-semibold text-primary hover:underline">
-                  See your history
-                </Link>
+                <p className="font-display text-3xl font-extrabold uppercase text-ink">You&apos;re patrol-ready</p>
+                <p className="text-ink">Everything mastered. Keep it sharp with the mixed quiz and Perform mode.</p>
               </div>
             )}
+
+            {/* Where you're at, one word per area */}
+            <ul className="grid grid-cols-3 gap-2 border-t-2 border-ink pt-4">
+              {areas.map((a) => {
+                const level = levelFor(a.done, a.total, a.tried);
+                return (
+                  <li key={a.id}>
+                    <Link href={`/test/${a.id}`} className="block text-center">
+                      <span className="block font-display text-lg font-bold uppercase text-ink">{a.label}</span>
+                      <span className={`mt-1 inline-block rounded border-2 px-2 py-0.5 text-xs font-bold leading-tight ${LEVEL_STYLE[level]}`}>
+                        {level === "patrol-ready" && "✓ "}
+                        {LEVEL_LABEL[level]}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </section>
+
+          {/* The detail, for anyone who wants it */}
+          {anyActivity && (
+            <details className="group">
+              <summary className="cursor-pointer font-display text-xl font-bold uppercase text-ink">
+                Show details
+              </summary>
+              <div className="mt-4 space-y-6">
+                <ul className="space-y-4">
+                  {areas.map((a) => (
+                    <li key={a.id} className="space-y-1.5">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="font-bold text-ink">{a.label}</span>
+                        <span className="text-sm text-stone-700">
+                          {a.done} of {a.total} {a.unit}
+                        </span>
+                      </div>
+                      <Segments states={a.states} label={`${a.label}: ${a.done} of ${a.total} ${a.unit}`} />
+                    </li>
+                  ))}
+                </ul>
+                {hasAttempts && (
+                  <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
+                    {tiles.map((t) => (
+                      <SignalTile key={t.id} s={t} />
+                    ))}
+                  </ul>
+                )}
+                <p className="text-xs text-stone-600">
+                  Levels: In training once you&apos;ve started, Shadow patrolling at three quarters, Patrol-ready when
+                  everything is done. A signal is mastered when your last {MASTERY_STREAK} tries were right; a mnemonic after a
+                  perfect quiz and a Match round with no mistakes; a radio test is passed at{" "}
+                  {Math.round(RADIO_PASS_MARK * 100)}% or more, or a call built with no mistakes.{" "}
+                  <Link href="/history" className="font-semibold text-primary hover:underline">
+                    Signal history
+                  </Link>
+                </p>
+              </div>
+            </details>
+          )}
         </>
       )}
 
