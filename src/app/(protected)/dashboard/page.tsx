@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { correctInARow, masteryOf, practiceStreak, levelFor, LEVEL_LABEL, MASTERY_STREAK, type Level, type Mastery } from "@/lib/progress";
 import { mnemonicProgress, radioProgress, RADIO_PASS_MARK, type LatestResult } from "@/lib/drillResults";
 import { getTopic } from "@/content/topics";
+import { track } from "@/lib/analytics";
 
 interface SignalStat {
   id: string;
@@ -188,6 +189,26 @@ export default function DashboardPage() {
   ];
   const focus = [...areas].filter((a) => a.next).sort((a, b) => a.done / a.total - b.done / b.total)[0];
 
+  // Anonymous "level_reached" when an area moves up a level since the last visit
+  // on this device. The first visit just records where you are.
+  const levelKey = areas.map((a) => `${a.id}:${levelFor(a.done, a.total, a.tried)}`).join(",");
+  useEffect(() => {
+    if (loading || !stats) return;
+    const RANK: Record<Level, number> = { "not-started": 0, learning: 1, ready: 2, "patrol-ready": 3 };
+    const now = Object.fromEntries(levelKey.split(",").map((p) => p.split(":"))) as Record<string, Level>;
+    try {
+      const before = JSON.parse(localStorage.getItem("ss-levels") ?? "null") as Record<string, Level> | null;
+      if (before) {
+        for (const [area, level] of Object.entries(now)) {
+          if (before[area] && RANK[level] > RANK[before[area]]) track("level_reached", { area, level });
+        }
+      }
+      localStorage.setItem("ss-levels", JSON.stringify(now));
+    } catch {
+      /* storage unavailable */
+    }
+  }, [loading, stats, levelKey]);
+
   return (
     <div className="space-y-8 pb-12">
       <header className="space-y-1">
@@ -220,12 +241,20 @@ export default function DashboardPage() {
                   {anyActivity ? focus.label : "Start with the signals"}
                 </p>
                 <p className="text-ink">{focus.next.text}</p>
-                <Link href="/test/daily" className="btn-primary w-full sm:w-auto">
+                <Link
+                  href="/test/daily"
+                  onClick={() => track("dashboard_cta", { target: "daily", focus: focus.id })}
+                  className="btn-primary w-full sm:w-auto"
+                >
                   Start today&apos;s practice
                 </Link>
                 <p className="text-sm text-stone-600">
                   Four quick questions: a signal, an acronym, a radio call and one from the PSAR manual.{" "}
-                  <Link href={focus.next.href} className="font-semibold text-primary hover:underline">
+                  <Link
+                    href={focus.next.href}
+                    onClick={() => track("dashboard_cta", { target: "area", focus: focus.id })}
+                    className="font-semibold text-primary hover:underline"
+                  >
                     Or go straight to {focus.label.toLowerCase()}
                   </Link>
                 </p>

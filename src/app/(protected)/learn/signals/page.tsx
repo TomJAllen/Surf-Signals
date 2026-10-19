@@ -1,5 +1,7 @@
 "use client";
 
+import TrackView from "@/components/TrackView";
+import { track } from "@/lib/analytics";
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -80,7 +82,10 @@ function SignalCard({ signal }: { signal: Signal }) {
           </div>
         ) : (
           <button
-            onClick={() => setShowVideo(true)}
+            onClick={() => {
+              setShowVideo(true);
+              track("video_opened", { signal: signal.name, where: "learn" });
+            }}
             className="self-start text-sm font-bold text-primary hover:underline"
           >
             ▶ Watch the official demo
@@ -122,6 +127,7 @@ export default function LearnPage() {
 
   return (
     <div className="space-y-8 pb-12">
+      <TrackView event="learn_viewed" props={{ area: "signals" }} />
       <header className="space-y-3">
         <Breadcrumbs trail={[{ href: "/learn", label: "Learn" }]} />
         <h1 className="text-3xl font-bold text-gray-900">Signals</h1>

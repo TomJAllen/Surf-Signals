@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { track } from "@/lib/analytics";
 import { recordDrillResult } from "@/lib/recordDrill";
+import { useAbandonTracking } from "@/lib/useAbandonTracking";
 
 // Identifies a drill in analytics, e.g. { drill: "mnemonic_quiz", item: "sample" }
 export interface DrillTracking {
@@ -38,6 +39,7 @@ export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete
   const done = index >= questions.length;
   const q = questions[index];
   const [round, setRound] = useState(0);
+  useAbandonTracking(trackAs?.drill, trackAs?.item, index + (picked ? 1 : 0), questions.length, done);
 
   useEffect(() => {
     if (trackAs) track("drill_started", { ...trackAs, item: trackAs.item ?? null });

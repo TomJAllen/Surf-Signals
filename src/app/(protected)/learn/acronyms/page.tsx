@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TrackView from "@/components/TrackView";
 import { MNEMONICS, MNEMONIC_GROUPS, type MnemonicGroup } from "@/content/mnemonics";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
@@ -7,6 +8,7 @@ const ORDER: MnemonicGroup[] = ["handover", "first-aid", "patrol"];
 export default function AcronymsPage() {
   return (
     <div className="space-y-8 pb-12">
+      <TrackView event="learn_viewed" props={{ area: "acronyms" }} />
       <Breadcrumbs trail={[{ href: "/learn", label: "Learn" }]} />
       <header className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Acronyms</h1>

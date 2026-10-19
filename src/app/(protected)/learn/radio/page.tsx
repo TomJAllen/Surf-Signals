@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TrackView from "@/components/TrackView";
 import {
   CALL_SCENARIOS,
   CALL_SIGNS,
@@ -36,6 +37,7 @@ export default function RadioPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-12">
+      <TrackView event="learn_viewed" props={{ area: "radio" }} />
       <Breadcrumbs trail={[{ href: "/learn", label: "Learn" }]} />
       <header className="space-y-3">
         <h1 className="text-3xl font-bold text-gray-900">Radio</h1>

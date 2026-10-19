@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@/lib/analytics";
 import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import type { Signal, StudyMode } from "@/types";
@@ -191,7 +192,10 @@ export default function FlashCard({
         Image
       </button>
       <button
-        onClick={() => setShowVideo(true)}
+        onClick={() => {
+              setShowVideo(true);
+              track("video_opened", { signal: signal.name, where: "perform" });
+            }}
         className={`px-4 py-1.5 rounded-md text-sm font-bold border-2 flex items-center gap-2 ${
           showVideo ? "bg-white border-ink text-ink" : "border-transparent text-stone-600 hover:text-ink"
         }`}
