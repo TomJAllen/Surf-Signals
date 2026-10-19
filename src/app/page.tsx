@@ -1,9 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import SignalTeaser from "@/components/SignalTeaser";
+import { SIGNAL_INDEX, type SignalSummary } from "@/content/signalIndex";
+
+function SignalTile({ signal }: { signal: SignalSummary }) {
+  return (
+    <li className="flex flex-col items-center text-center">
+      <div className="relative aspect-square w-full">
+        <Image src={signal.imageUrl} alt="" fill sizes="(min-width: 768px) 140px, 30vw" className="object-contain mix-blend-multiply" />
+      </div>
+      <span className="mt-1 text-sm font-semibold leading-tight">{signal.name}</span>
+    </li>
+  );
+}
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -17,160 +31,142 @@ export default function Home() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary to-primary-dark">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-primary">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/icon.svg" alt="" width={64} height={64} className="rounded-xl ring-[3px] ring-ink animate-pulse" />
       </div>
     );
   }
 
+  const fromBeach = SIGNAL_INDEX.filter((s) => s.category === "beach-to-water");
+  const fromWater = SIGNAL_INDEX.filter((s) => s.category === "water-to-beach");
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary via-primary-dark to-gray-900">
-      <div className="max-w-6xl mx-auto px-4 py-16 safe-top">
-        {/* Hero Section */}
-        <div className="text-center text-white">
-          <div className="inline-block mb-6">
-            <span className="bg-secondary text-gray-900 px-4 py-2 rounded-lg text-lg font-black tracking-wide">
-              FOR SURF LIFE SAVING MEMBERS
-            </span>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            Surf Signals
-          </h1>
-          <p className="text-xl md:text-2xl text-white/80 mb-4 max-w-2xl mx-auto">
-            Learn the signals, mnemonics and radio calls for your Bronze
-            Medallion, SRC or patrol, in a few minutes a day.
-          </p>
-          <p className="text-base md:text-lg text-white/60 mb-10 max-w-2xl mx-auto">
-            Perform signals in front of your camera for instant feedback, sort a
-            patient handover into IMIST AMBO, and build radio calls.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/practice"
-              className="px-8 py-4 bg-secondary text-gray-900 rounded-xl font-bold text-lg hover:bg-secondary-light transition-all active:scale-95 shadow-lg"
-            >
-              Try it now
-            </Link>
-            <Link
-              href="/signup"
-              className="px-8 py-4 bg-white/10 backdrop-blur text-white rounded-xl font-semibold text-lg hover:bg-white/20 transition-all border-2 border-white/30"
-            >
-              Create free account
-            </Link>
-          </div>
-          <p className="mt-4 text-sm text-white/60">
-            No account needed to practise. Sign up to save your progress across devices.{" "}
-            <Link href="/learn" className="underline hover:text-white">
-              Browse what you can learn
-            </Link>
-            {" · "}
-            <Link href="/login" className="underline hover:text-white">
-              Already have an account? Sign in
-            </Link>
-          </p>
-        </div>
-
-        {/* Features Section */}
-        <div className="mt-24 grid md:grid-cols-3 gap-6">
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-white border border-white/10 hover:border-secondary/50 transition-colors">
-            <div className="w-14 h-14 bg-secondary rounded-xl flex items-center justify-center mb-5">
-              <svg
-                className="w-7 h-7 text-gray-900"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
+    <div className="min-h-screen bg-white text-ink">
+      {/* Hero: the patrol flag, edge to edge. Red half carries the words,
+          yellow half carries a live question. */}
+      <header className="md:bg-[linear-gradient(104deg,#DA291C_0_55%,#FFE135_55%_100%)]">
+        <div className="mx-auto grid max-w-6xl md:grid-cols-[1.15fr_1fr] md:items-center">
+          <div className="bg-primary px-5 pb-16 pt-8 text-white safe-top md:bg-transparent md:px-6 md:py-20">
+            <div className="flex items-center gap-2 font-display text-2xl font-bold">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icon.svg" alt="" width={32} height={32} className="rounded-md ring-2 ring-ink" />
+              Surf Signals
             </div>
-            <h3 className="text-xl font-bold mb-3">Signals</h3>
-            <p className="text-white/70">
-              All 14 beach and water signals. Name them from a picture, then
-              perform them in front of your webcam. The camera checks your arm
-              positions and movement, and video never leaves your device.
+
+            <h1 className="mt-8 font-display text-6xl md:mt-10 font-extrabold uppercase leading-[0.9] sm:text-7xl lg:text-8xl">
+              Know every signal before your next patrol
+            </h1>
+            <p className="mt-6 max-w-md text-lg text-white/90">
+              Practise the 14 beach and water signals, the first aid mnemonics and radio
+              calls for your Bronze Medallion, SRC or patrol. A few minutes a day.
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <Link href="/practice" className="btn-accent">
+                Start practising
+              </Link>
+              <Link href="/signup" className="font-semibold underline decoration-2 underline-offset-4 hover:decoration-secondary">
+                Create a free account
+              </Link>
+            </div>
+            <p className="mt-4 text-sm text-white/80">
+              No account needed.{" "}
+              <Link href="/login" className="underline underline-offset-2 hover:text-white">
+                Sign in
+              </Link>{" "}
+              to keep your progress across devices.
             </p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-white border border-white/10 hover:border-primary/50 transition-colors">
-            <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center mb-5">
-              <svg
-                className="w-7 h-7 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"
-                />
-              </svg>
+          <div className="-mt-10 bg-secondary px-5 pb-14 pt-16 [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] md:m-0 md:bg-transparent md:p-10 md:[clip-path:none]">
+            <div className="flex justify-center md:justify-end">
+              <SignalTeaser />
             </div>
-            <h3 className="text-xl font-bold mb-3">Mnemonics</h3>
-            <p className="text-white/70">
-              DRSABCD, SAMPLE, IMIST AMBO, the 4 Ps and more. Quiz yourself
-              letter by letter and sort real patient scenarios into them.
-            </p>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-white border border-white/10 hover:border-secondary/50 transition-colors">
-            <div className="w-14 h-14 bg-secondary rounded-xl flex items-center justify-center mb-5">
-              <svg
-                className="w-7 h-7 text-gray-900"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-xl font-bold mb-3">Radio</h3>
-            <p className="text-white/70">
-              Prowords, the phonetic alphabet and the 4 Ps. Spell call signs
-              and put real radio exchanges in the right order.
-            </p>
           </div>
         </div>
+      </header>
 
-        {/* Categories Preview */}
-        <div className="mt-20 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-8">
-            Both directions covered
+      {/* The full set, grouped the way they're used on the beach */}
+      <section className="mx-auto max-w-6xl px-5 py-16 md:px-6 md:py-24">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h2 className="font-display text-4xl font-extrabold uppercase leading-none md:text-5xl">
+            All 14 signals
           </h2>
-          <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto text-left">
-            <div className="px-6 py-4 bg-amber-500/15 rounded-2xl border border-amber-400/30">
-              <div className="font-bold text-amber-200">Beach to Water</div>
-              <p className="text-white/70 text-sm mt-1">
-                Signals from the beach to swimmers, lifesavers and craft in the water.
-              </p>
-            </div>
-            <div className="px-6 py-4 bg-blue-500/15 rounded-2xl border border-blue-400/30">
-              <div className="font-bold text-blue-200">Water to Beach</div>
-              <p className="text-white/70 text-sm mt-1">
-                Signals from a lifesaver in the water back to the beach.
-              </p>
-            </div>
+          <Link href="/learn/signals" className="font-semibold underline decoration-2 underline-offset-4 hover:decoration-primary">
+            Learn what each one means
+          </Link>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-[8fr_6fr]">
+          <div className="rounded-lg border-2 border-ink bg-sand p-5">
+            <h3 className="font-display text-2xl font-bold uppercase">From the beach</h3>
+            <p className="text-stone-700">To swimmers, lifesavers and craft in the water.</p>
+            <ul className="mt-5 grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4">
+              {fromBeach.map((s) => (
+                <SignalTile key={s.name} signal={s} />
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-lg border-2 border-ink bg-sea p-5 text-white">
+            <h3 className="font-display text-2xl font-bold uppercase">From the water</h3>
+            <p className="text-white/85">From a lifesaver in the water back to the beach.</p>
+            <ul className="mt-5 grid grid-cols-3 gap-x-3 gap-y-5">
+              {fromWater.map((s) => (
+                <li key={s.name} className="flex flex-col items-center text-center">
+                  <div className="relative aspect-square w-full rounded-md bg-white">
+                    <Image src={s.imageUrl} alt="" fill sizes="(min-width: 768px) 140px, 30vw" className="object-contain p-1" />
+                  </div>
+                  <span className="mt-1 text-sm font-semibold leading-tight">{s.name}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Three topics, each led by the thing you'll actually learn */}
+      <section className="border-t-[3px] border-ink bg-white">
+        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-3 md:gap-8 md:px-6 md:py-20">
+          <div>
+            <p className="font-display text-5xl font-extrabold uppercase leading-none text-primary">Perform it</p>
+            <h3 className="mt-4 text-xl font-bold">Signals</h3>
+            <p className="mt-2 text-stone-700">
+              Name each signal from a picture, then do it in front of your webcam. The camera
+              checks your arm positions and movement, and video never leaves your device.
+            </p>
+          </div>
+          <div>
+            <p className="font-display text-5xl font-extrabold uppercase leading-none text-primary">DRSABCD</p>
+            <h3 className="mt-4 text-xl font-bold">Mnemonics</h3>
+            <p className="mt-2 text-stone-700">
+              SAMPLE, IMIST AMBO, the 4 Ps and more. Quiz yourself letter by letter, then sort
+              real patient scenarios into them.
+            </p>
+          </div>
+          <div>
+            <p className="font-display text-5xl font-extrabold uppercase leading-none text-primary">Over</p>
+            <h3 className="mt-4 text-xl font-bold">Radio</h3>
+            <p className="mt-2 text-stone-700">
+              Prowords and the phonetic alphabet. Spell call signs and put real radio exchanges
+              in the right order.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-ink text-white">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8 md:px-6">
+          <div className="flex items-center gap-2 font-display text-xl font-bold">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="" width={28} height={28} className="rounded-md" />
+            Surf Signals
+          </div>
+          <Link href="/practice" className="btn-secondary">
+            Start practising
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

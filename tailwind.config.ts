@@ -8,9 +8,17 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        ink: "#1C1917",
+        sand: "#F3E2BC",
+        sea: { DEFAULT: "#0E6A8C", dark: "#0A4F69" },
+        correct: "#1F8A3E",
         // Official Surf Life Saving Australia colors
         slsa: {
           pink: {
