@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { MNEMONICS, MNEMONIC_GROUPS, type MnemonicGroup } from "@/content/mnemonics";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const ORDER: MnemonicGroup[] = ["handover", "first-aid", "patrol"];
 
 export default function MnemonicsPage() {
   return (
     <div className="space-y-8 pb-12">
-      <nav className="text-sm text-gray-500">
-        <Link href="/learn" className="hover:underline">Learn</Link>
-      </nav>
+      <Breadcrumbs trail={[{ href: "/learn", label: "Learn" }]} />
       <header className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Mnemonics</h1>
         <p className="text-gray-600 max-w-2xl">

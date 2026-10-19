@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { StudyMode, SignalCategory, SessionConfig } from "@/types";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 interface SessionSetupProps {
   mode: StudyMode;
@@ -41,10 +42,7 @@ export default function SessionSetup({
 
   return (
     <div className="max-w-md mx-auto px-4 space-y-3">
-      <nav className="text-sm text-gray-500">
-        <Link href="/practice" className="hover:underline">Practice</Link> /{" "}
-        <Link href="/practice#signals" className="hover:underline">Signals</Link>
-      </nav>
+      <Breadcrumbs trail={[{ href: "/practice", label: "Practice" }, { href: "/practice#signals", label: "Signals" }]} />
       <div className="card">
         {/* Header */}
         <div className="text-center mb-8">

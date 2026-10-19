@@ -10,6 +10,7 @@ import {
   SIGNAL_POSE_DESCRIPTIONS,
 } from "@/lib/pose/signalDefinitions";
 import { MOTION_LABELS } from "@/lib/pose/motion";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const CATEGORY_INFO: Record<SignalCategory, { label: string; blurb: string; badge: string }> = {
   "beach-to-water": {
@@ -122,9 +123,7 @@ export default function LearnPage() {
   return (
     <div className="space-y-8 pb-12">
       <header className="space-y-3">
-        <nav className="text-sm text-gray-500">
-          <Link href="/learn" className="hover:underline">Learn</Link>
-        </nav>
+        <Breadcrumbs trail={[{ href: "/learn", label: "Learn" }]} />
         <h1 className="text-3xl font-bold text-gray-900">Signals</h1>
         <p className="text-gray-600 max-w-2xl">
           All {signals.length || 14} signals, what they mean and how to do them. Read through

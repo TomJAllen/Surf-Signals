@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MNEMONICS, MNEMONIC_GROUPS, type MnemonicGroup } from "@/content/mnemonics";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const ORDER: MnemonicGroup[] = ["handover", "first-aid", "patrol"];
 
@@ -18,9 +19,7 @@ function Chip({ href, label }: { href?: string; label: string }) {
 export default function PracticeMnemonicsPage() {
   return (
     <div className="space-y-8 pb-12">
-      <nav className="text-sm text-gray-500">
-        <Link href="/practice" className="hover:underline">Practice</Link>
-      </nav>
+      <Breadcrumbs trail={[{ href: "/practice", label: "Practice" }]} />
       <header className="space-y-3">
         <h1 className="text-3xl font-bold text-gray-900">Practise mnemonics</h1>
         <Link href="/practice/mnemonics/mixed" className="btn-primary inline-block">

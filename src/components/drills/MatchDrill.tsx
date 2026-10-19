@@ -26,6 +26,7 @@ interface Drag {
   x: number;
   y: number;
   width: number;
+  height: number;
   offsetX: number;
   offsetY: number;
   over: number | null;
@@ -45,7 +46,6 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
   const [announce, setAnnounce] = useState("");
   const [round, setRound] = useState(0);
 
-  const pending = useRef<{ card: number; x: number; y: number; started: boolean; rect: DOMRect } | null>(null);
   const justDragged = useRef(false);
 
   const placedCards = new Set(Object.values(placed));
@@ -85,57 +85,104 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
     [cards, placed, rows]
   );
 
-  const rowAt = (x: number, y: number): number | null => {
-    const el = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-slot]");
-    if (!el) return null;
+  // Latest state for the window-level drag listeners
+  const latest = useRef({ placed, place });
+  latest.current = { placed, place };
+  const slotsRef = useRef<HTMLOListElement>(null);
+
+  // The empty slot the dragged card overlaps most (judged by the card, not the
+  // pointer, because people line up the card they're holding). Falls back to
+  // whatever is under the pointer.
+  const slotFor = (d: { x: number; y: number; offsetX: number; offsetY: number; width: number; height: number }): number | null => {
+    const left = d.x - d.offsetX;
+    const top = d.y - d.offsetY;
+    let best: number | null = null;
+    let bestArea = 0;
+    slotsRef.current?.querySelectorAll<HTMLElement>("[data-slot]").forEach((el) => {
+      const row = Number(el.dataset.slot);
+      if (latest.current.placed[row] !== undefined) return;
+      const r = el.getBoundingClientRect();
+      const w = Math.min(left + d.width, r.right) - Math.max(left, r.left);
+      const h = Math.min(top + d.height, r.bottom) - Math.max(top, r.top);
+      const area = w > 0 && h > 0 ? w * h : 0;
+      if (area > bestArea) {
+        bestArea = area;
+        best = row;
+      }
+    });
+    if (best !== null && bestArea >= 0.2 * d.width * d.height) return best;
+    const el = document.elementFromPoint(d.x, d.y)?.closest<HTMLElement>("[data-slot]");
+    if (!el) return best;
     const row = Number(el.dataset.slot);
-    return placed[row] === undefined ? row : null;
+    return latest.current.placed[row] === undefined ? row : best;
   };
 
+  const stopListening = useRef<() => void>(() => {});
+  useEffect(() => () => stopListening.current(), []);
+
   // Dragging. With a mouse the whole card is the handle; on touch screens only the
-  // grip is, so the list can still be scrolled with a finger.
+  // grip is, so the list can still be scrolled with a finger. Moves and the release
+  // are watched on the whole window, so a drag can never get stuck.
   const onPointerDown = (e: React.PointerEvent<HTMLElement>, card: number) => {
     if (e.button !== 0) return;
     if (e.pointerType !== "mouse" && !(e.target as Element).closest("[data-grip]")) return;
+    stopListening.current();
     const el = e.currentTarget;
-    el.setPointerCapture(e.pointerId);
-    pending.current = { card, x: e.clientX, y: e.clientY, started: false, rect: el.getBoundingClientRect() };
-  };
-
-  const onPointerMove = (e: React.PointerEvent<HTMLElement>) => {
-    const p = pending.current;
-    if (!p) return;
-    if (!p.started) {
-      if (Math.hypot(e.clientX - p.x, e.clientY - p.y) < 6) return;
-      p.started = true;
-      setSelected(null);
+    try {
+      el.setPointerCapture(e.pointerId);
+    } catch {
+      /* not supported: window listeners still work */
     }
-    e.preventDefault();
-    // Scroll the page when dragging near the top or bottom edge
-    const edge = 70;
-    if (e.clientY < edge) window.scrollBy(0, -12);
-    else if (e.clientY > window.innerHeight - edge) window.scrollBy(0, 12);
-    setDrag({
-      card: p.card,
-      x: e.clientX,
-      y: e.clientY,
-      width: p.rect.width,
-      offsetX: p.x - p.rect.left,
-      offsetY: p.y - p.rect.top,
-      over: rowAt(e.clientX, e.clientY),
-    });
-  };
+    const rect = el.getBoundingClientRect();
+    const start = { x: e.clientX, y: e.clientY };
+    const geom = { offsetX: start.x - rect.left, offsetY: start.y - rect.top, width: rect.width, height: rect.height };
+    let started = false;
+    let last = start;
 
-  const endDrag = (e: React.PointerEvent<HTMLElement>, cancelled = false) => {
-    const p = pending.current;
-    pending.current = null;
-    if (!p?.started) return;
-    justDragged.current = true;
-    setTimeout(() => (justDragged.current = false), 0);
-    setDrag(null);
-    if (cancelled) return;
-    const row = rowAt(e.clientX, e.clientY);
-    if (row !== null) place(p.card, row);
+    const move = (ev: PointerEvent) => {
+      if (ev.pointerId !== e.pointerId) return;
+      last = { x: ev.clientX, y: ev.clientY };
+      if (!started) {
+        if (Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 6) return;
+        started = true;
+        setSelected(null);
+      }
+      ev.preventDefault();
+      // Scroll the page when dragging near the top or bottom edge
+      const edge = 70;
+      if (ev.clientY < edge) window.scrollBy(0, -12);
+      else if (ev.clientY > window.innerHeight - edge) window.scrollBy(0, 12);
+      const d = { card, x: ev.clientX, y: ev.clientY, ...geom };
+      setDrag({ ...d, over: slotFor(d) });
+    };
+
+    const finish = (drop: boolean) => {
+      stopListening.current();
+      if (!started) return;
+      justDragged.current = true;
+      setTimeout(() => (justDragged.current = false), 0);
+      setDrag(null);
+      if (!drop) return;
+      const row = slotFor({ ...last, ...geom });
+      if (row !== null) latest.current.place(card, row);
+    };
+    const up = (ev: PointerEvent) => ev.pointerId === e.pointerId && finish(true);
+    const cancel = () => finish(false);
+    const key = (ev: KeyboardEvent) => ev.key === "Escape" && finish(false);
+
+    window.addEventListener("pointermove", move, { passive: false });
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", cancel);
+    window.addEventListener("blur", cancel);
+    window.addEventListener("keydown", key);
+    stopListening.current = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", cancel);
+      window.removeEventListener("blur", cancel);
+      window.removeEventListener("keydown", key);
+      stopListening.current = () => {};
+    };
   };
 
   const restart = () => {
@@ -178,7 +225,7 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
         {/* Statements still to place */}
         {!done && (
           <div className="order-first lg:order-last sticky top-[4.5rem] z-10 lg:top-24">
-            <div className="bg-sand/95 backdrop-blur rounded-lg border-2 border-ink p-3 space-y-2 max-h-[32vh] lg:max-h-[calc(100vh-8rem)] overflow-y-auto">
+            <div className="bg-sand/95 backdrop-blur rounded-lg border-2 border-ink p-3 space-y-2 max-h-[26vh] lg:max-h-[calc(100vh-8rem)] overflow-y-auto">
               <p className="text-xs font-semibold uppercase tracking-wide text-ink/70">
                 {pool.length} to place · {mistakes} {mistakes === 1 ? "mistake" : "mistakes"}
               </p>
@@ -192,10 +239,7 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
                     setSelected((s) => (s === c.i ? null : c.i));
                   }}
                   onPointerDown={(e) => onPointerDown(e, c.i)}
-                  onPointerMove={onPointerMove}
-                  onPointerUp={(e) => endDrag(e)}
-                  onPointerCancel={(e) => endDrag(e, true)}
-                  className={`w-full flex items-start gap-2 text-left text-sm rounded-md border-2 px-3 py-2.5 transition-colors select-none lg:cursor-grab ${
+                  className={`w-full flex items-start gap-2 text-left text-sm rounded-md border-2 px-3 py-2 lg:py-2.5 transition-colors select-none lg:cursor-grab ${
                     drag?.card === c.i
                       ? "opacity-30 border-dashed border-gray-300"
                       : selected === c.i
@@ -212,7 +256,7 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
         )}
 
         {/* Letters and slots */}
-        <ol className={`space-y-2 ${done ? "lg:col-span-2" : ""}`}>
+        <ol ref={slotsRef} className={`space-y-2 ${done ? "lg:col-span-2" : ""}`}>
           {rows.map((r, row) => {
             const card = placed[row];
             const filled = card !== undefined;
