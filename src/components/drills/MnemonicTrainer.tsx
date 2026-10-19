@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { MNEMONICS, type Mnemonic } from "@/content/mnemonics";
 import { shuffle } from "@/lib/shuffle";
+import { sameLetterOptions, matchCards, matchSource, type MnemonicMode } from "@/lib/mnemonicQuiz";
+
+export type { MnemonicMode };
 import ChoiceDrill, { type ChoiceQuestion } from "./ChoiceDrill";
-import OrderDrill from "./OrderDrill";
+import MatchDrill from "./MatchDrill";
 import Tabs from "./Tabs";
 
-export type MnemonicMode = "learn" | "quiz" | "order" | "sort";
 type Mode = MnemonicMode;
 
 // The mnemonic's letters with one highlighted, e.g. IM[I]ST AMBO
@@ -29,13 +31,9 @@ function Letters({ m, highlight }: { m: Mnemonic; highlight?: number }) {
 }
 
 function quizQuestions(m: Mnemonic): ChoiceQuestion[] {
-  const others = MNEMONICS.filter((o) => o.slug !== m.slug).flatMap((o) => o.items.map((i) => i.term));
   return shuffle(m.items.map((item, i) => ({ item, i }))).map(({ item, i }) => {
-    const sameSet = m.items.filter((_, j) => j !== i).map((x) => x.term);
-    // Prefer the mnemonic's own other terms as distractors (harder), then fill from the rest
-    const distractors = Array.from(new Set([...shuffle(sameSet), ...shuffle(others)]))
-      .filter((t) => t !== item.term)
-      .slice(0, 3);
+    // Every option starts with the same letter, so the letter alone gives nothing away
+    const distractors = sameLetterOptions(m, i);
     return {
       id: `${m.slug}-${i}`,
       prompt: (
@@ -62,28 +60,11 @@ export function mixedQuestions(count = 12): ChoiceQuestion[] {
   return shuffle(MNEMONICS.flatMap((m) => quizQuestions(m))).slice(0, count);
 }
 
-const itemLabel = (m: Mnemonic, i: number) => `${m.items[i].letter} – ${m.items[i].term}`;
-
-function sortQuestions(m: Mnemonic): ChoiceQuestion[] {
-  if (!m.sort) return [];
-  const options = m.items.map((_, i) => itemLabel(m, i));
-  return shuffle(m.sort.facts).map((f, n) => ({
-    id: `${m.slug}-sort-${n}`,
-    prompt: (
-      <div className="space-y-2">
-        <p className="text-sm font-medium text-gray-500">Which part of {m.name} does this belong to?</p>
-        <p className="text-xl">&ldquo;{f.text}&rdquo;</p>
-      </div>
-    ),
-    options, // kept in mnemonic order: easier to scan
-    answer: itemLabel(m, f.item),
-    explain: m.items[f.item].detail ? (
-      <>
-        <strong>{m.items[f.item].term}:</strong> {m.items[f.item].detail}
-      </>
-    ) : undefined,
-  }));
-}
+const MATCH_INTRO = {
+  scenario: (m: Mnemonic) => m.sort!.intro,
+  detail: (m: Mnemonic) => `Match each description to its letter in ${m.name}.`,
+  term: (m: Mnemonic) => `Put the words of ${m.name} in order.`,
+};
 
 interface MnemonicTrainerProps {
   slug: string;
@@ -94,13 +75,13 @@ interface MnemonicTrainerProps {
 
 export default function MnemonicTrainer({
   slug,
-  modes = ["learn", "quiz", "order", "sort"],
+  modes = ["learn", "quiz", "match"],
   initialMode,
   practiceHref,
 }: MnemonicTrainerProps) {
   const m = MNEMONICS.find((x) => x.slug === slug)!;
-  const labels: Record<Mode, string> = { learn: "Learn", quiz: "Quiz", order: "Order", sort: "Sort a scenario" };
-  const tabs = modes.filter((id) => id !== "sort" || m.sort).map((id) => ({ id, label: labels[id] }));
+  const labels: Record<Mode, string> = { learn: "Learn", quiz: "Quiz", match: "Match" };
+  const tabs = modes.map((id) => ({ id, label: labels[id] }));
   const [mode, setMode] = useState<Mode>(
     initialMode && tabs.some((t) => t.id === initialMode) ? initialMode : tabs[0].id
   );
@@ -141,20 +122,14 @@ export default function MnemonicTrainer({
 
       {mode === "quiz" && <ChoiceDrill key="quiz" makeQuestions={() => quizQuestions(m)} doneLabel={`${m.name} quiz`} trackAs={{ drill: "mnemonic_quiz", item: m.slug }} />}
 
-      {mode === "order" && (
-        <OrderDrill
-          key="order"
-          instructions={`Tap the parts of ${m.name} in order.`}
-          trackAs={{ drill: "mnemonic_order", item: m.slug }}
-          items={m.items.map((it) => ({ label: it.term, tag: it.letter }))}
+      {mode === "match" && (
+        <MatchDrill
+          key="match"
+          rows={m.items.map((it) => ({ letter: it.letter, term: it.term }))}
+          makeCards={() => matchCards(m)}
+          intro={MATCH_INTRO[matchSource(m)](m)}
+          trackAs={{ drill: "mnemonic_match", item: m.slug }}
         />
-      )}
-
-      {mode === "sort" && m.sort && (
-        <div className="space-y-3">
-          <p className="text-gray-700">{m.sort.intro}</p>
-          <ChoiceDrill key="sort" makeQuestions={() => sortQuestions(m)} doneLabel="Scenario sorted" trackAs={{ drill: "mnemonic_sort", item: m.slug }} />
-        </div>
       )}
     </div>
   );

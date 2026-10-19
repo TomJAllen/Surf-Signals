@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MNEMONICS, getMnemonic } from "@/content/mnemonics";
-import MnemonicTrainer, { type MnemonicMode } from "@/components/drills/MnemonicTrainer";
+import MnemonicTrainer from "@/components/drills/MnemonicTrainer";
+import { parseMnemonicMode } from "@/lib/mnemonicQuiz";
 
 export function generateStaticParams() {
   return MNEMONICS.map((m) => ({ slug: m.slug }));
@@ -17,10 +18,10 @@ export default async function PracticeMnemonicPage({
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const m = getMnemonic(slug);
   if (!m) notFound();
-  const mode = (["quiz", "order", "sort"] as MnemonicMode[]).find((x) => x === query.mode);
+  const mode = parseMnemonicMode(query.mode);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-12">
+    <div className="max-w-3xl mx-auto space-y-6 pb-12">
       <nav className="text-sm text-gray-500">
         <Link href="/practice" className="hover:underline">Practice</Link> /{" "}
         <Link href="/practice/mnemonics" className="hover:underline">Mnemonics</Link>
@@ -36,7 +37,7 @@ export default async function PracticeMnemonicPage({
           </Link>
         </p>
       </header>
-      <MnemonicTrainer slug={m.slug} modes={["quiz", "order", "sort"]} initialMode={mode} />
+      <MnemonicTrainer slug={m.slug} modes={["quiz", "match"]} initialMode={mode} />
     </div>
   );
 }
