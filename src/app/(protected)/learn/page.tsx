@@ -7,7 +7,7 @@ const DETAIL: Record<string, { blurb: string; tags: string[] }> = {
     blurb: "All 14 beach and water signals: what they mean, how to do them, and official demo videos.",
     tags: ["Beach to Water", "Water to Beach"],
   },
-  mnemonics: {
+  acronyms: {
     blurb: "Assessment, handover, first aid and patrol memory aids, each explained letter by letter.",
     tags: MNEMONICS.slice(0, 5).map((m) => m.name),
   },

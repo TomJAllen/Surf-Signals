@@ -22,7 +22,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Surf Signals - Learn and practise patrol skills",
-  description: "Learn and practise surf lifesaving signals, mnemonics and radio calls",
+  description: "Learn and practise surf lifesaving signals, acronyms and radio calls",
 };
 
 export default function RootLayout({

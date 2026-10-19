@@ -58,7 +58,7 @@ export default function Home() {
               Know every signal before your next patrol
             </h1>
             <p className="mt-6 max-w-md text-lg text-white/90">
-              Practise the 14 beach and water signals, the first aid mnemonics and radio
+              Practise the 14 beach and water signals, the first aid acronyms and radio
               calls for your Bronze Medallion, SRC or patrol. A few minutes a day.
             </p>
 
@@ -137,11 +137,11 @@ export default function Home() {
               cta: "Test your signals",
             },
             {
-              topic: "Mnemonics",
+              topic: "Acronyms",
               title: "Know what to ask and say",
               body: "DRSABCD, SAMPLE, IMIST AMBO and nine more. Quiz yourself letter by letter, then drag real patient details onto the right letter.",
-              href: "/test/mnemonics",
-              cta: "Test your mnemonics",
+              href: "/test/acronyms",
+              cta: "Test your acronyms",
             },
             {
               topic: "Radio",

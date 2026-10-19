@@ -158,8 +158,8 @@ export default function DashboardPage() {
           : { text: "Name your first signal", href: "/study/identify?start=quick", cta: "Start with signals" },
     },
     {
-      id: "mnemonics",
-      label: "Mnemonics",
+      id: "acronyms",
+      label: "Acronyms",
       done: mnemMastered,
       total: mnems.length,
       unit: "mastered",
@@ -168,7 +168,7 @@ export default function DashboardPage() {
       next: nextMnem
         ? {
             text: `${nextMnem.name}: ${nextMnem.quizDone ? "a Match round with no mistakes" : "a perfect quiz"}`,
-            href: `/test/mnemonics/${nextMnem.slug}?mode=${nextMnem.quizDone ? "match" : "quiz"}`,
+            href: `/test/acronyms/${nextMnem.slug}?mode=${nextMnem.quizDone ? "match" : "quiz"}`,
             cta: `Test yourself on ${nextMnem.name}`,
           }
         : null,
@@ -224,7 +224,7 @@ export default function DashboardPage() {
                   Start today&apos;s practice
                 </Link>
                 <p className="text-sm text-stone-600">
-                  Four quick questions: a signal, a mnemonic, a radio call and one from the PSAR manual.{" "}
+                  Four quick questions: a signal, an acronym, a radio call and one from the PSAR manual.{" "}
                   <Link href={focus.next.href} className="font-semibold text-primary hover:underline">
                     Or go straight to {focus.label.toLowerCase()}
                   </Link>
@@ -288,7 +288,7 @@ export default function DashboardPage() {
                 )}
                 <p className="text-xs text-stone-600">
                   Levels: In training once you&apos;ve started, Shadow patrolling at three quarters, Patrol-ready when
-                  everything is done. A signal is mastered when your last {MASTERY_STREAK} tries were right; a mnemonic after a
+                  everything is done. A signal is mastered when your last {MASTERY_STREAK} tries were right; an acronym after a
                   perfect quiz and a Match round with no mistakes; a radio test is passed at{" "}
                   {Math.round(RADIO_PASS_MARK * 100)}% or more, or a call built with no mistakes.{" "}
                   <Link href="/history" className="font-semibold text-primary hover:underline">
@@ -303,7 +303,7 @@ export default function DashboardPage() {
 
       <p className="text-sm text-stone-600">
         Want to read up first?{" "}
-        {(["signals", "mnemonics", "radio"] as const).map((id, i) => (
+        {(["signals", "acronyms", "radio"] as const).map((id, i) => (
           <span key={id}>
             {i > 0 && " · "}
             <Link href={getTopic(id).learnHref} className="font-semibold text-primary hover:underline">

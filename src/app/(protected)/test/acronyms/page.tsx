@@ -16,16 +16,16 @@ function Chip({ href, label }: { href?: string; label: string }) {
   );
 }
 
-export default function TestMnemonicsPage() {
+export default function TestAcronymsPage() {
   return (
-    <TopicTests topic="mnemonics">
+    <TopicTests topic="acronyms">
       <h2 id="all" className="scroll-mt-24 font-display text-3xl font-extrabold uppercase text-ink">One at a time</h2>
       {ORDER.map((g) => (
         <section key={g} className="space-y-3">
           <h3 className="text-xl font-bold text-ink">{MNEMONIC_GROUPS[g].label}</h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {MNEMONICS.filter((m) => m.group === g).map((m) => {
-              const base = `/test/mnemonics/${m.slug}`;
+              const base = `/test/acronyms/${m.slug}`;
               return (
                 <div key={m.slug} className="card !p-4 space-y-3">
                   <div>

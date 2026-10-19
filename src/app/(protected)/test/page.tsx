@@ -3,7 +3,7 @@ import { TOPICS } from "@/content/topics";
 
 const FOR: Record<string, string> = {
   signals: "Name them from a picture, then perform them on camera.",
-  mnemonics: "Quiz each letter, then drag real patient details onto the right one.",
+  acronyms: "Quiz each letter, then drag real patient details onto the right one.",
   radio: "Prowords, the phonetic alphabet, spelling call signs and building calls.",
 };
 
@@ -22,7 +22,7 @@ export default function TestHubPage() {
       >
         <span className="font-display text-3xl font-extrabold uppercase text-ink">Today&apos;s practice →</span>
         <span className="mt-1 block text-ink">
-          Four quick questions: a signal, a mnemonic, a radio call and one from the PSAR manual.
+          Four quick questions: a signal, an acronym, a radio call and one from the PSAR manual.
         </span>
       </Link>
       <div className="grid gap-4 md:grid-cols-3">

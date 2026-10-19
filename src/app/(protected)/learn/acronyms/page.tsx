@@ -4,15 +4,15 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 
 const ORDER: MnemonicGroup[] = ["handover", "first-aid", "patrol"];
 
-export default function MnemonicsPage() {
+export default function AcronymsPage() {
   return (
     <div className="space-y-8 pb-12">
       <Breadcrumbs trail={[{ href: "/learn", label: "Learn" }]} />
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900">Mnemonics</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Acronyms</h1>
         <p className="text-gray-600 max-w-2xl">
-          The memory aids from your Bronze and SRC training. Learn each one, then quiz yourself, put it in
-          order, and for the handover ones, sort a real scenario into it.
+          The acronyms and memory aids from your Bronze and SRC training. Learn each one, then test yourself
+          letter by letter and by matching real patient details to the right letter.
         </p>
       </header>
 
@@ -26,7 +26,7 @@ export default function MnemonicsPage() {
             {MNEMONICS.filter((m) => m.group === g).map((m) => (
               <Link
                 key={m.slug}
-                href={`/learn/mnemonics/${m.slug}`}
+                href={`/learn/acronyms/${m.slug}`}
                 className="card !p-4 hover:shadow-lg hover:border-secondary border-2 border-transparent transition-all"
               >
                 <p className="text-xl font-black text-gray-900 tracking-wide">{m.name}</p>

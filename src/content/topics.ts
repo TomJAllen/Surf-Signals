@@ -2,7 +2,7 @@
 // Learn, Test and the dashboard all read from here so they stay in step.
 // An exercise without an href is shown as "Coming soon".
 
-export type TopicId = "signals" | "mnemonics" | "radio";
+export type TopicId = "signals" | "acronyms" | "radio";
 
 export interface Exercise {
   title: string;
@@ -44,25 +44,25 @@ export const TOPICS: Topic[] = [
     ],
   },
   {
-    id: "mnemonics",
-    title: "Mnemonics",
+    id: "acronyms",
+    title: "Acronyms",
     blurb: "DRSABCD, SAMPLE, IMIST AMBO and the other memory aids.",
-    learnHref: "/learn/mnemonics",
-    testHref: "/test/mnemonics",
+    learnHref: "/learn/acronyms",
+    testHref: "/test/acronyms",
     exercises: [
       {
         title: "Mixed quiz",
-        description: "Letters from every mnemonic, shuffled together.",
-        href: "/test/mnemonics/mixed",
+        description: "Letters from every acronym, shuffled together.",
+        href: "/test/acronyms/mixed",
       },
       {
-        title: "One mnemonic at a time",
+        title: "One acronym at a time",
         description: "Quiz each letter, then drag real statements onto the right letter.",
-        href: "/test/mnemonics#all",
+        href: "/test/acronyms#all",
       },
       {
         title: "Timed recall",
-        description: "Type out a whole mnemonic from memory against the clock.",
+        description: "Type out a whole acronym from memory against the clock.",
       },
       {
         title: "First aid scenarios",

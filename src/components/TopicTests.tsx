@@ -3,7 +3,7 @@ import { getTopic, type TopicId } from "@/content/topics";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ExerciseCard from "@/components/ExerciseCard";
 
-// The page for one area of Test (Signals, Mnemonics or Radio): its tests, with
+// The page for one area of Test (Signals, Acronyms or Radio): its tests, with
 // any extra content for that area underneath.
 export default function TopicTests({ topic, children }: { topic: TopicId; children?: React.ReactNode }) {
   const t = getTopic(topic);

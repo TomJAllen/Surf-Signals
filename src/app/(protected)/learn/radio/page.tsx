@@ -139,7 +139,7 @@ export default function RadioPage() {
             </li>
           ))}
         </ol>
-        <Link href="/test/mnemonics/four-ps?mode=match" className="text-primary font-semibold hover:underline text-sm">
+        <Link href="/test/acronyms/four-ps?mode=match" className="text-primary font-semibold hover:underline text-sm">
           Test yourself on the 4 Ps →
         </Link>
       </Section>

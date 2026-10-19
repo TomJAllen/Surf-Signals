@@ -5,8 +5,8 @@ export interface Crumb {
   label: string;
 }
 
-// "← Mnemonics" back button for the page one level up, plus the full trail
-// (Test › Mnemonics) on wider screens. `trail` runs from the top level down.
+// "← Acronyms" back button for the page one level up, plus the full trail
+// (Test › Acronyms) on wider screens. `trail` runs from the top level down.
 export default function Breadcrumbs({ trail }: { trail: Crumb[] }) {
   if (!trail.length) return null;
   const parent = trail[trail.length - 1];
