@@ -54,7 +54,7 @@ export const TOPICS: Topic[] = [
       },
       {
         title: "One mnemonic at a time",
-        description: "Quiz, put it in order, and sort real scenarios for the handover ones.",
+        description: "Quiz each letter, then drag real statements onto the right letter.",
         href: "/practice/mnemonics",
       },
       {

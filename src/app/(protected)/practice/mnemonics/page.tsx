@@ -42,8 +42,7 @@ export default function PracticeMnemonicsPage() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Chip href={`${base}?mode=quiz`} label="Quiz" />
-                    <Chip href={`${base}?mode=order`} label="Order" />
-                    <Chip href={m.sort ? `${base}?mode=sort` : undefined} label="Scenario" />
+                    <Chip href={`${base}?mode=match`} label={m.sort ? "Match a scenario" : "Match"} />
                   </div>
                 </div>
               );
