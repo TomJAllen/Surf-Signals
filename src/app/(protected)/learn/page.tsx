@@ -9,6 +9,7 @@ import {
   getSignalsWithSameShape,
   SIGNAL_POSE_DESCRIPTIONS,
 } from "@/lib/pose/signalDefinitions";
+import { MOTION_LABELS } from "@/lib/pose/motion";
 
 const CATEGORY_INFO: Record<SignalCategory, { label: string; blurb: string; badge: string }> = {
   "beach-to-water": {
@@ -23,9 +24,9 @@ const CATEGORY_INFO: Record<SignalCategory, { label: string; blurb: string; badg
   },
 };
 
-const MOTION_LABEL = { wave: "Wave", circle: "Circle" } as const;
 
 function SignalCard({ signal }: { signal: Signal }) {
+  const [showVideo, setShowVideo] = useState(false);
   const howTo = signal.poseHint || SIGNAL_POSE_DESCRIPTIONS[signal.name];
   const motion = getSignalDefinitions(signal.name).find((d) => d.motion)?.motion;
   const lookalikes = getSignalsWithSameShape(signal.name);
@@ -44,7 +45,7 @@ function SignalCard({ signal }: { signal: Signal }) {
         <div className="absolute top-2 right-2 flex gap-1">
           {motion && (
             <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-900 text-white">
-              {MOTION_LABEL[motion]}
+              {MOTION_LABELS[motion]}
             </span>
           )}
           {info && (
@@ -64,6 +65,26 @@ function SignalCard({ signal }: { signal: Signal }) {
           <span className="text-gray-700">{howTo}</span>
         </div>
       )}
+
+      {signal.videoUrl &&
+        (showVideo ? (
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-gray-900">
+            <iframe
+              src={signal.videoUrl}
+              title={`${signal.name}: official SLS demonstration`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="absolute inset-0 w-full h-full"
+            />
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowVideo(true)}
+            className="self-start text-sm font-bold text-primary hover:underline"
+          >
+            ▶ Watch the official demo
+          </button>
+        ))}
 
       {lookalikes.length > 0 && (
         <p className="text-xs text-gray-500 mt-auto pt-2 border-t border-gray-100">
@@ -104,7 +125,8 @@ export default function LearnPage() {
         <h1 className="text-3xl font-bold text-gray-900">Learn the signals</h1>
         <p className="text-gray-600 max-w-2xl">
           All {signals.length || 14} signals, what they mean and how to do them. Read through
-          these first, then test yourself.
+          these first, then test yourself. Based on the SLSA Public Safety and Aquatic Rescue
+          Training Manual (35th edition).
         </p>
         <div className="flex flex-wrap gap-2">
           <button className={tabClass(category === null)} onClick={() => setCategory(null)}>

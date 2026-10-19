@@ -94,7 +94,8 @@ export default function MultipleChoiceCard({
     return `${base} bg-gray-100 text-gray-400`;
   };
 
-  const hasVideo = !!signal.videoUrl;
+  // Only offer the video once answered: the YouTube player shows the signal's name
+  const hasVideo = !!signal.videoUrl && selectedId !== null;
 
   const categoryColors: Record<string, string> = {
     "beach-to-water": "bg-amber-500",

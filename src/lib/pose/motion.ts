@@ -7,6 +7,13 @@ export const MOTION_HISTORY_FRAMES = 30;
 // Movement thresholds, as a fraction of shoulder width so they work at any distance from camera
 const WAVE_MIN_AMPLITUDE = 0.5; // side-to-side range of the wrist
 const CIRCLE_MIN_AMPLITUDE = 0.35; // range needed on BOTH axes
+// A circle covers similar ground across and up-down; a flap or wave is much longer one way
+const CIRCLE_MIN_ROUNDNESS = 0.4;
+const FLAP_MIN_AMPLITUDE = 0.6; // up-down range of the wrist
+// Cut-away: wrist starts well above the shoulder, then drops this far within a short window
+const CUTAWAY_START_MAX_Y = -0.8; // wrist at least this far above the shoulder (negative = up)
+const CUTAWAY_MIN_DROP = 1.2;
+const CUTAWAY_MAX_FRAMES = 10; // ≈0.66s at 15fps — "quickly"
 const REVERSAL_HYSTERESIS = 0.15; // ignore jitter smaller than this when counting direction changes
 const MIN_VISIBILITY = 0.5;
 const MIN_SAMPLES = 8;
@@ -87,6 +94,7 @@ export interface MotionMetrics {
   rangeY: number; // up-down range, in shoulder widths
   reversalsX: number;
   reversalsY: number;
+  drop: number; // biggest quick fall of the wrist from above the shoulder (cut-away)
   progress: number; // 0..1 towards the requirement (for the on-screen indicator)
   detected: boolean;
 }
@@ -98,6 +106,9 @@ export const MOTION_THRESHOLDS = {
   minSamples: MIN_SAMPLES,
   waveMinReversals: 2,
   circleMinReversals: 1,
+  flapMinAmplitude: FLAP_MIN_AMPLITUDE,
+  flapMinReversals: 2,
+  cutawayMinDrop: CUTAWAY_MIN_DROP,
 } as const;
 
 const EMPTY_METRICS: MotionMetrics = {
@@ -107,9 +118,22 @@ const EMPTY_METRICS: MotionMetrics = {
   rangeY: 0,
   reversalsX: 0,
   reversalsY: 0,
+  drop: 0,
   progress: 0,
   detected: false,
 };
+
+// Largest fall of the wrist that starts above the shoulder and happens within a few frames
+function quickestDrop(ys: number[]): number {
+  let best = 0;
+  for (let i = 0; i < ys.length; i++) {
+    if (ys[i] > CUTAWAY_START_MAX_Y) continue;
+    for (let j = i + 1; j < Math.min(ys.length, i + 1 + CUTAWAY_MAX_FRAMES); j++) {
+      best = Math.max(best, ys[j] - ys[i]);
+    }
+  }
+  return best;
+}
 
 const fraction = (value: number, target: number) => Math.min(1, value / target);
 // Average of the partial requirements, kept below 1 until every one is met
@@ -126,6 +150,7 @@ function measureSide(history: PoseLandmarks[], side: WristSide, motion: SignalMo
     rangeY: range(ys),
     reversalsX: countReversals(xs),
     reversalsY: countReversals(ys),
+    drop: quickestDrop(ys),
   };
   const enoughSamples = m.samples >= MIN_SAMPLES;
   const t = MOTION_THRESHOLDS;
@@ -137,6 +162,19 @@ function measureSide(history: PoseLandmarks[], side: WristSide, motion: SignalMo
     return { ...m, detected, progress: detected ? 1 : enoughSamples ? partial(parts) : 0 };
   }
 
+  if (motion === "flap") {
+    // Arm raised and lowered, at least once up and once down
+    const parts = [fraction(m.rangeY, t.flapMinAmplitude), fraction(m.reversalsY, t.flapMinReversals)];
+    const detected = enoughSamples && m.rangeY >= t.flapMinAmplitude && m.reversalsY >= t.flapMinReversals;
+    return { ...m, detected, progress: detected ? 1 : enoughSamples ? partial(parts) : 0 };
+  }
+
+  if (motion === "cutaway") {
+    // Held up, then cut away sharply: one big, quick fall from above the shoulder
+    const detected = enoughSamples && m.drop >= t.cutawayMinDrop;
+    return { ...m, detected, progress: detected ? 1 : enoughSamples ? partial([fraction(m.drop, t.cutawayMinDrop)]) : 0 };
+  }
+
   // circle: real movement on both axes, changing direction on both
   const parts = [
     fraction(m.rangeX, t.circleMinAmplitude),
@@ -144,8 +182,10 @@ function measureSide(history: PoseLandmarks[], side: WristSide, motion: SignalMo
     fraction(m.reversalsX, t.circleMinReversals),
     fraction(m.reversalsY, t.circleMinReversals),
   ];
+  const roundness = Math.min(m.rangeX, m.rangeY) / Math.max(m.rangeX, m.rangeY, 1e-6);
   const detected =
     enoughSamples &&
+    roundness >= CIRCLE_MIN_ROUNDNESS &&
     m.rangeX >= t.circleMinAmplitude &&
     m.rangeY >= t.circleMinAmplitude &&
     m.reversalsX >= t.circleMinReversals &&
@@ -157,7 +197,7 @@ function measureSide(history: PoseLandmarks[], side: WristSide, motion: SignalMo
 export function measureMotion(history: PoseLandmarks[], motion: SignalMotion): MotionMetrics {
   const recent = history.slice(-MOTION_HISTORY_FRAMES);
   const sides = [measureSide(recent, "left", motion), measureSide(recent, "right", motion)];
-  const score = (m: MotionMetrics) => (m.detected ? 2 : 0) + m.progress + (m.rangeX + m.rangeY) / 100;
+  const score = (m: MotionMetrics) => (m.detected ? 2 : 0) + m.progress + (m.rangeX + m.rangeY + m.drop) / 100;
   const best = sides.reduce((a, b) => (score(b) > score(a) ? b : a));
   return best.samples > 0 ? best : { ...EMPTY_METRICS };
 }
@@ -167,8 +207,22 @@ export function detectMotion(history: PoseLandmarks[], motion: SignalMotion): bo
   return measureMotion(history, motion).detected;
 }
 
+export const MOTION_LABELS: Record<SignalMotion, string> = {
+  wave: "Wave",
+  circle: "Circle",
+  flap: "Up & down",
+  cutaway: "Cut away",
+};
+
 export function motionFeedback(motion: SignalMotion): string {
-  return motion === "wave"
-    ? "Now wave side to side"
-    : "Now move your arm in a circle";
+  switch (motion) {
+    case "wave":
+      return "Now wave side to side";
+    case "circle":
+      return "Now move your arm in a circle";
+    case "flap":
+      return "Now move your arm up and down";
+    case "cutaway":
+      return "Hold it, then cut your arm away quickly to the side";
+  }
 }

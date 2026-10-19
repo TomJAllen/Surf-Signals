@@ -58,7 +58,11 @@ export type ArmPosition =
 export type HandState = "open" | "closed" | "unknown";
 
 // Movement a signal requires on top of its static arm shape
-export type SignalMotion = "wave" | "circle";
+// - wave:    wrist sweeps side to side (Assistance Required, Attract Attention)
+// - circle:  wrist travels round in a loop (Pick Up Swimmers)
+// - flap:    arm raised and lowered (Pick Up or Adjust Buoys, Powercraft Wishes to Return)
+// - cutaway: arm held up, then cut away quickly to the side (Message Understood, Shore Signal Received)
+export type SignalMotion = "wave" | "circle" | "flap" | "cutaway";
 
 // Signal pose definition for matching
 export interface SignalPoseDefinition {
