@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { recentBySignal } from "@/lib/progress";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -16,6 +17,8 @@ export async function GET() {
       },
       recentAttempts: [],
       signalStats: [],
+      recentResults: {},
+      practiceTimes: [],
     });
   }
 
@@ -30,7 +33,8 @@ export async function GET() {
     });
 
     // Aggregate in the database rather than loading every attempt into memory
-    const [grouped, recentAttempts, signals] = await Promise.all([
+    const since = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+    const [grouped, recentAttempts, signals, latest, practiceHours] = await Promise.all([
       prisma.attempt.groupBy({
         by: ["signalId", "mode", "correct"],
         where: { userId },
@@ -45,7 +49,26 @@ export async function GET() {
       prisma.signal.findMany({
         select: { id: true, name: true, description: true, imageUrl: true, category: true },
       }),
+      // Latest results for mastery (newest first; enough to cover every signal)
+      prisma.attempt.findMany({
+        where: { userId },
+        select: { signalId: true, correct: true },
+        orderBy: { createdAt: "desc" },
+        take: 500,
+      }),
+      // When they practised over the last 60 days, for the streak
+      prisma.attempt.findMany({
+        where: { userId, createdAt: { gte: since } },
+        select: { createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 2000,
+      }),
     ]);
+
+    // One timestamp per hour is plenty to work out which days they practised
+    const practiceTimes = Array.from(
+      new Set(practiceHours.map((a) => a.createdAt.toISOString().slice(0, 13)))
+    ).map((h) => `${h}:00:00.000Z`);
 
     const totals = { all: [0, 0], identify: [0, 0], perform: [0, 0] } as Record<string, [number, number]>;
     const bySignal = new Map<string, [number, number]>();
@@ -83,6 +106,8 @@ export async function GET() {
         createdAt: a.createdAt.toISOString(),
       })),
       signalStats,
+      recentResults: recentBySignal(latest),
+      practiceTimes,
     });
   } catch (error) {
     console.error("Error fetching stats:", error);

@@ -47,7 +47,7 @@ export default function Home() {
           yellow half carries a live question. */}
       <header className="md:bg-[linear-gradient(104deg,#DA291C_0_55%,#FFE135_55%_100%)]">
         <div className="mx-auto grid max-w-6xl md:grid-cols-[1.15fr_1fr] md:items-center">
-          <div className="bg-primary px-5 pb-16 pt-8 text-white safe-top md:bg-transparent md:px-6 md:py-20">
+          <div className="bg-primary px-5 pb-16 pt-[max(1.75rem,env(safe-area-inset-top))] text-white md:bg-transparent md:px-6 md:py-20">
             <div className="flex items-center gap-2 font-display text-2xl font-bold">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/icon.svg" alt="" width={32} height={32} className="rounded-md ring-2 ring-ink" />
@@ -125,33 +125,44 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Three topics, each led by the thing you'll actually learn */}
+      {/* Three topics, each led by what it does for you */}
       <section className="border-t-[3px] border-ink bg-white">
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-3 md:gap-8 md:px-6 md:py-20">
-          <div>
-            <p className="font-display text-5xl font-extrabold uppercase leading-none text-primary">Perform it</p>
-            <h3 className="mt-4 text-xl font-bold">Signals</h3>
-            <p className="mt-2 text-stone-700">
-              Name each signal from a picture, then do it in front of your webcam. The camera
-              checks your arm positions and movement, and video never leaves your device.
-            </p>
-          </div>
-          <div>
-            <p className="font-display text-5xl font-extrabold uppercase leading-none text-primary">DRSABCD</p>
-            <h3 className="mt-4 text-xl font-bold">Mnemonics</h3>
-            <p className="mt-2 text-stone-700">
-              SAMPLE, IMIST AMBO, the 4 Ps and more. Quiz yourself letter by letter, then sort
-              real patient scenarios into them.
-            </p>
-          </div>
-          <div>
-            <p className="font-display text-5xl font-extrabold uppercase leading-none text-primary">Over</p>
-            <h3 className="mt-4 text-xl font-bold">Radio</h3>
-            <p className="mt-2 text-stone-700">
-              Prowords and the phonetic alphabet. Spell call signs and put real radio exchanges
-              in the right order.
-            </p>
-          </div>
+        <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 md:grid-cols-3 md:gap-8 md:px-6 md:py-20">
+          {[
+            {
+              topic: "Signals",
+              title: "Do them on camera",
+              body: "Name all 14 from a picture, then perform each one in front of your camera. It checks your arm positions and movement, and the video never leaves your device.",
+              href: "/practice#signals",
+              cta: "Practise signals",
+            },
+            {
+              topic: "Mnemonics",
+              title: "Know what to ask and say",
+              body: "DRSABCD, SAMPLE, IMIST AMBO and nine more. Quiz yourself letter by letter, then drag real patient details onto the right letter.",
+              href: "/practice#mnemonics",
+              cta: "Practise mnemonics",
+            },
+            {
+              topic: "Radio",
+              title: "Sound sure on the radio",
+              body: "Prowords, the phonetic alphabet and the 4 Ps. Spell call signs and put real calls to SurfCom in the right order.",
+              href: "/practice#radio",
+              cta: "Practise radio",
+            },
+          ].map((f) => (
+            <div key={f.topic} className="flex flex-col">
+              <p className="text-sm font-bold uppercase tracking-widest text-primary">{f.topic}</p>
+              <h3 className="mt-2 font-display text-4xl font-extrabold uppercase leading-none text-ink">{f.title}</h3>
+              <p className="mt-3 flex-1 text-stone-700">{f.body}</p>
+              <Link
+                href={f.href}
+                className="mt-4 self-start font-semibold underline decoration-2 underline-offset-4 hover:decoration-primary"
+              >
+                {f.cta} →
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
 
