@@ -155,3 +155,7 @@ export const CALL_SCENARIOS: CallScenario[] = [
     ],
   },
 ];
+
+// The radio tests, in the order they're listed (each has its own page: /test/radio/<id>)
+export const RADIO_DRILLS = ["prowords", "phonetic", "spell", "calls"] as const;
+export type RadioDrill = (typeof RADIO_DRILLS)[number];

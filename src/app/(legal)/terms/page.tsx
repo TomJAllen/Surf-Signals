@@ -41,7 +41,7 @@ export default function TermsPage() {
 
       <Section title="2. Free to use, with or without an account">
         <p>
-          The app is free. You can use Learn and Practice without an account. An account is optional and lets you
+          The app is free. You can use Learn and Test without an account. An account is optional and lets you
           save your progress across devices.
         </p>
         <p>

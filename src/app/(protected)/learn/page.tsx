@@ -24,7 +24,7 @@ export default function LearnHubPage() {
         <h1 className="text-3xl font-bold text-gray-900">Learn</h1>
         <p className="text-gray-600 max-w-2xl">
           What you need to know for patrol, your Bronze Medallion and SRC. Based on the SLSA Public Safety
-          and Aquatic Rescue Training Manual (35th edition). When you&apos;re ready, test yourself in Practice.
+          and Aquatic Rescue Training Manual (35th edition). When you&apos;re ready, test yourself.
         </p>
       </header>
       <div className="grid md:grid-cols-3 gap-4">
@@ -40,8 +40,8 @@ export default function LearnHubPage() {
               </div>
             </Link>
             <div className="pt-2 border-t border-gray-100">
-              <Link href={`/practice#${t.id}`} className="text-sm font-bold text-primary hover:underline">
-                Practise {t.title.toLowerCase()} ({t.exercises.filter((e) => e.href).length} exercises) →
+              <Link href={t.testHref} className="text-sm font-bold text-primary hover:underline">
+                Test your {t.title.toLowerCase()} ({t.exercises.filter((e) => e.href).length} tests) →
               </Link>
             </div>
           </div>
