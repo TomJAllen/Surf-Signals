@@ -7,16 +7,17 @@ export function generateStaticParams() {
   return MNEMONICS.map((m) => ({ slug: m.slug }));
 }
 
-export default function PracticeMnemonicPage({
+export default async function PracticeMnemonicPage({
   params,
   searchParams,
 }: {
-  params: { slug: string };
-  searchParams: { mode?: string };
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ mode?: string }>;
 }) {
-  const m = getMnemonic(params.slug);
+  const [{ slug }, query] = await Promise.all([params, searchParams]);
+  const m = getMnemonic(slug);
   if (!m) notFound();
-  const mode = (["quiz", "order", "sort"] as MnemonicMode[]).find((x) => x === searchParams.mode);
+  const mode = (["quiz", "order", "sort"] as MnemonicMode[]).find((x) => x === query.mode);
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
