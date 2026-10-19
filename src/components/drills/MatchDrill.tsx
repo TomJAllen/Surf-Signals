@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { track } from "@/lib/analytics";
+import { recordDrillResult } from "@/lib/recordDrill";
 import type { DrillTracking } from "./ChoiceDrill";
 
 export interface MatchRow {
@@ -58,7 +59,7 @@ export default function MatchDrill({ rows, makeCards, intro, trackAs }: MatchDri
   }, [round]);
 
   useEffect(() => {
-    if (done && trackAs) track("drill_completed", { ...trackAs, item: trackAs.item ?? null, mistakes, total: rows.length });
+    if (done && trackAs) recordDrillResult({ drill: trackAs.drill, item: trackAs.item, score: rows.length, total: rows.length, mistakes });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);
 

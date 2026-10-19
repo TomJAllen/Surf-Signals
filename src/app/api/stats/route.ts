@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { recentBySignal } from "@/lib/progress";
+import { latestResults } from "@/lib/drillResults";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -19,6 +20,7 @@ export async function GET() {
       signalStats: [],
       recentResults: {},
       practiceTimes: [],
+      drillResults: [],
     });
   }
 
@@ -34,7 +36,7 @@ export async function GET() {
 
     // Aggregate in the database rather than loading every attempt into memory
     const since = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
-    const [grouped, recentAttempts, signals, latest, practiceHours] = await Promise.all([
+    const [grouped, recentAttempts, signals, latest, practiceHours, drills] = await Promise.all([
       prisma.attempt.groupBy({
         by: ["signalId", "mode", "correct"],
         where: { userId },
@@ -63,11 +65,20 @@ export async function GET() {
         orderBy: { createdAt: "desc" },
         take: 2000,
       }),
+      // Mnemonic and radio test results, newest first
+      prisma.drillResult.findMany({
+        where: { userId },
+        select: { drill: true, item: true, score: true, total: true, mistakes: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 1000,
+      }),
     ]);
 
     // One timestamp per hour is plenty to work out which days they practised
     const practiceTimes = Array.from(
-      new Set(practiceHours.map((a) => a.createdAt.toISOString().slice(0, 13)))
+      new Set(
+        [...practiceHours, ...drills.filter((d) => d.createdAt >= since)].map((a) => a.createdAt.toISOString().slice(0, 13))
+      )
     ).map((h) => `${h}:00:00.000Z`);
 
     const totals = { all: [0, 0], identify: [0, 0], perform: [0, 0] } as Record<string, [number, number]>;
@@ -108,6 +119,7 @@ export async function GET() {
       signalStats,
       recentResults: recentBySignal(latest),
       practiceTimes,
+      drillResults: latestResults(drills).map(({ createdAt, ...r }) => ({ ...r, at: createdAt.toISOString() })),
     });
   } catch (error) {
     console.error("Error fetching stats:", error);
