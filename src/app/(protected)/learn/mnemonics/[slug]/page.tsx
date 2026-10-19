@@ -7,8 +7,9 @@ export function generateStaticParams() {
   return MNEMONICS.map((m) => ({ slug: m.slug }));
 }
 
-export default function MnemonicPage({ params }: { params: { slug: string } }) {
-  const m = getMnemonic(params.slug);
+export default async function MnemonicPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const m = getMnemonic(slug);
   if (!m) notFound();
 
   return (

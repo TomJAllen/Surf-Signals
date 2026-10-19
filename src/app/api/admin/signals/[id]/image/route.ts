@@ -14,7 +14,7 @@ const MAX_BYTES = 4 * 1024 * 1024; // stay under Vercel's 4.5MB request body lim
 // (Vercel's filesystem is read-only, so images can't be written into public/.)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { error } = await requireAdmin();
   if (error) return error;
@@ -27,7 +27,7 @@ export async function POST(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const signal = await prisma.signal.findUnique({ where: { id } });
     if (!signal) {
