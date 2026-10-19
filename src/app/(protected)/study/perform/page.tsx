@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import FlashCard from "@/components/FlashCard";
 import SessionSetup from "@/components/SessionSetup";
+import { pickSessionSignals } from "@/lib/progress";
+import { useRecentSignalResults } from "@/lib/useRecentSignalResults";
+import { shuffle } from "@/lib/shuffle";
 import SessionSummary from "@/components/SessionSummary";
 import { useSession } from "next-auth/react";
 import { saveLocalAttempt } from "@/lib/localStorage";
 import { track } from "@/lib/analytics";
-import type { Signal, SignalCategory, SessionConfig } from "@/types";
+import type { Signal, SessionConfig } from "@/types";
 
 // LocalStorage key for camera preference
 const CAMERA_ENABLED_KEY = "surf-signals-camera-enabled";
@@ -21,6 +24,10 @@ interface SessionResult {
 
 export default function PerformPage() {
   const { status: authStatus } = useSession();
+  // Latest results per signal, so a quick session can focus on weak ones
+  const { recent } = useRecentSignalResults(authStatus);
+  const recentRef = useRef(recent);
+  recentRef.current = recent;
   const [phase, setPhase] = useState<SessionPhase>("setup");
   const [signals, setSignals] = useState<Signal[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -28,10 +35,6 @@ export default function PerformPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [totalSignals, setTotalSignals] = useState(0);
-  const [signalsByCategory, setSignalsByCategory] = useState<Record<SignalCategory, number>>({
-    "beach-to-water": 0,
-    "water-to-beach": 0,
-  });
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [cameraPermissionGranted, setCameraPermissionGranted] = useState(false);
 
@@ -62,10 +65,6 @@ export default function PerformPage() {
         const data: Signal[] = await response.json();
 
         setTotalSignals(data.length);
-        setSignalsByCategory({
-          "beach-to-water": data.filter((s) => s.category === "beach-to-water").length,
-          "water-to-beach": data.filter((s) => s.category === "water-to-beach").length,
-        });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
@@ -81,18 +80,12 @@ export default function PerformPage() {
 
     try {
       // Build query params
-      const params = new URLSearchParams();
-      if (config.category) params.set("category", config.category);
-      params.set("limit", String(config.count));
-      params.set("shuffle", "true");
-
-      const response = await fetch(`/api/signals?${params}`);
+      const response = await fetch("/api/signals");
       if (!response.ok) throw new Error("Failed to fetch signals");
-
       const data: Signal[] = await response.json();
 
-      // The API returns a random sample when shuffle=true
-      const shuffled = data;
+      // Weak signals first for a quick set; everything, shuffled, for a full one
+      const shuffled = pickSessionSignals(data, recentRef.current, config.count, shuffle);
 
       // Request camera permission once at session start
       if (cameraEnabled) {
@@ -200,7 +193,6 @@ export default function PerformPage() {
         <SessionSetup
           mode="perform"
           totalSignals={totalSignals}
-          signalsByCategory={signalsByCategory}
           onStart={startSession}
           cameraEnabled={cameraEnabled}
           onCameraToggle={handleCameraToggle}
