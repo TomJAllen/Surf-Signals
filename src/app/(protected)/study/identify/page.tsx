@@ -201,12 +201,12 @@ export default function IdentifyPage() {
       {/* Compact Progress */}
       <div className="max-w-md mx-auto px-4">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-gray-500 whitespace-nowrap">
+          <span className="font-display text-lg font-bold text-ink whitespace-nowrap">
             Signal {currentIndex + 1} of {signals.length}
           </span>
-          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="flex-1 h-3 bg-sand border-2 border-ink rounded-sm overflow-hidden">
             <div
-              className="h-full bg-secondary transition-all duration-300"
+              className="h-full bg-primary transition-all duration-300"
               style={{ width: `${((currentIndex) / signals.length) * 100}%` }}
             />
           </div>

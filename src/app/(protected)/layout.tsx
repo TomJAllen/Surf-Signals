@@ -112,23 +112,23 @@ export default function ProtectedLayout({
           <div
             role="region"
             aria-label="Create an account"
-            className="pointer-events-auto max-w-xl mx-auto flex items-center gap-3 bg-white border border-gray-200 shadow-lg rounded-2xl py-3 pl-4 pr-2"
+            className="pointer-events-auto max-w-xl mx-auto flex items-center gap-3 bg-sand border-[3px] border-ink shadow-[4px_4px_0_#1C1917] rounded-lg py-2.5 pl-4 pr-2"
           >
-            <p className="flex-1 text-sm text-gray-700 leading-snug">
-              <span className="font-semibold text-gray-900">Practising as a guest.</span>{" "}
+            <p className="flex-1 text-sm text-ink leading-snug">
+              <span className="font-semibold">Practising as a guest.</span>{" "}
               <span className="hidden sm:inline">Create a free account to save your progress.</span>
               <span className="sm:hidden">Save your progress with a free account.</span>
             </p>
             <Link
               href="/signup"
-              className="shrink-0 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-dark transition-colors whitespace-nowrap"
+              className="btn-primary shrink-0 py-2 px-4 text-lg whitespace-nowrap"
             >
               Sign up
             </Link>
             <button
               onClick={dismissBanner}
               aria-label="Hide this message"
-              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-md text-stone-600 hover:text-ink hover:bg-white"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />

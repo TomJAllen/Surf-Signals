@@ -71,65 +71,55 @@ export default function MultipleChoiceCard({
 
   const getButtonClass = (option: Signal) => {
     const base =
-      "w-full py-2.5 sm:py-3 px-4 rounded-xl font-bold text-left transition-all";
+      "w-full py-2.5 sm:py-3 px-4 rounded-md border-2 border-ink font-semibold text-left transition-colors";
 
     if (!selectedId) {
-      return `${base} bg-gray-100 hover:bg-gray-200 text-gray-900 active:scale-[0.98]`;
+      return `${base} bg-white hover:bg-secondary text-ink`;
     }
-
-    // After selection
     if (option.id === selectedId && option.id === signal.id) {
-      // Selected the correct answer
-      return `${base} bg-green-500 text-white`;
+      return `${base} bg-correct text-white`;
     }
     if (option.id === selectedId && option.id !== signal.id) {
-      // Selected a wrong answer
-      return `${base} bg-red-500 text-white`;
+      return `${base} bg-primary text-white`;
     }
     if (option.id === signal.id) {
-      // Highlight the correct answer when wrong was selected
-      return `${base} bg-yellow-400 text-gray-900`;
+      // Point out the right answer after a wrong pick
+      return `${base} bg-secondary text-ink`;
     }
-    // Other unselected options
-    return `${base} bg-gray-100 text-gray-400`;
+    return `${base} bg-white text-stone-400 border-stone-300`;
   };
 
   // Only offer the video once answered: the YouTube player shows the signal's name
   const hasVideo = !!signal.videoUrl && selectedId !== null;
 
-  const categoryColors: Record<string, string> = {
-    "beach-to-water": "bg-amber-500",
-    "water-to-beach": "bg-blue-500",
-  };
-
   return (
     <div className="max-w-lg md:max-w-4xl mx-auto px-4">
       <div className="flashcard">
         {/* Header */}
-        <div className="flashcard-header text-center py-3">
-          <span className="text-sm font-medium opacity-80">Identify Mode</span>
-          <h3 className="text-lg font-bold">What signal is this?</h3>
+        <div className="flashcard-header flex flex-wrap items-center gap-x-3 gap-y-2 pr-20">
+          <h3 className="text-2xl sm:text-3xl font-extrabold uppercase leading-none">What&apos;s this signal?</h3>
+          {signal.category && (
+            <span className={signal.category === "beach-to-water" ? "chip-beach" : "chip-water"}>
+              {signal.category === "beach-to-water" ? "From the beach" : "From the water"}
+            </span>
+          )}
         </div>
 
         {/* Media Toggle */}
         {hasVideo && (
-          <div className="flex justify-center gap-2 p-2 bg-gray-100 border-b border-gray-200">
+          <div className="flex justify-center gap-2 p-2 bg-sand border-b-2 border-ink">
             <button
               onClick={() => setShowVideo(false)}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                !showVideo
-                  ? "bg-white shadow-sm text-gray-900"
-                  : "text-gray-500 hover:text-gray-700"
+              className={`px-4 py-1.5 rounded-md text-sm font-bold border-2 ${
+                !showVideo ? "bg-white border-ink text-ink" : "border-transparent text-stone-600 hover:text-ink"
               }`}
             >
               Image
             </button>
             <button
               onClick={() => setShowVideo(true)}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
-                showVideo
-                  ? "bg-white shadow-sm text-gray-900"
-                  : "text-gray-500 hover:text-gray-700"
+              className={`px-4 py-1.5 rounded-md text-sm font-bold border-2 flex items-center gap-2 ${
+                showVideo ? "bg-white border-ink text-ink" : "border-transparent text-stone-600 hover:text-ink"
               }`}
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -144,13 +134,6 @@ export default function MultipleChoiceCard({
         <div className="md:grid md:grid-cols-2">
         {/* Signal Media: height capped to the viewport so the answers stay on screen */}
         <div className="relative w-full aspect-square max-h-[34svh] md:max-h-[62svh] bg-white">
-          {signal.category && (
-            <span
-              className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold text-white uppercase z-10 ${categoryColors[signal.category] || "bg-gray-500"}`}
-            >
-              {signal.category}
-            </span>
-          )}
           {showVideo && signal.videoUrl ? (
             <div className="absolute inset-4 flex items-center justify-center">
               <VideoEmbed url={signal.videoUrl} title={signal.name} />
@@ -168,7 +151,7 @@ export default function MultipleChoiceCard({
         </div>
 
         {/* Answer Options */}
-        <div className="p-4 bg-white space-y-2 md:flex md:flex-col md:justify-center md:space-y-3">
+        <div className="p-4 bg-white space-y-2 border-t-[3px] border-ink md:border-t-0 md:border-l-[3px] md:flex md:flex-col md:justify-center md:space-y-3">
           {options.map((option) => (
             <button
               key={option.id}
@@ -191,13 +174,13 @@ export default function MultipleChoiceCard({
           ))}
 
           {answeredWrong && (
-            <div className="mt-3 p-4 rounded-xl bg-yellow-50 border border-yellow-300 space-y-2" role="status">
-              <p className="font-bold text-gray-900">This is: {signal.name}</p>
-              <p className="text-sm text-gray-700">{signal.description}</p>
+            <div className="mt-3 p-4 rounded-md bg-sand border-2 border-ink space-y-2" role="status">
+              <p className="font-display text-2xl font-bold uppercase leading-tight text-ink">{signal.name}</p>
+              <p className="text-sm text-stone-700">{signal.description}</p>
               <button
                 onClick={onNext}
                 autoFocus
-                className="w-full mt-2 py-3 px-4 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98]"
+                className="btn-primary w-full mt-2"
               >
                 Next signal
               </button>

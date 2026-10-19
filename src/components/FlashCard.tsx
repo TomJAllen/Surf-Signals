@@ -171,14 +171,9 @@ export default function FlashCard({
     setRevealed(true);
   }, []);
 
-  const categoryColors: Record<string, string> = {
-    "beach-to-water": "bg-amber-500",
-    "water-to-beach": "bg-blue-500",
-  };
-
   const categoryBadge = signal.category && (
-    <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold text-white uppercase z-10 ${categoryColors[signal.category] || "bg-gray-500"}`}>
-      {signal.category}
+    <span className={`absolute top-3 left-3 z-10 ${signal.category === "beach-to-water" ? "chip-beach" : "chip-water"}`}>
+      {signal.category === "beach-to-water" ? "From the beach" : "From the water"}
     </span>
   );
 
@@ -186,23 +181,19 @@ export default function FlashCard({
   const hasVideo = !!signal.videoUrl;
 
   const MediaToggle = () => hasVideo && (
-    <div className="flex justify-center gap-2 p-2 bg-gray-100 border-b border-gray-200">
+    <div className="flex justify-center gap-2 p-2 bg-sand border-b-2 border-ink">
       <button
         onClick={() => setShowVideo(false)}
-        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-          !showVideo
-            ? "bg-white shadow-sm text-gray-900"
-            : "text-gray-500 hover:text-gray-700"
+        className={`px-4 py-1.5 rounded-md text-sm font-bold border-2 ${
+          !showVideo ? "bg-white border-ink text-ink" : "border-transparent text-stone-600 hover:text-ink"
         }`}
       >
         Image
       </button>
       <button
         onClick={() => setShowVideo(true)}
-        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
-          showVideo
-            ? "bg-white shadow-sm text-gray-900"
-            : "text-gray-500 hover:text-gray-700"
+        className={`px-4 py-1.5 rounded-md text-sm font-bold border-2 flex items-center gap-2 ${
+          showVideo ? "bg-white border-ink text-ink" : "border-transparent text-stone-600 hover:text-ink"
         }`}
       >
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -217,7 +208,7 @@ export default function FlashCard({
     <>
       <MediaToggle />
       {/* Height capped to the viewport so the buttons below stay on screen */}
-      <div className="relative w-full aspect-square max-h-[34svh] md:max-h-[45svh] bg-white">
+      <div className="relative w-full aspect-square max-h-[34svh] md:max-h-[45svh] bg-white border-b-[3px] border-ink">
         {showBadge && categoryBadge}
         {showVideo && signal.videoUrl ? (
           <div className="absolute inset-4 flex items-center justify-center">
@@ -242,9 +233,8 @@ export default function FlashCard({
       <div className="max-w-lg mx-auto px-4">
         <div className="flashcard">
           {/* Header */}
-          <div className="flashcard-header text-center">
-            <span className="text-sm font-medium opacity-80">Identify Mode</span>
-            <h3 className="text-lg font-bold">What signal is this?</h3>
+          <div className="flashcard-header">
+            <h3 className="text-2xl sm:text-3xl font-extrabold uppercase leading-none">What&apos;s this signal?</h3>
           </div>
 
           {/* Signal Media (Image/Video) */}
@@ -259,15 +249,15 @@ export default function FlashCard({
                 </p>
                 <button
                   onClick={handleReveal}
-                  className="w-full py-4 px-6 bg-secondary text-gray-900 rounded-xl font-bold hover:bg-secondary-light transition-all active:scale-[0.98] shadow-md"
+                  className="btn-secondary w-full"
                 >
                   Reveal Answer
                 </button>
               </div>
             ) : (
               <div>
-                <div className="text-center mb-6 p-4 bg-gradient-to-b from-secondary/10 to-transparent rounded-xl">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                <div className="text-center mb-6 p-4 bg-sand rounded-md border-2 border-ink">
+                  <h2 className="text-3xl font-extrabold uppercase leading-none text-ink">
                     {signal.name}
                   </h2>
                   <p className="text-gray-600 mt-2">{signal.description}</p>
@@ -277,13 +267,13 @@ export default function FlashCard({
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleAnswer(false)}
-                      className="flex-1 py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
+                      className="btn-outline flex-1 px-3"
                     >
                       Incorrect
                     </button>
                     <button
                       onClick={() => handleAnswer(true)}
-                      className="flex-1 py-4 px-6 bg-secondary text-gray-900 rounded-xl font-bold hover:bg-secondary-light transition-all active:scale-[0.98] shadow-md"
+                      className="btn-secondary flex-1 px-3"
                     >
                       Correct
                     </button>
@@ -291,7 +281,7 @@ export default function FlashCard({
                 ) : (
                   <button
                     onClick={handleNext}
-                    className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
+                    className="btn-primary w-full"
                   >
                     Next Signal
                   </button>
@@ -310,27 +300,24 @@ export default function FlashCard({
       <div className="flashcard">
         {/* Header with Signal Info */}
         <div className="flashcard-header">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium opacity-80">
+          <div className="flex items-center justify-between gap-3 mb-2 pr-14">
+            <span className="relative z-10 text-sm font-semibold text-white/90">
               {performPhase === "detecting" ? "Camera Detection" :
                performPhase === "success" ? "Well Done!" :
                performPhase === "timeout" ? "Time's Up!" :
                "Perform Mode"}
             </span>
             {signal.category && (
-              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                signal.category === "beach-to-water" ? "bg-amber-400 text-amber-900" :
-                "bg-blue-400 text-blue-900"
-              }`}>
-                {signal.category === "beach-to-water" ? "Beach" : "Water"}
+              <span className={`relative z-10 ${signal.category === "beach-to-water" ? "chip-beach" : "chip-water"}`}>
+                {signal.category === "beach-to-water" ? "From the beach" : "From the water"}
               </span>
             )}
           </div>
-          <h2 className="text-2xl font-bold">
+          <h2 className="relative z-10 pr-14 text-4xl font-extrabold uppercase leading-none">
             {signal.name}
           </h2>
           {showDescription && (
-            <p className="opacity-80 mt-1">{signal.description}</p>
+            <p className="relative z-10 pr-14 mt-2 text-white/90">{signal.description}</p>
           )}
         </div>
 
@@ -368,14 +355,14 @@ export default function FlashCard({
           {/* Prompt phase - no camera, show reveal button */}
           {performPhase === "prompt" && (
             <div className="text-center">
-              <div className="mb-6 p-6 bg-secondary/10 rounded-xl border-2 border-dashed border-secondary/30">
-                <p className="text-gray-700 font-medium">
+              <div className="mb-6 p-5 bg-sand rounded-md border-2 border-ink">
+                <p className="text-ink font-medium">
                   Perform this signal physically, then reveal the reference to check your form.
                 </p>
               </div>
               <button
                 onClick={handleReveal}
-                className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
+                className="btn-primary w-full"
               >
                 Reveal Reference
               </button>
@@ -405,13 +392,13 @@ export default function FlashCard({
               <div className="flex gap-3">
                 <button
                   onClick={() => handleAnswer(false)}
-                  className="flex-1 py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
+                  className="btn-outline flex-1 px-3"
                 >
                   ✗ I got it wrong
                 </button>
                 <button
                   onClick={() => handleAnswer(true)}
-                  className="flex-1 py-4 px-6 bg-secondary text-gray-900 rounded-xl font-bold hover:bg-secondary-light transition-all active:scale-[0.98] shadow-md"
+                  className="btn-secondary flex-1 px-3"
                 >
                   ✓ I got it right
                 </button>
@@ -423,7 +410,7 @@ export default function FlashCard({
           {performPhase === "answered" && (
             <button
               onClick={handleNext}
-              className="w-full py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all active:scale-[0.98] shadow-md"
+              className="btn-primary w-full"
             >
               Next Signal
             </button>
