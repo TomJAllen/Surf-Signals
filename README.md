@@ -38,6 +38,7 @@ If `ADMIN_PASSWORD` isn't set when you seed, a random password is generated and 
 6. **Admin access:** set `ADMIN_EMAILS` to your email. In production the admin area is locked to these emails *and* `role = "admin"` in the database.
 7. **Analytics:** enable Web Analytics in the Vercel project (page views). For anonymous event analytics, create a free PostHog project, turn on *Discard client IP data*, and set `NEXT_PUBLIC_POSTHOG_KEY` (and `NEXT_PUBLIC_POSTHOG_REGION` if it's in the EU).
 8. **Legal pages:** set `NEXT_PUBLIC_CONTACT_EMAIL` (shown on /privacy and /terms).
+   **Password reset emails (optional):** set `RESEND_API_KEY` (and optionally `EMAIL_FROM`, default `Patrol Ready <noreply@patrolready.au>`) after verifying your domain in Resend. Without it, "Forgot your password?" tells people to email the contact address.
 9. **Supabase only:** lock down Supabase's auto-generated public API (Row Level Security on, `anon`/`authenticated` privileges revoked), and set `DATABASE_CA_CERT` so the database certificate is verified. See `docs/supabase-hardening.sql`.
 
 See also `SECURITY.md`.

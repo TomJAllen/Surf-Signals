@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 
-// One-time password reset links, created by an admin from Admin → Users.
+// One-time password reset links: emailed from "Forgot your password?", or created
+// by an admin from Admin → Users.
 //
 // The token is signed with NEXTAUTH_SECRET and bound to the user's current password
 // hash, so it needs no database table and stops working as soon as it's used (the
