@@ -23,8 +23,9 @@ export default function LearnHubPage() {
       <header className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Learn</h1>
         <p className="text-gray-600 max-w-2xl">
-          What you need to know for patrol, your Bronze Medallion and SRC. Based on the SLSA Public Safety
-          and Aquatic Rescue Training Manual (35th edition). When you&apos;re ready, test yourself.
+          Quick refreshers on the signals, acronyms and radio you use on patrol and in your Bronze Medallion and
+          SRC, based on the SLSA Public Safety and Aquatic Rescue Training Manual (35th edition). Use them alongside
+          your club training and the manual, not instead of them.
         </p>
       </header>
       <div className="grid md:grid-cols-3 gap-4">

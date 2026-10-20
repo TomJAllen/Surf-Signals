@@ -301,8 +301,11 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="font-display text-3xl font-extrabold uppercase text-ink">You&apos;re patrol-ready</p>
-                <p className="text-ink">Everything mastered. Keep it sharp with a few questions a day.</p>
+                <p className="font-display text-3xl font-extrabold uppercase text-ink">All done in here</p>
+                <p className="text-ink">
+                  You&apos;ve mastered everything in Patrol Ready. Keep it sharp with a few questions a day, and keep
+                  training with your club.
+                </p>
                 <Link href="/test/daily" className="btn-primary w-full sm:w-auto">
                   Start today&apos;s practice
                 </Link>
@@ -389,7 +392,8 @@ export default function DashboardPage() {
               Levels: In training once you&apos;ve started, Shadow patrolling at three quarters, Patrol-ready when
               everything is done. A signal is mastered when your last {MASTERY_STREAK} tries were right; an acronym after a
               perfect quiz and a Match round with no mistakes; a radio test is passed at{" "}
-              {Math.round(RADIO_PASS_MARK * 100)}% or more, or a call built with no mistakes.{" "}
+              {Math.round(RADIO_PASS_MARK * 100)}% or more, or a call built with no mistakes. Levels show your progress
+              in this app only. Whether you&apos;re ready to patrol is up to your club&apos;s training and assessment.{" "}
               <Link href="/history" className="font-semibold text-primary hover:underline">
                 Signal history
               </Link>

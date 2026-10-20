@@ -21,9 +21,9 @@ const geistMono = localFont({
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.patrolready.au";
-const TITLE = "Patrol Ready: learn and test surf lifesaving patrol skills";
+const TITLE = "Patrol Ready: brush up on your surf lifesaving patrol skills";
 const DESCRIPTION =
-  "Free training for surf lifesavers. Learn and test the hand signals (with on-camera practice), first-aid acronyms and radio calls, plus four new questions every day. No account needed.";
+  "A quick, free refresher for surf lifesavers: hand signals (with on-camera practice), first aid acronyms and radio calls, plus four new questions every day. Use it alongside your club training. No account needed.";
 
 // Title, description and share preview (the picture is opengraph-image.tsx)
 export const metadata: Metadata = {

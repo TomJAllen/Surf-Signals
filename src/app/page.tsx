@@ -55,11 +55,11 @@ export default function Home() {
             </div>
 
             <h1 className="mt-8 font-display text-6xl md:mt-10 font-extrabold uppercase leading-[0.9] sm:text-7xl lg:text-8xl">
-              Know every signal before your next patrol
+              Brush up before your next patrol
             </h1>
             <p className="mt-6 max-w-md text-lg text-white/90">
-              Practise the 14 beach and water signals, the first aid acronyms and radio
-              calls for your Bronze Medallion, SRC or patrol. A few minutes a day.
+              A quick refresher on the 14 beach and water signals, first aid acronyms and radio
+              calls. A few minutes a day, alongside your Bronze, SRC and club training.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
@@ -163,6 +163,17 @@ export default function Home() {
               </Link>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-5 pb-12 md:px-6">
+        <div className="rounded-lg border-2 border-dashed border-ink bg-white p-5 text-stone-700">
+          <p className="font-display text-xl font-bold uppercase text-ink">A refresher, not a course</p>
+          <p className="mt-1">
+            Patrol Ready helps you keep the basics fresh between training sessions and patrols. It doesn&apos;t
+            replace your club training, your trainers and assessors, or the SLSA manual. Where anything here
+            differs from what you&apos;ve been taught, go with your training.
+          </p>
         </div>
       </section>
 

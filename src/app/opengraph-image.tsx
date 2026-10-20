@@ -4,7 +4,7 @@ import { join } from "path";
 
 // The picture shown when someone shares a Patrol Ready link (WhatsApp, iMessage,
 // Slack, Facebook…). Built once at build time.
-export const alt = "Patrol Ready: learn and test surf lifesaving signals, acronyms and radio";
+export const alt = "Patrol Ready: brush up on surf lifesaving signals, acronyms and radio";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -54,7 +54,7 @@ export default async function OpenGraphImage() {
             Patrol Ready
           </div>
           <div style={{ fontSize: 50, fontWeight: 700, lineHeight: 1.1, marginTop: 28 }}>
-            Learn and test surf lifesaving signals, acronyms and radio.
+            Brush up on your surf lifesaving signals, acronyms and radio.
           </div>
           <div style={{ display: "flex", marginTop: 40 }}>
             <div
