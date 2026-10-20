@@ -23,7 +23,7 @@ export default function TestHubPage() {
       >
         <span className="font-display text-3xl font-extrabold uppercase text-ink">Today&apos;s practice →</span>
         <span className="mt-1 block text-ink">
-          Four quick questions: a signal, an acronym, a radio call and one from the PSAR manual.
+          Four questions a day, the same for everyone: a signal, an acronym, a radio call and one from the PSAR manual.
         </span>
       </Link>
       <div className="grid gap-4 md:grid-cols-3">

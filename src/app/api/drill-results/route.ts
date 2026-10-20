@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/admin";
 import { parseDrillResult } from "@/lib/drillResults";
 import { clampLimit } from "@/lib/validation";
+import { dailyKey } from "@/lib/daily";
 import { rateLimit, RULES, tooManyRequestsMessage } from "@/lib/rateLimit";
 
 // The signed-in user's finished tests and sessions, newest first (for History)
@@ -32,6 +33,16 @@ export async function POST(request: Request) {
 
   const result = parseDrillResult(await request.json().catch(() => null));
   if (!result) return NextResponse.json({ error: "Invalid result" }, { status: 400 });
+
+  // Today's practice counts once a day (the first go), like the page shows
+  if (result.drill === "daily_mix") {
+    const last = await prisma.drillResult.findFirst({
+      where: { userId, drill: "daily_mix" },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    if (last && dailyKey(last.createdAt) === dailyKey()) return NextResponse.json({ ok: true, duplicate: true });
+  }
 
   await prisma.drillResult.create({ data: { ...result, userId } });
   return NextResponse.json({ ok: true });

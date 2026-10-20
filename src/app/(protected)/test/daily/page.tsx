@@ -1,76 +1,28 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import SignalImage from "@/components/SignalImage";
 import ChoiceDrill, { type ChoiceQuestion } from "@/components/drills/ChoiceDrill";
-import { quizQuestions } from "@/components/drills/MnemonicTrainer";
-import { phoneticQuestions, prowordQuestions } from "@/components/drills/RadioPractice";
-import { MNEMONICS } from "@/content/mnemonics";
-import { PSAR_QUESTIONS } from "@/content/psar";
-import { pickSessionSignals } from "@/lib/progress";
-import { mnemonicProgress, type LatestResult } from "@/lib/drillResults";
-import { useRecentSignalResults } from "@/lib/useRecentSignalResults";
+import { type LatestResult } from "@/lib/drillResults";
+import { dailyKey } from "@/lib/daily";
+import { dailyQuestions, plainPrompt } from "@/lib/dailyQuestions";
+import { dailyAnswersHere, dailyDoneHere, rememberDailyAnswers, type DailyResult } from "@/lib/recordDrill";
 import { saveLocalAttempt } from "@/lib/localStorage";
 import { track } from "@/lib/analytics";
-import { shuffle } from "@/lib/shuffle";
 import type { Signal } from "@/types";
 
-const SEEN_KEY = "ss-psar-seen";
-
-// The PSAR question you've gone longest without seeing (remembered in this browser)
-function nextPsarQuestion(): ChoiceQuestion {
-  let seen: string[] = [];
-  try {
-    seen = JSON.parse(localStorage.getItem(SEEN_KEY) ?? "[]");
-  } catch {
-    /* storage unavailable */
-  }
-  const unseen = PSAR_QUESTIONS.filter((q) => !seen.includes(q.id));
-  const q = shuffle(unseen.length ? unseen : PSAR_QUESTIONS)[0];
-  try {
-    const next = [...seen.filter((id) => id !== q.id), q.id].slice(-(PSAR_QUESTIONS.length - 1));
-    localStorage.setItem(SEEN_KEY, JSON.stringify(next));
-  } catch {
-    /* storage unavailable */
-  }
-  return {
-    id: `psar-${q.id}`,
-    tag: `PSAR manual · ${q.topic}`,
-    prompt: q.question,
-    options: shuffle([q.answer, ...q.wrong]),
-    answer: q.answer,
-    explain: q.explain,
-  };
-}
-
-function signalQuestion(signal: Signal, all: Signal[]): ChoiceQuestion {
-  const others = shuffle(all.filter((s) => s.id !== signal.id)).slice(0, 3);
-  return {
-    id: `sig-${signal.id}`,
-    tag: "Signals",
-    prompt: (
-      <div className="space-y-3">
-        <p>What&apos;s this signal?</p>
-        <SignalImage src={signal.imageUrl} alt="A lifesaver giving a signal" size="md" />
-      </div>
-    ),
-    options: shuffle([signal.name, ...others.map((s) => s.name)]),
-    answer: signal.name,
-    explain: signal.description,
-  };
-}
-
-// Today's practice: one signal, one mnemonic letter, one radio question and one
-// question from the PSAR manual, focused on what you need where we know it.
+// Today's practice: one set of four questions a day, the same for everyone,
+// answered once. Afterwards you see your score and today's answers.
 export default function DailyPracticePage() {
   const { status } = useSession();
-  const { recent, ready } = useRecentSignalResults(status);
   const [signals, setSignals] = useState<Signal[] | null>(null);
-  const [drillResults, setDrillResults] = useState<LatestResult[] | null>(null);
   const [error, setError] = useState("");
+  const [day] = useState(() => dailyKey());
+  // Already done today? From this browser, or from the account
+  const [done, setDone] = useState<DailyResult | null | undefined>(undefined);
+  const [results, setResults] = useState<boolean[] | null>(null);
 
   useEffect(() => {
     fetch("/api/signals")
@@ -81,28 +33,24 @@ export default function DailyPracticePage() {
 
   useEffect(() => {
     if (status === "loading") return;
-    if (status !== "authenticated") {
-      setDrillResults([]);
+    const here = dailyDoneHere();
+    setResults(dailyAnswersHere());
+    if (here || status !== "authenticated") {
+      setDone(here);
       return;
     }
     fetch("/api/stats")
       .then((r) => (r.ok ? r.json() : null))
-      .then((s) => setDrillResults(s?.drillResults ?? []))
-      .catch(() => setDrillResults([]));
-  }, [status]);
+      .then((s) => {
+        const saved = (s?.drillResults as LatestResult[] | undefined)?.find(
+          (r) => r.drill === "daily_mix" && dailyKey(new Date(r.at)) === day
+        );
+        setDone(saved ? { day, score: saved.score, total: saved.total } : null);
+      })
+      .catch(() => setDone(null));
+  }, [status, day]);
 
-  // A new set each time: on arrival, and again on "Try again"
-  const canBuild = !!signals?.length && ready && drillResults !== null;
-  const buildQuestions = useCallback((): ChoiceQuestion[] => {
-    if (!signals?.length || drillResults === null) return [];
-    const signal = pickSessionSignals(signals, recent, 1, shuffle)[0];
-    const progress = mnemonicProgress(drillResults);
-    const focus = progress.find((m) => m.tried && !m.mastered) ?? progress.find((m) => !m.mastered);
-    const mnemonic = MNEMONICS.find((m) => m.slug === focus?.slug) ?? shuffle(MNEMONICS)[0];
-    const mnemonicQ = { ...quizQuestions(mnemonic)[0], tag: `Acronyms · ${mnemonic.name}` };
-    const radioQ = { ...shuffle([...prowordQuestions(), ...phoneticQuestions()])[0], tag: "Radio" };
-    return [signalQuestion(signal, signals), mnemonicQ, radioQ, nextPsarQuestion()];
-  }, [signals, recent, drillResults]);
+  const questions = useMemo(() => (signals?.length ? dailyQuestions(signals, day) : []), [signals, day]);
 
   // The signal answer also counts towards that signal's mastery
   const onAnswer = (q: ChoiceQuestion, correct: boolean) => {
@@ -121,31 +69,82 @@ export default function DailyPracticePage() {
     }).catch(() => {});
   };
 
+  const backHref = status === "authenticated" ? "/dashboard" : "/test";
+  const backLabel = status === "authenticated" ? "Dashboard" : "Test";
+
   return (
     <div className="mx-auto max-w-2xl space-y-6 pb-12">
-      <Breadcrumbs trail={[{ href: status === "authenticated" ? "/dashboard" : "/test", label: status === "authenticated" ? "Dashboard" : "Test" }]} />
+      <Breadcrumbs trail={[{ href: backHref, label: backLabel }]} />
       <header className="space-y-1">
         <h1 className="font-display text-4xl font-extrabold uppercase text-ink">Today&apos;s practice</h1>
-        <p className="text-stone-700">Four quick questions: a signal, an acronym, a radio call and one from the PSAR manual.</p>
+        <p className="text-stone-700">
+          Four questions a day, the same for everyone: a signal, an acronym, a radio call and one from the PSAR manual.
+        </p>
       </header>
 
       {error ? (
         <div className="card text-center text-ink">{error}</div>
-      ) : !canBuild ? (
+      ) : !signals || done === undefined ? (
         <div className="card flex justify-center py-10">
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
         </div>
+      ) : done ? (
+        <div className="space-y-4">
+          <section className="card space-y-2 text-center">
+            <p className="text-sm font-bold uppercase tracking-widest text-correct">Done for today</p>
+            <p className="font-display text-5xl font-extrabold text-ink">
+              {done.score}/{done.total}
+            </p>
+            <p className="text-stone-700">A new set is ready at midnight. Keep practising with the tests in the meantime.</p>
+            <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-center">
+              <Link href="/test" className="btn-primary">
+                More tests
+              </Link>
+              {status === "authenticated" && (
+                <Link href="/dashboard" className="btn-outline">
+                  Back to dashboard
+                </Link>
+              )}
+            </div>
+          </section>
+          <section className="space-y-2">
+            <h2 className="font-display text-xl font-bold uppercase text-ink">Today&apos;s answers</h2>
+            <ol className="card divide-y-2 divide-stone-200 p-0">
+              {questions.map((q, i) => {
+                const right = results?.[i];
+                return (
+                  <li key={q.id} className="flex items-start gap-3 px-4 py-3">
+                    <span
+                      aria-label={right === undefined ? undefined : right ? "You got this right" : "You got this wrong"}
+                      className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
+                        right === undefined ? "bg-stone-200 text-stone-600" : right ? "bg-correct text-white" : "bg-primary text-white"
+                      }`}
+                    >
+                      {right === undefined ? i + 1 : right ? "✓" : "✗"}
+                    </span>
+                    <div className="min-w-0">
+                      {q.tag && <p className="text-xs font-bold uppercase tracking-widest text-primary">{q.tag}</p>}
+                      <p className="text-ink">{plainPrompt(q)}</p>
+                      <p className="font-semibold text-ink">{q.answer}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        </div>
       ) : (
         <ChoiceDrill
-          makeQuestions={buildQuestions}
+          makeQuestions={() => questions}
           doneLabel="Today's practice"
           trackAs={{ drill: "daily_mix" }}
           onAnswer={onAnswer}
-          doneExtra={
-            <Link href={status === "authenticated" ? "/dashboard" : "/test"} className="btn-outline w-full">
-              {status === "authenticated" ? "Back to dashboard" : "More tests"}
-            </Link>
-          }
+          allowRetry={false}
+          onFinish={(score, total, res) => {
+            rememberDailyAnswers(res);
+            setResults(res);
+            setDone({ day, score, total });
+          }}
         />
       )}
     </div>
