@@ -27,14 +27,25 @@ interface ChoiceDrillProps {
   trackAs?: DrillTracking;
   onAnswer?: (question: ChoiceQuestion, correct: boolean) => void;
   doneExtra?: ReactNode; // shown under the score, e.g. a link back to the dashboard
+  allowRetry?: boolean; // false for one-go sets like Today's practice
+  onFinish?: (score: number, total: number, results: boolean[]) => void;
 }
 
 // Multiple-choice drill: pick an answer, see why, then move on when ready.
-export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete", trackAs, onAnswer, doneExtra }: ChoiceDrillProps) {
+export default function ChoiceDrill({
+  makeQuestions,
+  doneLabel = "Round complete",
+  trackAs,
+  onAnswer,
+  doneExtra,
+  allowRetry = true,
+  onFinish,
+}: ChoiceDrillProps) {
   const [questions, setQuestions] = useState<ChoiceQuestion[]>(() => makeQuestions());
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
+  const [results, setResults] = useState<boolean[]>([]);
 
   const done = index >= questions.length;
   const q = questions[index];
@@ -47,9 +58,9 @@ export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete
   }, [round]);
 
   useEffect(() => {
-    if (done && trackAs) {
-      recordDrillResult({ drill: trackAs.drill, item: trackAs.item, score, total: questions.length });
-    }
+    if (!done) return;
+    if (trackAs) recordDrillResult({ drill: trackAs.drill, item: trackAs.item, score, total: questions.length });
+    onFinish?.(score, questions.length, results);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);
 
@@ -58,6 +69,7 @@ export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete
     setIndex(0);
     setPicked(null);
     setScore(0);
+    setResults([]);
     setRound((r) => r + 1);
   };
 
@@ -72,9 +84,11 @@ export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete
         <p className="text-gray-600">
           {pct === 100 ? "Perfect. You know this one." : pct >= 70 ? "Nearly there. Go again to lock it in." : "Keep at it. Have another look at Learn, then try again."}
         </p>
-        <button onClick={restart} className="btn-primary w-full">
-          Try again
-        </button>
+        {allowRetry && (
+          <button onClick={restart} className="btn-primary w-full">
+            Try again
+          </button>
+        )}
         {doneExtra}
       </div>
     );
@@ -108,6 +122,7 @@ export default function ChoiceDrill({ makeQuestions, doneLabel = "Round complete
             onClick={() => {
               setPicked(option);
               if (option === q.answer) setScore((s) => s + 1);
+              setResults((r) => [...r, option === q.answer]);
               onAnswer?.(q, option === q.answer);
             }}
             className={optionClass(option)}

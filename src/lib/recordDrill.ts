@@ -2,7 +2,7 @@
 
 import { track } from "./analytics";
 import { SAVED_DRILLS, type SavedDrill } from "./drillResults";
-import { localDay } from "./progress";
+import { dailyKey } from "./daily";
 
 interface Result {
   drill: string;
@@ -54,7 +54,7 @@ export interface DailyResult {
 
 function rememberDaily(score: number, total: number) {
   try {
-    localStorage.setItem(DAILY_KEY, JSON.stringify({ day: localDay(new Date()), score, total }));
+    localStorage.setItem(DAILY_KEY, JSON.stringify({ day: dailyKey(), score, total }));
   } catch {
     /* storage unavailable */
   }
@@ -64,7 +64,27 @@ function rememberDaily(score: number, total: number) {
 export function dailyDoneHere(now = new Date()): DailyResult | null {
   try {
     const r = JSON.parse(localStorage.getItem(DAILY_KEY) ?? "null") as DailyResult | null;
-    return r && r.day === localDay(now) ? r : null;
+    return r && r.day === dailyKey(now) ? r : null;
+  } catch {
+    return null;
+  }
+}
+
+// Which of today's questions were right, for the "today's answers" list
+const ANSWERS_KEY = "ss-daily-answers";
+
+export function rememberDailyAnswers(results: boolean[]) {
+  try {
+    localStorage.setItem(ANSWERS_KEY, JSON.stringify({ day: dailyKey(), results }));
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+export function dailyAnswersHere(now = new Date()): boolean[] | null {
+  try {
+    const r = JSON.parse(localStorage.getItem(ANSWERS_KEY) ?? "null") as { day: string; results: boolean[] } | null;
+    return r && r.day === dailyKey(now) && Array.isArray(r.results) ? r.results : null;
   } catch {
     return null;
   }

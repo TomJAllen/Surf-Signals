@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { correctInARow, localDay, masteryOf, practiceStreak, levelFor, LEVEL_LABEL, MASTERY_STREAK, type Level, type Mastery } from "@/lib/progress";
+import { correctInARow, masteryOf, practiceStreak, levelFor, LEVEL_LABEL, MASTERY_STREAK, type Level, type Mastery } from "@/lib/progress";
 import { mnemonicProgress, radioProgress, RADIO_PASS_MARK, type LatestResult } from "@/lib/drillResults";
 import { TOPICS } from "@/content/topics";
 import IdeasCard from "@/components/IdeasCard";
 import { track } from "@/lib/analytics";
 import { dailyDoneHere, type DailyResult } from "@/lib/recordDrill";
+import { dailyKey } from "@/lib/daily";
 
 interface SignalStat {
   id: string;
@@ -138,7 +139,7 @@ export default function DashboardPage() {
   const tiles = [...signals].sort((a, b) => ORDER[a.mastery] - ORDER[b.mastery] || a.name.localeCompare(b.name));
 
   const latest = stats?.drillResults ?? [];
-  const savedDaily = latest.find((r) => r.drill === "daily_mix" && localDay(new Date(r.at)) === localDay(new Date()));
+  const savedDaily = latest.find((r) => r.drill === "daily_mix" && dailyKey(new Date(r.at)) === dailyKey());
   const dailyToday = savedDaily ? { score: savedDaily.score, total: savedDaily.total } : dailyHere;
   const mnems = mnemonicProgress(latest);
   const mnemMastered = mnems.filter((m) => m.mastered).length;
@@ -249,7 +250,7 @@ export default function DashboardPage() {
                 <p className="font-display text-2xl font-extrabold uppercase leading-none text-ink">Today&apos;s practice done</p>
                 <p className="mt-1 text-ink">
                   You got <strong>{dailyToday.score}/{dailyToday.total}</strong>
-                  {dailyToday.score === dailyToday.total ? ". Perfect." : ". Back tomorrow for a new set."}
+                  {dailyToday.score === dailyToday.total ? ". Perfect." : "."} New set at midnight.
                 </p>
               </div>
               <div className="flex w-full flex-wrap gap-x-4 gap-y-1 text-sm sm:w-auto">
@@ -264,10 +265,10 @@ export default function DashboardPage() {
                 )}
                 <Link
                   href="/test/daily"
-                  onClick={() => track("dashboard_cta", { target: "daily_again" })}
+                  onClick={() => track("dashboard_cta", { target: "daily_answers" })}
                   className="font-semibold text-stone-700 hover:underline"
                 >
-                  Another round
+                  See today&apos;s answers
                 </Link>
               </div>
             </section>
