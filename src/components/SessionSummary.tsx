@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { track } from "@/lib/analytics";
+import { saveDrillResult } from "@/lib/recordDrill";
 import type { StudyMode } from "@/types";
 
 interface SessionResult {
@@ -29,6 +30,8 @@ export default function SessionSummary({
 
   useEffect(() => {
     track("signal_session_completed", { mode, total, correct, accuracy });
+    // Shows up in History as one session
+    if (total > 0) saveDrillResult({ drill: `signals_${mode}`, item: null, score: correct, total });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

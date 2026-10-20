@@ -1,4 +1,4 @@
-// Mnemonic and radio test results: what can be saved, and what counts as
+// Results of finished tests and sessions (acronyms, radio, signals, today's practice): what can be saved, and what counts as
 // mastered or passed. Shared by the save endpoint, the stats API and the dashboard.
 
 import { MNEMONICS } from "@/content/mnemonics";
@@ -13,6 +13,8 @@ export const SAVED_DRILLS = [
   "radio_spell",
   "radio_build_call",
   "daily_mix",
+  "signals_identify",
+  "signals_perform",
 ] as const;
 export type SavedDrill = (typeof SAVED_DRILLS)[number];
 
@@ -104,4 +106,28 @@ export function radioProgress(latest: LatestResult[]): RadioProgress[] {
     );
     return { id, tried: results.length > 0, passed };
   });
+}
+
+// --- Names for the History page ---
+
+const RADIO_TITLES: Record<string, string> = {
+  radio_prowords: "Prowords",
+  radio_phonetic: "Phonetic letters",
+  radio_spell: "Spell it",
+  radio_build_call: "Build the call",
+};
+
+export type ResultArea = "daily" | "signals" | "acronyms" | "radio";
+
+// What a saved result was, in words: "SAMPLE: Match", "Radio: Prowords"…
+export function describeResult(drill: string, item: string | null): { area: ResultArea; title: string } {
+  if (drill === "daily_mix") return { area: "daily", title: "Daily practice" };
+  if (drill === "signals_identify") return { area: "signals", title: "Identify" };
+  if (drill === "signals_perform") return { area: "signals", title: "Perform" };
+  if (drill === "mnemonic_mixed") return { area: "acronyms", title: "Mixed quiz" };
+  if (drill === "mnemonic_quiz" || drill === "mnemonic_match") {
+    const name = MNEMONICS.find((m) => m.slug === item)?.name ?? "Acronym";
+    return { area: "acronyms", title: `${name}: ${drill === "mnemonic_quiz" ? "Quiz" : "Match"}` };
+  }
+  return { area: "radio", title: RADIO_TITLES[drill] ?? "Radio test" };
 }
