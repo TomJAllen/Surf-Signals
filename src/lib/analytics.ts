@@ -95,7 +95,8 @@ export type AnalyticsEvent =
   | "video_opened"
   | "dashboard_cta"
   | "drill_abandoned"
-  | "level_reached";
+  | "level_reached"
+  | "idea_clicked";
 
 // `leaving: true` sends it in a way that survives the page being closed
 export function track(
