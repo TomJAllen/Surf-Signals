@@ -2,9 +2,24 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/admin";
 import { parseDrillResult } from "@/lib/drillResults";
+import { clampLimit } from "@/lib/validation";
 import { rateLimit, RULES, tooManyRequestsMessage } from "@/lib/rateLimit";
 
-// Saves a finished mnemonic or radio test for the signed-in user
+// The signed-in user's finished tests and sessions, newest first (for History)
+export async function GET(request: Request) {
+  const { error, session } = await requireUser();
+  if (error) return error;
+  const limit = clampLimit(new URL(request.url).searchParams.get("limit"), 50, 200);
+  const rows = await prisma.drillResult.findMany({
+    where: { userId: session.user.id },
+    select: { id: true, drill: true, item: true, score: true, total: true, mistakes: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+  return NextResponse.json(rows.map(({ createdAt, ...r }) => ({ ...r, at: createdAt.toISOString() })));
+}
+
+// Saves a finished test or session for the signed-in user
 export async function POST(request: Request) {
   const { error, session } = await requireUser();
   if (error) return error;

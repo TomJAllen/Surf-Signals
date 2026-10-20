@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { correctInARow, masteryOf, practiceStreak, levelFor, LEVEL_LABEL, MASTERY_STREAK, type Level, type Mastery } from "@/lib/progress";
+import { correctInARow, localDay, masteryOf, practiceStreak, levelFor, LEVEL_LABEL, MASTERY_STREAK, type Level, type Mastery } from "@/lib/progress";
 import { mnemonicProgress, radioProgress, RADIO_PASS_MARK, type LatestResult } from "@/lib/drillResults";
 import { TOPICS } from "@/content/topics";
 import { track } from "@/lib/analytics";
+import { dailyDoneHere, type DailyResult } from "@/lib/recordDrill";
 
 interface SignalStat {
   id: string;
@@ -113,6 +114,9 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  // Today's practice done in this browser (shown at once, before the account catches up)
+  const [dailyHere, setDailyHere] = useState<DailyResult | null>(null);
+  useEffect(() => setDailyHere(dailyDoneHere()), []);
 
   useEffect(() => {
     fetch("/api/stats")
@@ -133,6 +137,8 @@ export default function DashboardPage() {
   const tiles = [...signals].sort((a, b) => ORDER[a.mastery] - ORDER[b.mastery] || a.name.localeCompare(b.name));
 
   const latest = stats?.drillResults ?? [];
+  const savedDaily = latest.find((r) => r.drill === "daily_mix" && localDay(new Date(r.at)) === localDay(new Date()));
+  const dailyToday = savedDaily ? { score: savedDaily.score, total: savedDaily.total } : dailyHere;
   const mnems = mnemonicProgress(latest);
   const mnemMastered = mnems.filter((m) => m.mastered).length;
   // Carry on with one you've started, otherwise the next new one
@@ -233,6 +239,38 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* Today: one thing to do */}
+          {dailyToday ? (
+            <section className="card flex flex-wrap items-center gap-x-4 gap-y-3 border-correct">
+              <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-correct text-xl font-bold text-white">
+                ✓
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-display text-2xl font-extrabold uppercase leading-none text-ink">Today&apos;s practice done</p>
+                <p className="mt-1 text-ink">
+                  You got <strong>{dailyToday.score}/{dailyToday.total}</strong>
+                  {dailyToday.score === dailyToday.total ? ". Perfect." : ". Back tomorrow for a new set."}
+                </p>
+              </div>
+              <div className="flex w-full flex-wrap gap-x-4 gap-y-1 text-sm sm:w-auto">
+                {focus?.next && (
+                  <Link
+                    href={focus.next.href}
+                    onClick={() => track("dashboard_cta", { target: "area_after_daily", focus: focus.id })}
+                    className="font-semibold text-primary hover:underline"
+                  >
+                    Keep going: {focus.label.toLowerCase()} →
+                  </Link>
+                )}
+                <Link
+                  href="/test/daily"
+                  onClick={() => track("dashboard_cta", { target: "daily_again" })}
+                  className="font-semibold text-stone-700 hover:underline"
+                >
+                  Another round
+                </Link>
+              </div>
+            </section>
+          ) : (
           <section className="card-highlight space-y-5">
             {focus?.next ? (
               <div className="space-y-3">
@@ -268,8 +306,8 @@ export default function DashboardPage() {
                 </Link>
               </div>
             )}
-
           </section>
+          )}
         </>
       )}
 
