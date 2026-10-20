@@ -20,10 +20,26 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.patrolready.au";
+const TITLE = "Patrol Ready: learn and test surf lifesaving patrol skills";
+const DESCRIPTION =
+  "Free training for surf lifesavers. Learn and test the hand signals (with on-camera practice), first-aid acronyms and radio calls, plus four new questions every day. No account needed.";
+
+// Title, description and share preview (the picture is opengraph-image.tsx)
 export const metadata: Metadata = {
-  title: "Patrol Ready - Learn and practise patrol skills",
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
   applicationName: "Patrol Ready",
-  description: "Learn and practise surf lifesaving signals, acronyms and radio calls",
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "Patrol Ready",
+    locale: "en_AU",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
+  appleWebApp: { title: "Patrol Ready" },
 };
 
 export default function RootLayout({
