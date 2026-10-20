@@ -99,11 +99,11 @@ export default function PrivacyPage() {
           <li><strong>Supabase</strong>: database for accounts and practice results, hosted in Australia (Sydney).</li>
           <li><strong>Vercel</strong>: website hosting, with our servers in Sydney; also Vercel Web Analytics and image storage.</li>
           <li><strong>PostHog</strong>: anonymous analytics, hosted in the United States.</li>
-          <li><strong>Resend</strong>: sends password reset emails when you ask for one (just your email address and the link), from the United States.</li>
+          <li><strong>Resend</strong>: sends password reset emails when you ask for one (just your email address and the link). Emails are sent from Japan and records are kept in the United States.</li>
         </ul>
         <p>
-          Your account and practice results are stored in Australia. Anonymous analytics (PostHog) and password reset emails (Resend) are
-          processed in the United States, and some of Vercel&apos;s services may process data overseas. We choose providers with strong security practices and
+          Your account and practice results are stored in Australia. Anonymous analytics (PostHog) are processed in the United States, password reset
+          emails (Resend) are sent from Japan with records kept in the United States, and some of Vercel&apos;s services may process data overseas. We choose providers with strong security practices and
           only share what each needs. We may also disclose information if required by law.
         </p>
       </Section>
