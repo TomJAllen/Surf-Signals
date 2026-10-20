@@ -1,0 +1,24 @@
+name: Idea or new test
+description: Suggest a new test, a content fix or an improvement
+labels: ["idea"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make Patrol Ready better. Please don't include anyone's personal details,
+        and don't paste large parts of the SLSA manual (describe the content in your own words).
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to see, or what could be better?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help? (e.g. something your patrol or trainees struggle with)
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Signals, Acronyms, Radio, PSAR manual questions, Something else]

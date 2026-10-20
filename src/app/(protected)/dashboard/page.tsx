@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { correctInARow, localDay, masteryOf, practiceStreak, levelFor, LEVEL_LABEL, MASTERY_STREAK, type Level, type Mastery } from "@/lib/progress";
 import { mnemonicProgress, radioProgress, RADIO_PASS_MARK, type LatestResult } from "@/lib/drillResults";
 import { TOPICS } from "@/content/topics";
+import IdeasCard from "@/components/IdeasCard";
 import { track } from "@/lib/analytics";
 import { dailyDoneHere, type DailyResult } from "@/lib/recordDrill";
 
@@ -395,6 +396,8 @@ export default function DashboardPage() {
           </div>
         </details>
       )}
+
+      <IdeasCard where="dashboard" />
     </div>
   );
 }

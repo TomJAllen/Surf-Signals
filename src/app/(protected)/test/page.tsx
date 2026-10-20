@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TOPICS } from "@/content/topics";
+import IdeasCard from "@/components/IdeasCard";
 
 const FOR: Record<string, string> = {
   signals: "Name them from a picture, then perform them on camera.",
@@ -45,6 +46,7 @@ export default function TestHubPage() {
           );
         })}
       </div>
+      <IdeasCard where="test" />
     </div>
   );
 }
