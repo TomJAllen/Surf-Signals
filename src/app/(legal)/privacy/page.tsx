@@ -96,13 +96,13 @@ export default function PrivacyPage() {
       <Section title="Who we share it with">
         <p>Only the service providers that run the app for us, under their own security and privacy commitments:</p>
         <ul className="list-disc pl-6 space-y-1">
-          <li><strong>Supabase</strong>: database for accounts and practice results. Currently hosted in India (Mumbai).</li>
+          <li><strong>Supabase</strong>: database for accounts and practice results, hosted in Australia (Sydney).</li>
           <li><strong>Vercel</strong>: website hosting, with our servers in Sydney; also Vercel Web Analytics and image storage.</li>
           <li><strong>PostHog</strong>: anonymous analytics, hosted in the United States.</li>
         </ul>
         <p>
-          Because some of these providers store or process data outside Australia (including India and the United
-          States), your information may be held overseas. We choose providers with strong security practices and
+          Your account and practice results are stored in Australia. Anonymous analytics are processed by PostHog
+          in the United States, and some of Vercel&apos;s services may process data overseas. We choose providers with strong security practices and
           only share what each needs. We may also disclose information if required by law.
         </p>
       </Section>
