@@ -5,7 +5,7 @@
 // - URL fragments ("#…") are removed, as they can hold one-time tokens
 // - text that looks like an email address is removed from clicked elements
 
-export const PRIVATE_PATH_PREFIXES = ["/admin", "/account", "/reset-password"];
+export const PRIVATE_PATH_PREFIXES = ["/admin", "/account", "/reset-password", "/forgot-password"];
 
 export function isPrivatePath(pathname: string): boolean {
   return PRIVATE_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));

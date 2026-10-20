@@ -1,7 +1,7 @@
 // Versions of the legal documents. Bump a version when the document changes in a
 // way users need to agree to again; signed-in users are then asked to accept it.
 export const TERMS_VERSION = "2026-10-19";
-export const PRIVACY_VERSION = "2026-10-20-syd"; // database moved to Sydney
+export const PRIVACY_VERSION = "2026-10-20-email"; // password reset emails via Resend
 export const LEGAL_EFFECTIVE_DATE = "19 October 2026";
 export const PRIVACY_EFFECTIVE_DATE = "20 October 2026";
 
