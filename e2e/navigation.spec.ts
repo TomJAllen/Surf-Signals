@@ -6,7 +6,7 @@ test.describe("Navigation", () => {
 
     // Logo and brand
     await expect(page.getByText("SURF LIFE SAVING AUSTRALIA")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Surf Signals" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Patrol Ready" })).toBeVisible();
 
     // CTAs
     await expect(page.getByRole("link", { name: "Get Started Free" })).toBeVisible();

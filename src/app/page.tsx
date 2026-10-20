@@ -51,7 +51,7 @@ export default function Home() {
             <div className="flex items-center gap-2 font-display text-2xl font-bold">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/icon.svg" alt="" width={32} height={32} className="rounded-md ring-2 ring-ink" />
-              Surf Signals
+              Patrol Ready
             </div>
 
             <h1 className="mt-8 font-display text-6xl md:mt-10 font-extrabold uppercase leading-[0.9] sm:text-7xl lg:text-8xl">
@@ -171,7 +171,7 @@ export default function Home() {
           <div className="flex items-center gap-2 font-display text-xl font-bold">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/icon.svg" alt="" width={28} height={28} className="rounded-md" />
-            Surf Signals
+            Patrol Ready
           </div>
           <Link href="/test" className="btn-secondary">
             Test yourself

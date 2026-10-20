@@ -4,13 +4,13 @@ import { LegalPage, Section, Contact } from "@/components/LegalPage";
 import { PRIVACY_EFFECTIVE_DATE, MIN_AGE_WITHOUT_GUARDIAN, OPERATOR_NAME } from "@/content/legal";
 import AnalyticsToggle from "@/components/AnalyticsToggle";
 
-export const metadata: Metadata = { title: "Privacy Policy · Surf Signals" };
+export const metadata: Metadata = { title: "Privacy Policy · Patrol Ready" };
 
 export default function PrivacyPage() {
   return (
     <LegalPage title="Privacy Policy" effective={PRIVACY_EFFECTIVE_DATE}>
       <p>
-        Surf Signals is a free training app for surf lifesaving members, run by {OPERATOR_NAME} in Sydney,
+        Patrol Ready (formerly Surf Signals) is a free training app for surf lifesaving members, run by {OPERATOR_NAME} in Sydney,
         Australia (&ldquo;we&rdquo;, &ldquo;us&rdquo;). This policy explains what personal information we collect,
         why, and what you can do about it. We handle personal information in line with the Australian Privacy
         Principles in the <em>Privacy Act 1988</em> (Cth).
@@ -162,7 +162,7 @@ export default function PrivacyPage() {
       </Section>
 
       <p className="text-sm text-gray-500 pt-4 border-t border-gray-200">
-        Surf Signals is an independent app and is not affiliated with or endorsed by Surf Life Saving Australia.
+        Patrol Ready is an independent app and is not affiliated with or endorsed by Surf Life Saving Australia.
         See also our <Link href="/terms" className="underline">Terms of Use</Link>.
       </p>
     </LegalPage>

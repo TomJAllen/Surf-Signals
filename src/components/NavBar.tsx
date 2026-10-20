@@ -42,7 +42,7 @@ export default function NavBar() {
           <Link href={session ? "/dashboard" : "/"} className="font-display font-bold text-2xl flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/icon.svg" alt="" width={30} height={30} className="rounded-md ring-2 ring-ink" />
-            Surf Signals
+            Patrol Ready
           </Link>
 
           <div className="hidden md:flex items-center space-x-1">

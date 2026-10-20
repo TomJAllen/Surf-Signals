@@ -21,7 +21,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Surf Signals - Learn and practise patrol skills",
+  title: "Patrol Ready - Learn and practise patrol skills",
+  applicationName: "Patrol Ready",
   description: "Learn and practise surf lifesaving signals, acronyms and radio calls",
 };
 

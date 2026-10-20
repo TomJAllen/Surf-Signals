@@ -46,7 +46,7 @@ export async function GET() {
 
   const data = {
     exportedAt: new Date().toISOString(),
-    note: "All personal data Surf Signals holds about you. Your password is stored only as a one-way hash and isn't included.",
+    note: "All personal data Patrol Ready holds about you. Your password is stored only as a one-way hash and isn't included.",
     account: {
       id: user.id,
       email: user.email,
@@ -71,7 +71,7 @@ export async function GET() {
   return new NextResponse(JSON.stringify(data, null, 2), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": `attachment; filename="surf-signals-data-${new Date().toISOString().slice(0, 10)}.json"`,
+      "Content-Disposition": `attachment; filename="patrol-ready-data-${new Date().toISOString().slice(0, 10)}.json"`,
       "Cache-Control": "no-store",
     },
   });
